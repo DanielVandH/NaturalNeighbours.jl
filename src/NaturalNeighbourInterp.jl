@@ -388,15 +388,15 @@ get_triangulation(ni::NaturalNeighbourInterpolant) = ni.triangulation
 get_z(ni::NaturalNeighbourInterpolant) = ni.z
 get_cache(ni::NaturalNeighbourInterpolant) = ni.cache
 get_cache(ni::NaturalNeighbourInterpolant, id) = ni.cache[id]
-interpolate(tri::Triangulation, z) = NaturalNeighbourInterpolant(tri, z)
-function interpolate(points, z)
-    tri = triangulate(points, delete_ghosts=false)
+interpolate(tri::Triangulation, z; kwargs...) = NaturalNeighbourInterpolant(tri, z)
+function interpolate(points, z; kwargs...)
+    tri = triangulate(points, delete_ghosts=false; kwargs...)
     return interpolate(tri, z)
 end
-function interpolate(x::AbstractVector, y::AbstractVector, z)
+function interpolate(x::AbstractVector, y::AbstractVector, z; kwargs...)
     @assert length(x) == length(y) == length(z) "x, y, and z must have the same length."
     points = [(ξ, η) for (ξ, η) in zip(x, y)]
-    return interpolate(points, z)
+    return interpolate(points, z; kwargs...)
 end
 
 function _eval_interp(itp::NaturalNeighbourInterpolant, p, cache; method=:sibson, kwargs...)

@@ -438,11 +438,12 @@ fig
 
 ## Example I: No extrapolation 
 # Define the interpolant
+rng = StableRNG(123)
 f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
 x = vec([(i - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
 y = vec([(j - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
 z = f.(x, y)
-itp = interpolate(x, y, z)
+itp = interpolate(x, y, z; rng)
 
 # Points to evaluate the interpolant at 
 xx = LinRange(0, 1, 50)
@@ -451,8 +452,8 @@ _x = vec([x for x in xx, _ in yy])
 _y = vec([y for _ in xx, y in yy])
 
 # Evaluate the interpolant
-sibson_vals = itp(_x, _y; method=:sibson) # multithreaded
-triangle_vals = itp(_x, _y; method=:triangle)
+sibson_vals = itp(_x, _y; method=:sibson, rng) # multithreaded
+triangle_vals = itp(_x, _y; method=:triangle, rng)
 exact_vals = [f(x, y) for x in xx, y in yy]
 sibson_vals = reshape(sibson_vals, (length(xx), length(yy)))
 triangle_vals = reshape(triangle_vals, (length(xx), length(yy)))
