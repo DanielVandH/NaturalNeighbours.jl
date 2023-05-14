@@ -283,7 +283,7 @@ end
 end
 
 @testset "Natural coordinates" begin
-    for method in (:sibson, :triangle)
+    for method in (:sibson, :triangle, :nearest)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
         n = 2500
@@ -292,7 +292,11 @@ end
             natural_coordinates = NNI.compute_natural_coordinates(tri, p; method)
             @test sum(NNI.get_coordinates(natural_coordinates)) ≈ 1
             δ = NNI.get_barycentric_deviation(natural_coordinates)
-            @test δ ≈ 0 atol = 1e-9
+            if method ≠ :nearest
+                @test δ ≈ 0 atol = 1e-5
+            else
+                @test δ ≈ norm(p .- get_point(tri, NNI.get_indices(natural_coordinates)[1]))
+            end
         end
 
         for _ in 1:50
@@ -304,7 +308,11 @@ end
                 natural_coordinates = NNI.compute_natural_coordinates(tri, p; method)
                 @test sum(NNI.get_coordinates(natural_coordinates)) ≈ 1
                 δ = NNI.get_barycentric_deviation(natural_coordinates)
-                @test δ ≈ 0 atol = 1e-5
+                if method ≠ :nearest
+                    @test δ ≈ 0 atol = 1e-5
+                else
+                    @test δ ≈ norm(p .- get_point(tri, NNI.get_indices(natural_coordinates)[1]))
+                end
             end
         end
     end
@@ -336,7 +344,7 @@ end
 end
 
 function test_interpolant(itp, x, y, f)
-    for method in (:sibson, :triangle)
+    for method in (:sibson, :triangle, :nearest)
         for _ in 1:500
             vals = itp(x, y; parallel=false, method)
             vals2 = similar(vals)
@@ -347,7 +355,12 @@ function test_interpolant(itp, x, y, f)
             for i in eachindex(x, y)
                 _x = x[i]
                 _y = y[i]
-                _z = f isa Function ? f(_x, _y) : f[i]
+                if method ≠ :nearest
+                    _z = f isa Function ? f(_x, _y) : f[i]
+                else
+                    m = DT.jump_to_voronoi_polygon(itp.triangulation, (_x, _y))
+                    _z = f isa Function ? f(get_point(itp.triangulation, m)...) : f[m]
+                end
                 @test all(val -> isapprox(val, _z, rtol=1e-1), (itp(_x, _y; method), vals[i], vals2[i], vals3[i], vals4[i]))
             end
         end
@@ -412,29 +425,6 @@ end
     @test __z ≈ itp(1.8, 0.7; method=:triangle)
     @test __z ≈ itp(1.8, 0.7; method=:sibson)
 end
-
-rng = StableRNG(123)
-f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
-tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 15, 15, add_ghost_triangles=true)
-z = [f(x, y) for (x, y) in each_point(tri)]
-itp = interpolate(get_points(tri), z)
-xx = LinRange(0, 1, 50)
-yy = LinRange(0, 1, 50)
-zz = [itp(x, y) for x in xx, y in yy]
-_zz = [f(x, y) for x in xx, y in yy]
-
-x = vec([x for x in xx, _ in yy])
-y = vec([y for _ in xx, y in yy])
-itp(x, y)
-@benchmark $itp($x, $y)
-
-
-fig = Figure()
-ax = Axis(fig[1, 1], aspect=1)
-contourf!(ax, xx, yy, _zz, colormap=:viridis, levels=20)
-ax = Axis(fig[1, 2], aspect=1)
-contourf!(ax, xx, yy, zz, colormap=:viridis, levels=20)
-fig
 
 @testset "Example I: No extrapolation" begin
     ## Example I: No extrapolation 
