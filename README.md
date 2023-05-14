@@ -15,8 +15,8 @@ Let's give some quick examples. The first problem we consider is interpolating $
 ```julia
 using NaturalNeighbourInterp
 f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
-x = vec([(i - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
-y = vec([(j - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
+x = vec([(i - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
+y = vec([(j - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
 z = f.(x, y)
 itp = interpolate(x, y, z)
 ```
