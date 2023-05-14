@@ -5,7 +5,7 @@ using Test
     # Write your tests here.
 end
 
-using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra
+using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra, ReferenceTests
 const DT = DelaunayTriangulation
 const NNI = NaturalNeighbourInterp
 
@@ -436,56 +436,57 @@ ax = Axis(fig[1, 2], aspect=1)
 contourf!(ax, xx, yy, zz, colormap=:viridis, levels=20)
 fig
 
-## Example I: No extrapolation 
-# Define the interpolant
-rng = StableRNG(123)
-f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
-x = vec([(i - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
-y = vec([(j - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
-z = f.(x, y)
-itp = interpolate(x, y, z; rng)
+@testset "Example I: No extrapolation" begin
+    ## Example I: No extrapolation 
+    # Define the interpolant
+    rng = StableRNG(123)
+    f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
+    x = vec([(i - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
+    y = vec([(j - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
+    z = f.(x, y)
+    itp = interpolate(x, y, z; rng)
 
-# Points to evaluate the interpolant at 
-xx = LinRange(0, 1, 50)
-yy = LinRange(0, 1, 50)
-_x = vec([x for x in xx, _ in yy])
-_y = vec([y for _ in xx, y in yy])
+    # Points to evaluate the interpolant at 
+    xx = LinRange(0, 1, 50)
+    yy = LinRange(0, 1, 50)
+    _x = vec([x for x in xx, _ in yy])
+    _y = vec([y for _ in xx, y in yy])
 
-# Evaluate the interpolant
-sibson_vals = itp(_x, _y; method=:sibson, rng) # multithreaded
-triangle_vals = itp(_x, _y; method=:triangle, rng)
-exact_vals = [f(x, y) for x in xx, y in yy]
-sibson_vals = reshape(sibson_vals, (length(xx), length(yy)))
-triangle_vals = reshape(triangle_vals, (length(xx), length(yy)))
+    # Evaluate the interpolant
+    sibson_vals = itp(_x, _y; method=:sibson, rng) # multithreaded
+    triangle_vals = itp(_x, _y; method=:triangle, rng)
+    exact_vals = [f(x, y) for x in xx, y in yy]
+    sibson_vals = reshape(sibson_vals, (length(xx), length(yy)))
+    triangle_vals = reshape(triangle_vals, (length(xx), length(yy)))
 
-# Get the errors 
-sibson_errs = abs.(sibson_vals .- exact_vals) ./ abs.(exact_vals)
-triangle_errs = abs.(triangle_vals .- exact_vals) ./ abs.(exact_vals)
+    # Get the errors 
+    sibson_errs = abs.(sibson_vals .- exact_vals) ./ abs.(exact_vals)
+    triangle_errs = abs.(triangle_vals .- exact_vals) ./ abs.(exact_vals)
 
-# Plot the results
-fig = Figure(fontsize=33)
-make_ax = (i, j, title) -> begin
-    Axis(fig[i, j], title=title, titlealign=:left,
-        width=400, height=400,
-        xticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]), yticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]))
+    # Plot the results
+    fig = Figure(fontsize=33)
+    make_ax = (i, j, title) -> begin
+        Axis(fig[i, j], title=title, titlealign=:left,
+            width=400, height=400,
+            xticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]), yticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]))
+    end
+    ax1 = make_ax(1, 1, L"(a):$ $ Sibson")
+    contourf!(ax1, xx, yy, sibson_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+    ax2 = make_ax(1, 2, L"(b):$ $ Triangle")
+    contourf!(ax2, xx, yy, triangle_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+    ax3 = make_ax(1, 3, L"(c):$ $ Exact")
+    contourf!(ax3, xx, yy, exact_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+    ax4 = make_ax(2, 3, L"(f):$ $ Data")
+    tricontourf!(ax4, x, y, z, colormap=:viridis, levels=20, colorrange=(-1, 0))
+    ax5 = make_ax(2, 1, L"(d):$ $ Sibson error")
+    contourf!(ax5, xx, yy, sibson_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
+    ax6 = make_ax(2, 2, L"(e):$ $ Triangle error")
+    contourf!(ax6, xx, yy, triangle_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
+    for ax in (ax1, ax2, ax3, ax3, ax4, ax5, ax6)
+        xlims!(ax, 0, 1)
+        ylims!(ax, 0, 1)
+        scatter!(ax, x, y, markersize=9, color=:red)
+    end
+    resize_to_layout!(fig)
+    @test_reference "figures/example_1.png" fig
 end
-ax1 = make_ax(1, 1, L"(a):$ $ Sibson")
-contourf!(ax1, xx, yy, sibson_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
-ax2 = make_ax(1, 2, L"(b):$ $ Triangle")
-contourf!(ax2, xx, yy, triangle_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
-ax3 = make_ax(1, 3, L"(c):$ $ Exact")
-contourf!(ax3, xx, yy, exact_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
-ax4 = make_ax(2, 3, L"(f):$ $ Data")
-tricontourf!(ax4, x, y, z, colormap=:viridis, levels=20, colorrange=(-1, 0))
-ax5 = make_ax(2, 1, L"(d):$ $ Sibson error")
-contourf!(ax5, xx, yy, sibson_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
-ax6 = make_ax(2, 2, L"(e):$ $ Triangle error")
-contourf!(ax6, xx, yy, triangle_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
-for ax in (ax1, ax2, ax3, ax3, ax4, ax5, ax6)
-    xlims!(ax, 0, 1)
-    ylims!(ax, 0, 1)
-    scatter!(ax, x, y, markersize=9, color=:red)
-end
-resize_to_layout!(fig)
-fig
-save(normpath(@__DIR__, "..", "test", "figures", "example_1.png"), fig)

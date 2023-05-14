@@ -83,6 +83,7 @@ resize_to_layout!(fig)
 fig
 ```
 
+![Interpolation examples](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/5fabee4777d18117bafe1a55b08ad93994fc1b5a/test/figures/example_1.png)
 
 
 ## Example II: Some extrapolation 
