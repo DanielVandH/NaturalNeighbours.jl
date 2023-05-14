@@ -4,7 +4,93 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbourInterp.jl/dev/)
 [![Build Status](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets. This method of (scattered data) interpolation takes in some data $X = \{(x_i,y_i)\}_{i=1}^m \subset \mathbb R^2$ with corresponding data values $Z = \{z_i\}_{i=1}^m$ and constructs a function $f \colon \mathbb R^2 \to \mathbb R$ such that $f(x_i, y_i) = z_i$, $i=1,\ldots,m$, based on the _Voronoi tessellation_ of $X$. We use [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations.
+This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets. This method of (scattered data) interpolation takes in some data $X = \{(x_i,y_i)\}_{i=1}^m \subset \mathbb R^2$ with corresponding data values $Z = \{z_i\}_{i=1}^m$ and constructs a function $f \colon \mathbb R^2 \to \mathbb R$ such that $f(x_i, y_i) = z_i$, $i=1,\ldots,m$, based on the _Voronoi tessellation_ of $X$. We use [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations. More detail is given in the docs.
+
+# Examples
+
+## Example I: No extrapolation
+
+Let's give some quick examples. The first problem we consider is interpolating $f(x, y) = \sin(xy) - \cos(x-y)\exp[-(x-y)^2]$ for $(x, y) \in [0, 1]^2$. The first step is to define the interpolant, accomplished via `interpolate`.
+
+```julia
+using NaturalNeighbourInterp
+f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
+x = vec([(i - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
+y = vec([(j - 1) / 9 for i in (1, 3, 4,5,8,9,10), j in (1,2,3,5,6,7,9,10)])
+z = f.(x, y)
+itp = interpolate(x, y, z)
+```
+
+This `itp` is our interpolant, and it is callable. To demonstrate this, let's define the points to evaluate the interpolant at.
+
+```julia
+xx = LinRange(0, 1, 50)
+yy = LinRange(0, 1, 50)
+_x = vec([x for x in xx, _ in yy])
+_y = vec([y for _ in xx, y in yy])
+```
+
+Now we can evaluate the interpolant at these points. While it is possible to do e.g. `itp.(x, y)`, it is more efficient to do `itp(x, y)`. This latter version will use multithreading to handle computing the interpolant at many points, significantly accelerating the computation. Note that doing something like
+
+```julia
+Base.Threads.@threads for i in eachindex(x, y)
+    z[i] = itp(x[i], y[i]) # DO NOT DO
+end
+```
+
+will not work as `itp` by itself is not thread-safe. So, with that out of the way, let's evaluate the interpolant. We will use both the Sibson and triangle methods; the Sibson method computes the interpolant weights based on the stolen Voronoi areas, while the triangle method just defines a piecewise linear interpolant over each triangle in the Delaunay triangulation of the point set.
+
+```julia
+sibson_vals = itp(_x, _y; method=:sibson) # multithreaded
+triangle_vals = itp(_x, _y; method=:triangle)
+exact_vals = [f(x, y) for x in xx, y in yy]
+sibson_vals = reshape(sibson_vals, (length(xx), length(yy)))
+triangle_vals = reshape(triangle_vals, (length(xx), length(yy)))
+
+# Get the errors 
+sibson_errs = abs.(sibson_vals .- exact_vals) ./ abs.(exact_vals)
+triangle_errs = abs.(triangle_vals .- exact_vals) ./ abs.(exact_vals)
+```
+
+Now we can plot the results.
+
+```julia
+using CairoMakie
+fig = Figure(fontsize=33)
+make_ax = (i, j, title) -> begin
+    Axis(fig[i, j], title=title, titlealign=:left,
+        width=400, height=400,
+        xticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]), yticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]))
+end
+ax1 = make_ax(1, 1, L"(a):$ $ Sibson")
+contourf!(ax1, xx, yy, sibson_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax2 = make_ax(1, 2, L"(b):$ $ Triangle")
+contourf!(ax2, xx, yy, triangle_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax3 = make_ax(1, 3, L"(c):$ $ Exact")
+contourf!(ax3, xx, yy, exact_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax4 = make_ax(2, 3, L"(f):$ $ Data")
+tricontourf!(ax4, x, y, z, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax5 = make_ax(2, 1, L"(d):$ $ Sibson error")
+contourf!(ax5, xx, yy, sibson_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
+ax6 = make_ax(2, 2, L"(e):$ $ Triangle error")
+contourf!(ax6, xx, yy, triangle_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
+for ax in (ax1, ax2, ax3, ax3, ax4, ax5, ax6)
+    xlims!(ax, 0, 1)
+    ylims!(ax, 0, 1)
+    scatter!(ax, x, y, markersize=9, color=:red)
+end
+resize_to_layout!(fig)
+fig
+```
+
+
+
+## Example II: Some extrapolation 
+
+Extrapolation is a difficult problem. We do not currently have the best methods available for this (e.g. with [dynamic ghost points](https://doi.org/10.1016/j.cad.2008.08.007)). Instead, any points that are outside of the convex hull of the boundary are projected onto an edge of the convex hull boundary, or at least the line through that edge, and two-point interpolation is applied to the projected point. Here is an example showing what we can expect from this.
+
+
+## Mathematical Detail
 
 To explain this in more detail, let us make some definitions:
 

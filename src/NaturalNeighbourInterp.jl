@@ -31,11 +31,15 @@ import DelaunayTriangulation: DelaunayTriangulation,
     num_solid_vertices,
     has_ghost_triangles,
     add_ghost_triangles!,
+    is_collinear,
     has_boundary_nodes,
     get_triangulation,
     rotate_ghost_triangle_to_standard_form,
     is_on,
+    is_degenerate,
     point_position_relative_to_triangle,
+    point_position_on_line_segment,
+    point_position_relative_to_line,
     is_ghost_triangle,
     distance_to_polygon,
     initial,
@@ -44,7 +48,8 @@ import DelaunayTriangulation: DelaunayTriangulation,
     triangle_type,
     is_boundary_triangle,
     replace_boundary_triangle_with_ghost_triangle,
-    each_solid_triangle
+    each_solid_triangle,
+    jump_and_march
 import ChunkSplitters: chunks
 
 num_points(::NTuple{N,F}) where {N,F} = N
@@ -52,9 +57,6 @@ getpoint(p::NTuple{N,F}, i::Integer) where {N,F} = p[i]
 
 export interpolate
 
-# warn: When the point is the boundary of the convex hull,
-# these are no longer the natural coordinates. They just give 
-# an OK approximation for interpolation.
 struct NaturalCoordinates{F,I,T<:Triangulation}
     coordinates::Vector{F}
     indices::Vector{I}
@@ -203,14 +205,22 @@ function InterpolantCache(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL}) wher
     return InterpolantCache(coordinates, envelope, insertion_event_history, poly_points, temp_adjacent, last_triangle)
 end
 
+function two_point_interpolate!(tri, i, j, c)
+    # Project c onto the line through (a, b): https://stackoverflow.com/a/15187473
+    # The orthogonal projection is not guaranteed to be on the line segment (corresponding 
+    # to t < 0 or t > 1), in which case the weights are no longer a convex combination.
+    a, b = get_point(tri, i, j)
+    ax, ay = getxy(a)
+    bx, by = getxy(b)
+    cx, cy = getxy(c)
+    ℓ² = (ax - bx)^2 + (ay - by)^2
+    t = (cx - ax) * (bx - ax) + (cy - ay) * (by - ay)
+    t /= ℓ²
+    return t
+end
+
 function two_point_interpolate!(coordinates, envelope, tri, i, j, r) #interpolate r using two points i, j
-    p, q = get_point(tri, i, j)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    x, y = getxy(r)
-    ℓ² = (px - qx)^2 + (py - qy)^2
-    d² = (px - x)^2 + (py - y)^2
-    t = sqrt(d² / ℓ²)
+    t = two_point_interpolate!(tri, i, j, r)
     resize!(coordinates, 2)
     resize!(envelope, 2)
     coordinates[1] = one(t) - t
@@ -224,6 +234,50 @@ function compute_natural_coordinates(
     tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
     interpolation_point,
     cache::InterpolantCache{F}=InterpolantCache(tri);
+    method=:sibson,
+    kwargs...
+) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
+    if method == :sibson
+        return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+    elseif method == :triangle
+        return _compute_triangle_coordinates(tri, interpolation_point, cache; kwargs...)
+    else
+        throw(ArgumentError("method must be one of :sibson or :triangle."))
+    end
+end
+
+function check_for_extrapolation(tri, V, interpolation_point, last_triangle)
+    if is_ghost_triangle(V)
+        V = rotate_ghost_triangle_to_standard_form(V)
+        i, j, _ = indices(V)
+        last_triangle[] = (i, j, get_adjacent(tri, j, i))
+    else
+        last_triangle[] = indices(V)
+    end
+    if is_boundary_triangle(tri, V)
+        _V = replace_boundary_triangle_with_ghost_triangle(tri, V)
+        _u, _w, _ = indices(_V)
+        cert = point_position_relative_to_line(tri, _u, _w, interpolation_point)
+        if is_collinear(cert)
+            cert = point_position_on_line_segment(tri, _u, _w, interpolation_point)
+            if is_on(cert) || is_degenerate(cert)
+                V = _V
+            end
+        end
+    end
+    if is_ghost_triangle(V)
+        V = rotate_ghost_triangle_to_standard_form(V)
+        i, j, _ = indices(V)
+        return i, j, true
+    end
+    i, j, _ = indices(V)
+    return i, j, false
+end
+
+function _compute_sibson_coordinates(
+    tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
+    interpolation_point,
+    cache::InterpolantCache{F}=InterpolantCache(tri);
     kwargs...
 ) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
     coordinates = get_coordinates(cache)
@@ -233,19 +287,8 @@ function compute_natural_coordinates(
     temp_adjacent = get_temp_adjacent(cache)
     last_triangle = get_last_triangle(cache)
     envelope, temp_adjacent, insertion_event_history, V = compute_bowyer_envelope!(envelope, tri, insertion_event_history, temp_adjacent, interpolation_point; try_points=last_triangle[], kwargs...) #kwargs are add_point! kwargs
-    if is_ghost_triangle(V)
-        V = rotate_ghost_triangle_to_standard_form(V)
-        i, j, _ = indices(V)
-        last_triangle[] = (i, j, get_adjacent(tri, j, i))
-    end
-    if is_boundary_triangle(tri, V) & (is_on ∘ point_position_relative_to_triangle)(tri, V, interpolation_point)
-        V = replace_boundary_triangle_with_ghost_triangle(tri, V)
-    end
-    if is_ghost_triangle(V) & (is_on ∘ point_position_relative_to_triangle)(tri, V, interpolation_point)
-        V = rotate_ghost_triangle_to_standard_form(V)
-        i, j, _ = indices(V)
-        return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
-    end
+    i, j, return_flag = check_for_extrapolation(tri, V, interpolation_point, last_triangle)
+    return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
     resize!(coordinates, length(envelope) - 1)
     w = zero(number_type(tri))
     duplicate_point_flag = false
@@ -267,6 +310,39 @@ function compute_natural_coordinates(
     else
         coordinates ./= w
     end
+    return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
+end
+
+function _compute_triangle_coordinates(
+    tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
+    interpolation_point,
+    cache::InterpolantCache{F}=InterpolantCache(tri);
+    kwargs...
+) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
+    coordinates = get_coordinates(cache)
+    envelope = get_envelope(cache)
+    last_triangle = get_last_triangle(cache)
+    V = jump_and_march(tri, interpolation_point; try_points=last_triangle[])
+    i, j, return_flag = check_for_extrapolation(tri, V, interpolation_point, last_triangle)
+    return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
+    i, j, k = indices(V)
+    resize!(coordinates, 3)
+    resize!(envelope, 3)
+    p, q, r = get_point(tri, i, j, k)
+    x₁, y₁ = getxy(p)
+    x₂, y₂ = getxy(q)
+    x₃, y₃ = getxy(r)
+    x, y = getxy(interpolation_point)
+    Δ = (y₂ - y₃) * (x₁ - x₃) + (x₃ - x₂) * (y₁ - y₃)
+    λ₁ = ((y₂ - y₃) * (x - x₃) + (x₃ - x₂) * (y - y₃)) / Δ
+    λ₂ = ((y₃ - y₁) * (x - x₃) + (x₁ - x₃) * (y - y₃)) / Δ
+    λ₃ = one(λ₁) - λ₁ - λ₂
+    coordinates[1] = λ₁
+    coordinates[2] = λ₂
+    coordinates[3] = λ₃
+    envelope[1] = i
+    envelope[2] = j
+    envelope[3] = k
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
 
@@ -323,9 +399,9 @@ function interpolate(x::AbstractVector, y::AbstractVector, z)
     return interpolate(points, z)
 end
 
-function _eval_interp(itp::NaturalNeighbourInterpolant, p, cache; kwargs...)
+function _eval_interp(itp::NaturalNeighbourInterpolant, p, cache; method=:sibson, kwargs...)
     tri = get_triangulation(itp)
-    nc = compute_natural_coordinates(tri, p, cache; kwargs...)
+    nc = compute_natural_coordinates(tri, p, cache; method, kwargs...)
     z = get_z(itp)
     coordinates = get_coordinates(nc)
     indices = get_indices(nc)
@@ -338,17 +414,17 @@ function _eval_interp(itp::NaturalNeighbourInterpolant, p, cache; kwargs...)
     return val
 end
 
-function (itp::NaturalNeighbourInterpolant)(x, y, id::Integer=1; parallel=false, kwargs...)
+function (itp::NaturalNeighbourInterpolant)(x, y, id::Integer=1; parallel=false, method=:sibson, kwargs...)
     p = (x, y)
     cache = get_cache(itp, id)
-    return _eval_interp(itp, p, cache; kwargs...)
+    return _eval_interp(itp, p, cache; method, kwargs...)
 end
 
-function (itp::NaturalNeighbourInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, kwargs...)
+function (itp::NaturalNeighbourInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=:sibson, kwargs...)
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
     if !parallel
         for i in eachindex(x, y)
-            vals[i] = itp(x[i], y[i], 1; kwargs...)
+            vals[i] = itp(x[i], y[i], 1; method, kwargs...)
         end
     else
         caches = get_cache(itp)
@@ -356,21 +432,20 @@ function (itp::NaturalNeighbourInterpolant)(vals::AbstractVector, x::AbstractVec
         chunked_iterator = chunks(vals, nt)
         Threads.@threads for (xrange, chunk_id) in chunked_iterator
             for i in xrange
-                vals[i] = itp(x[i], y[i], chunk_id; kwargs...)
+                vals[i] = itp(x[i], y[i], chunk_id; method, kwargs...)
             end
         end
     end
     return nothing
 end
-function (itp::NaturalNeighbourInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, kwargs...)
+function (itp::NaturalNeighbourInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=:sibson, kwargs...)
     @assert length(x) == length(y) "x and y must have the same length."
     n = length(x)
     tri = get_triangulation(itp)
     F = number_type(tri)
     vals = zeros(F, n)
-    itp(vals, x, y; parallel, kwargs...)
+    itp(vals, x, y; method, parallel, kwargs...)
     return vals
 end
-
 
 end # module NaturalNeighbourInterp
