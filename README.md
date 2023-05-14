@@ -90,6 +90,67 @@ fig
 
 Extrapolation is a difficult problem. We do not currently have the best methods available for this (e.g. with [dynamic ghost points](https://doi.org/10.1016/j.cad.2008.08.007)). Instead, any points that are outside of the convex hull of the boundary are projected onto an edge of the convex hull boundary, or at least the line through that edge, and two-point interpolation is applied to the projected point. Here is an example showing what we can expect from this.
 
+```julia
+using NaturalNeighbourInterp, CairoMakie, StableRNGs, DelaunayTriangulation 
+
+## Define the interpolant 
+rng = StableRNG(1235)
+f = (x, y) -> cos(x^2 / 5) + exp(-(1 / 9) * ((x - y / 9)^2 + (y - x)^2))
+x = rand(rng, 33)
+y = rand(rng, 33)
+z = f.(x, y)
+itp = interpolate(x, y, z; rng)
+
+## Points to evaluate at 
+xx = LinRange(-1/2, 3/2, 250)
+yy = LinRange(-1/2, 3/2, 250)
+_x = vec([x for x in xx, _ in yy])
+_y = vec([y for _ in xx, y in yy])
+
+## Evaluate the interpolant
+sibson_vals = itp(_x, _y; method=:sibson) # multithreaded
+triangle_vals = itp(_x, _y; method=:triangle)
+exact_vals = [f(x, y) for x in xx, y in yy]
+sibson_vals = reshape(sibson_vals, (length(xx), length(yy)))
+triangle_vals = reshape(triangle_vals, (length(xx), length(yy)))
+sibson_errs = abs.(sibson_vals .- exact_vals) ./ abs.(exact_vals)
+triangle_errs = abs.(triangle_vals .- exact_vals) ./ abs.(exact_vals)
+
+## Plot 
+fig = Figure(fontsize=33)
+make_ax = (i, j, title) -> begin
+    Axis(fig[i, j], title=title, titlealign=:left,
+        width=400, height=400,
+        xticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]), yticks=([0, 0.5, 1], [L"0", L"0.5", L"1"]))
+end
+ax1 = make_ax(1, 1, L"(a):$ $ Sibson")
+contourf!(ax1, xx, yy, sibson_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax2 = make_ax(1, 2, L"(b):$ $ Triangle")
+contourf!(ax2, xx, yy, triangle_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax3 = make_ax(1, 3, L"(c):$ $ Exact")
+contourf!(ax3, xx, yy, exact_vals, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax4 = make_ax(2, 3, L"(f):$ $ Data")
+tricontourf!(ax4, x, y, z, colormap=:viridis, levels=20, colorrange=(-1, 0))
+ax5 = make_ax(2, 1, L"(d):$ $ Sibson error")
+contourf!(ax5, xx, yy, sibson_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
+ax6 = make_ax(2, 2, L"(e):$ $ Triangle error")
+contourf!(ax6, xx, yy, triangle_errs, colormap=:viridis, levels=20, colorrange=(0, 0.1))
+tri = itp.triangulation
+ch_idx = get_convex_hull_indices(tri)
+ch_points = [get_point(tri, i) for i in ch_idx]
+for ax in (ax1, ax2, ax3, ax3, ax4, ax5, ax6)
+    xlims!(ax, -1/2, 3/2)
+    ylims!(ax, -1/2, 3/2)
+    scatter!(ax, x, y, markersize=9, color=:red)
+    lines!(ax, ch_points, color=:black, linewidth=3)
+end
+resize_to_layout!(fig)
+fig
+```
+
+![Extrapolation examples](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/5fabee4777d18117bafe1a55b08ad93994fc1b5a/test/figures/example_2.png)
+
+It's not perfect, and it would be nice to eventually have good extrapolation tools. 
 
 ## Mathematical Detail
 
