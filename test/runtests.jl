@@ -540,8 +540,8 @@ end
     for ax in (ax1, ax2, ax3, ax3, ax4, ax5, ax6)
         xlims!(ax, -1 / 2, 3 / 2)
         ylims!(ax, -1 / 2, 3 / 2)
-        scatter!(ax, x, y, markersize=9, color=:red)
         lines!(ax, ch_points, color=:black, linewidth=3)
+        scatter!(ax, x, y, markersize=9, color=:red)
     end
     resize_to_layout!(fig)
     @test_reference "figures/example_2.png" fig
