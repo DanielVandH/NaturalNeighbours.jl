@@ -148,7 +148,7 @@ resize_to_layout!(fig)
 fig
 ```
 
-![Extrapolation examples](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/5fabee4777d18117bafe1a55b08ad93994fc1b5a/test/figures/example_2.png)
+![Extrapolation examples](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/8f14a26d6726b78648261bbf12a4457de7d2cc0a/test/figures/example_2.png)
 
 It's not perfect, and it would be nice to eventually have good extrapolation tools. 
 
