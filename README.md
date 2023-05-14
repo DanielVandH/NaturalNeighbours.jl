@@ -178,7 +178,7 @@ $$
 A basic definition for $\lambda_i(x_0, y_0)$ is through _Sibson's coordinates_, which defines 
 
 $$
-\hat\lambda_i = \operatorname{Area}(\mathcal V_0' \cap \mathcal V_i), \quad \lambda_i = \left(\sum_{j \in \mathcal N_0} \hat\lambda_j\right)^{-1}\hat\lambda_i.
+\hat\lambda_i = \text{Area}(\mathcal V_0' \cap \mathcal V_i), \quad \lambda_i = \left(\sum_{j \in \mathcal N_0} \hat\lambda_j\right)^{-1}\hat\lambda_i.
 $$
 
 Here, $\mathcal V_0'$ is defined as the _virtual tile_ of $(x_0, y_0)$, and is the polygon that would appear in the Voronoi tessellation $\mathcal V(X \cup \{(x_0, y_0)\})$ with $(x_0, y_0)$ inserted. Thus, $\hat\lambda_i$ is the amount of area _stolen_ from $\mathcal V_i$ from the insertion of $(x_0, y_0)$, and $\lambda_i$ is the normalised version.
