@@ -67,3 +67,13 @@ function get_barycentric_deviation(natural_coordinates::NaturalCoordinates{F}) w
     δ² = (x - x̂)^2 + (y - ŷ)^2
     return sqrt(δ²)
 end
+
+function handle_duplicate_points!(tri, interpolation_point, coordinates::AbstractVector{F}, envelope) where {F}
+    idx = findfirst(i -> get_point(tri, i) == getxy(interpolation_point), envelope)
+    envelope_idx = envelope[idx]
+    resize!(coordinates, 1)
+    resize!(envelope, 1)
+    envelope[begin] = envelope_idx
+    coordinates[begin] = one(F)
+    return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
+end

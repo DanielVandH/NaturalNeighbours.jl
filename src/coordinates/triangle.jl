@@ -7,7 +7,7 @@ function _compute_triangle_coordinates(
     coordinates = get_coordinates(cache)
     envelope = get_envelope(cache)
     last_triangle = get_last_triangle(cache)
-    V = jump_and_march(tri, interpolation_point; try_points=last_triangle[])
+    V = jump_and_march(tri, interpolation_point; try_points=last_triangle[], kwargs...)
     i, j, return_flag = check_for_extrapolation(tri, V, interpolation_point, last_triangle)
     return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
     i, j, k = indices(V)

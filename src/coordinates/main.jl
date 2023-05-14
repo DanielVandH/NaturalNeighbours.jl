@@ -11,7 +11,9 @@ function compute_natural_coordinates(
         return _compute_triangle_coordinates(tri, interpolation_point, cache; kwargs...)
     elseif method == :nearest # not local coordinates, but still a nice method to have...
         return _compute_nearest_coordinates(tri, interpolation_point, cache; kwargs...)
+    elseif method == :laplace
+        return _compute_laplace_coordinates(tri, interpolation_point, cache; kwargs...)
     else
-        throw(ArgumentError("method must be one of :sibson, :triangle, or :nearest."))
+        throw(ArgumentError("method must be one of :sibson, :triangle, :laplace, or :nearest."))
     end
 end

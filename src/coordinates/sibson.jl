@@ -15,25 +15,15 @@ function _compute_sibson_coordinates(
     return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
     resize!(coordinates, length(envelope) - 1)
     w = zero(number_type(tri))
-    duplicate_point_flag = false
     for i in firstindex(envelope):(lastindex(envelope)-1)
         pre = pre_insertion_area!(poly_points, envelope, i, tri)
         post = post_insertion_area(envelope, i, tri, interpolation_point)
-        if isnan(post)
-            duplicate_point_flag = true
-            break
-        end
+        isnan(post) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope)
         coordinates[i] = pre - post
         w += coordinates[i]
     end
     pop!(envelope)
-    if duplicate_point_flag
-        idx = findfirst(i -> get_point(tri, i) == getxy(interpolation_point), envelope)
-        fill!(coordinates, zero(F))
-        coordinates[idx] = one(F)
-    else
-        coordinates ./= w
-    end
+    coordinates ./= w
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
 
