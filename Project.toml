@@ -3,6 +3,10 @@ uuid = "f16ad982-4edb-46b1-8125-78e5a8b5a9e6"
 authors = ["Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>"]
 version = "1.0.0"
 
+[deps]
+ChunkSplitters = "ae650224-84b6-46f8-82ea-d812ca08434e"
+DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
+
 [compat]
 julia = "1"
 
