@@ -4,7 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbourInterp.jl/dev/)
 [![Build Status](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets. This method of (scattered data) interpolation takes in some data $X = {(x_i,y_i)}\_{i=1}^m \subset \mathbb R^2$ with corresponding data values $Z = {z_i}_{i=1}^m$ and constructs a function $f \colon \mathbb R^2 \to \mathbb R$ such that $f(x_i, y_i) = z_i$, $i=1,\ldots,m$, based on the _Voronoi tessellation_ of $X$. We use [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations. More detail is given in the docs.
+This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets. This method of (scattered data) interpolation takes in some data $X = ((x_i,y_i))\_{i=1}^m \subset \mathbb R^2$ with corresponding data values $Z = (z_i)_{i=1}^m$ and constructs a function $f \colon \mathbb R^2 \to \mathbb R$ such that $f(x_i, y_i) = z_i$, $i=1,\ldots,m$, based on the _Voronoi tessellation_ of $X$. We use [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations. More detail is given in the docs.
 
 # Examples
 
