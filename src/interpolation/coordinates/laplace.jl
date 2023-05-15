@@ -42,6 +42,6 @@ function laplace_ratio(tri, envelope, i, interpolation_point)
     return w
 end
 
-function compute_natural_coordinates(method::Laplace, tri, interpolation_point, cache; kwargs...) 
+function compute_natural_coordinates(::Laplace, tri, interpolation_point, cache=InterpolantCache(tri); kwargs...) 
     return _compute_laplace_coordinates(tri, interpolation_point, cache; kwargs...)
 end

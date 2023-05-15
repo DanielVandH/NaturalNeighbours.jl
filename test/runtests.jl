@@ -284,15 +284,16 @@ end
 
 @testset "Natural coordinates" begin
     for method in (:sibson, :triangle, :nearest, :laplace)
+        method = NNI.wrap_interpolator(method)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
         n = 2500
         pts = random_points_in_convex_hull(tri, n)
         for p in Iterators.flatten((pts, each_point(tri)))
-            natural_coordinates = NNI.compute_natural_coordinates(tri, p; method)
+            natural_coordinates = NNI.compute_natural_coordinates(method, tri, p)
             @test sum(NNI.get_coordinates(natural_coordinates)) ≈ 1
             δ = NNI.get_barycentric_deviation(natural_coordinates)
-            if method ≠ :nearest
+            if method ≠ NNI.Nearest()
                 @test δ ≈ 0 atol = 1e-5
             else
                 @test δ ≈ norm(p .- get_point(tri, NNI.get_indices(natural_coordinates)[1]))
@@ -305,10 +306,10 @@ end
             n = 5000
             random_points = random_points_in_convex_hull(tri, n)
             for p in Iterators.flatten((random_points, each_point(tri)))
-                natural_coordinates = NNI.compute_natural_coordinates(tri, p; method)
+                natural_coordinates = NNI.compute_natural_coordinates(method, tri, p)
                 @test sum(NNI.get_coordinates(natural_coordinates)) ≈ 1
                 δ = NNI.get_barycentric_deviation(natural_coordinates)
-                if method ≠ :nearest
+                if method ≠ NNI.Nearest()
                     @test δ ≈ 0 atol = 1e-5
                 else
                     @test δ ≈ norm(p .- get_point(tri, NNI.get_indices(natural_coordinates)[1]))
@@ -316,8 +317,6 @@ end
             end
         end
     end
-    tri = triangulate(rand(2, 50))
-    @test_throws ArgumentError NNI.compute_natural_coordinates(tri, (0.0, 0.0); method=:del)
 end
 
 @testset "Two-point interpolations" begin
@@ -563,7 +562,7 @@ end
         AX2 = get_area(vorn2, num_points(tri2))
 
         # Sibson
-        nc = NNI.compute_natural_coordinates(tri, q; method=:sibson, rng=rng)
+        nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q; rng=rng)
         AF1G1D1B1A1 = 1.1739978952813 # E = 5
         A1B1C1 = 0.062500000375 # Z = 24
         B1D1E1C1 = 0.2540749084958 # G = 7
@@ -576,13 +575,13 @@ end
         @test nc.coordinates ≈ [K1I1J1, F1G1J1K1, AF1G1D1B1A1, A1B1C1, B1D1E1C1, H1I1E1D1G1] ./ AX rtol = 1e-2
 
         # Triangle 
-        nc = NNI.compute_natural_coordinates(tri, q; method=:triangle, rng=rng)
+        nc = NNI.compute_natural_coordinates(NNI.Triangle(), tri, q; rng=rng)
         V = jump_and_march(tri, q; rng)
         @test nc.indices == [5, 11, 12]
         @test nc.coordinates ≈ [0.52, 0.3, 0.18] rtol = 1e-2
 
         # Laplace 
-        nc = NNI.compute_natural_coordinates(tri, q; method=:laplace, rng=rng)
+        nc = NNI.compute_natural_coordinates(NNI.Laplace(), tri, q; rng=rng)
         dqw = 4.0311288741493
         dqk = 2.1189620100417
         dqg = 2.2360679774998
@@ -610,6 +609,11 @@ end
         g /= tot
         @test nc.indices == [23, 12, 5, 24, 7, 11]
         @test nc.coordinates ≈ [w, ℓ, e, z, g, k] rtol = 1e-2
+
+        # Nearest 
+        nc = NNI.compute_natural_coordinates(NNI.Nearest(), tri, q; rng=rng)
+        @test nc.indices == [5]
+        @test nc.coordinates ≈ [1.0]
     end
 end
 
@@ -617,11 +621,11 @@ end
     tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
     derivative_cache = NNI.DerivativeCache(tri)
     @test NNI.get_iterated_neighbourhood(derivative_cache) == derivative_cache.iterated_neighbourhood == Set{Int64}()
-    @test NNI.get_linear_matrix(derivative_cache) == derivative_cache.linear_matrix == ElasticMatrix{Float64}(undef, 2, 0)
-    @test NNI.get_quadratic_matrix(derivative_cache) == derivative_cache.quadratic_matrix == ElasticMatrix{Float64}(undef, 5, 0)
+    @test NNI.get_linear_matrix(derivative_cache) == derivative_cache.linear_matrix == ElasticMatrix{Float64}(undef, 3, 0)
+    @test NNI.get_quadratic_matrix(derivative_cache) == derivative_cache.quadratic_matrix == ElasticMatrix{Float64}(undef, 10, 0)
     @test NNI.get_rhs_vector(derivative_cache) == derivative_cache.rhs_vector == Float64[]
-    @test NNI.get_linear_sol(derivative_cache) == derivative_cache.linear_sol == [0.0, 0.0]
-    @test NNI.get_quadratic_sol(derivative_cache) == derivative_cache.quadratic_sol == [0.0, 0.0, 0.0, 0.0, 0.0]
+    @test NNI.get_linear_sol(derivative_cache) == derivative_cache.linear_sol == [0.0, 0.0, 0.0]
+    @test NNI.get_quadratic_sol(derivative_cache) == derivative_cache.quadratic_sol == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0,0.0,0.0,0.0,0.0]
 end
 
 @testset "wrap_interpolator" begin
@@ -634,6 +638,12 @@ end
     @test NNI.wrap_interpolator(:nearest) == NNI.Nearest()
     @test NNI.wrap_interpolator(:laplace) == NNI.Laplace()
     @test_throws ArgumentError NNI.wrap_interpolator(:lap)
+end
+
+@testset "wrap_differentiator" begin
+    @test NNI.wrap_differentiator(NNI.Direct()) == NNI.Direct()
+    @test NNI.wrap_differentiator(:direct) == NNI.Direct()
+    @test_throws ArgumentError NNI.wrap_differentiator(:dir)
 end
 
 tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
@@ -668,4 +678,108 @@ for (i, s) in enumerate(S)
     ∇A[1, i] = aᵢ₁
     ∇A[2, i] = aᵢ₂
     ∇_rhs[i] = βᵢ * z[s]
+end
+
+@testset "_eval_gradient_direct" begin
+    tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    f = (x, y) -> sin(x - y) + cos(x + y)
+    z = [f(x, y) for (x, y) in each_point(tri)]
+    ∇A = ElasticMatrix{Float64}(undef, 3, 0)
+    ∇_rhs = Vector{Float64}(undef, 0)
+    sizehint!(∇_rhs, 6)
+    i = 5000
+    p = get_point(tri, i)
+    S = DT.iterated_neighbourhood(tri, i, 1)
+    m = length(S)
+    resize!(∇A, (3, m))
+    resize!(∇_rhs, m)
+    x, y = getxy(p)
+    for (i, s) in enumerate(S)
+        pₛ = get_point(tri, s)
+        xₛ, yₛ = getxy(pₛ)
+        δ = sqrt((x - xₛ)^2 + (y - yₛ)^2)
+        βᵢ = inv(δ)
+        aᵢ₂ = βᵢ * xₛ
+        aᵢ₃ = βᵢ * yₛ
+        ∇A[1, i] = βᵢ
+        ∇A[2, i] = aᵢ₂
+        ∇A[3, i] = aᵢ₃
+        ∇_rhs[i] = βᵢ * z[s]
+    end
+    A_orig = deepcopy(∇A)
+    A = deepcopy(A_orig)
+    b = deepcopy(∇_rhs)
+    x = zeros(3)
+    qr_A = qr!(A')
+    ldiv!(x, qr_A, b)
+    ∇2 = NNI._eval_gradient_direct(tri, z, i)
+    @test ∇2[1] ≈ x[2]
+    @test ∇2[2] ≈ x[3]
+    ∇3 = NNI.eval_gradient(NNI.Direct(), tri, z, i)
+    @test ∇2[1] ≈ x[2]
+    @test ∇2[2] ≈ x[3]
+    f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
+    @test f′(p...) ≈ collect(∇2) rtol = 1e-2
+end
+
+@testset "_eval_gradient_and_hessian_direct" begin
+    tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    f = (x, y) -> sin(x - y) + cos(x + y)
+    z = [f(x, y) for (x, y) in each_point(tri)]
+    ∇A = ElasticMatrix{Float64}(undef, 10, 0)
+    ∇_rhs = Vector{Float64}(undef, 0)
+    sizehint!(∇_rhs, 6)
+    i = 5000
+    p = get_point(tri, i)
+    S = DT.iterated_neighbourhood(tri, i, 3)
+    m = length(S)
+    resize!(∇A, (10, m))
+    resize!(∇_rhs, m)
+    x, y = getxy(p)
+    for (i, s) in enumerate(S)
+        pₛ = get_point(tri, s)
+        xₛ, yₛ = getxy(pₛ)
+        δ = sqrt((x - xₛ)^2 + (y - yₛ)^2)
+        βᵢ = inv(δ)
+        aᵢ₁ = βᵢ
+        aᵢ₂ = βᵢ * xₛ
+        aᵢ₃ = βᵢ * yₛ
+        aᵢ₄ = βᵢ * xₛ^2 / 2
+        aᵢ₅ = βᵢ * yₛ^2 / 2
+        aᵢ₆ = βᵢ * xₛ * yₛ
+        aᵢ₇ = βᵢ * xₛ^3 / 6
+        aᵢ₈ = βᵢ * yₛ^3 / 6
+        aᵢ₉ = βᵢ * xₛ^2 * yₛ / 2
+        aᵢ₁₀ = βᵢ * xₛ * yₛ^2 / 2
+        ∇A[1, i] = aᵢ₁
+        ∇A[2, i] = aᵢ₂
+        ∇A[3, i] = aᵢ₃
+        ∇A[4, i] = aᵢ₄
+        ∇A[5, i] = aᵢ₅
+        ∇A[6, i] = aᵢ₆
+        ∇A[6, i] = aᵢ₆
+        ∇A[7, i] = aᵢ₇
+        ∇A[8, i] = aᵢ₈
+        ∇A[9, i] = aᵢ₉
+        ∇A[10, i] = aᵢ₁₀
+        ∇_rhs[i] = βᵢ * (z[s] .- z[5000])
+    end
+    x = ∇A' \ ∇_rhs 
+    ∇2, H = NNI._eval_gradient_and_hessian_direct(tri, z, i)
+    @test ∇2[1] ≈ x[2]
+    @test ∇2[2] ≈ x[3]
+    @test H[1] ≈ x[4] 
+    @test H[2] ≈ x[5]
+    @test H[3] ≈ x[6]
+    ∇3 = NNI.eval_gradient_and_hessian(NNI.Direct(), tri, z, i)
+    @test ∇2[1] ≈ x[2]
+    @test ∇2[2] ≈ x[3]
+    @test H[1] ≈ x[4] 
+    @test H[2] ≈ x[5]
+    @test H[3] ≈ x[6]
+    f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
+    f′′ = (x, y) -> [-sin(x - y)-cos(x + y) sin(x - y)-cos(x + y)
+        sin(x - y)-cos(x + y) -sin(x - y)-cos(x + y)]
+    @test f′(p...) ≈ collect(∇2) rtol = 1e-2
+    @test f′′(p...) ≈ H rtol = 1e-2
 end

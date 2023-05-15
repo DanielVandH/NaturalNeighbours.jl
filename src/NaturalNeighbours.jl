@@ -54,12 +54,14 @@ import DelaunayTriangulation: DelaunayTriangulation,
     iterated_neighbourhood,
     iterated_neighbourhood!
 import ChunkSplitters: chunks
-using ElasticArrays
+using StaticArrays
+using LinearAlgebra
 
 num_points(::NTuple{N,F}) where {N,F} = N
 getpoint(p::NTuple{N,F}, i::Integer) where {N,F} = p[i]
 
 export interpolate
+export generate_derivatives
 
 include("data_structures/natural_coordinates.jl")
 include("data_structures/interpolation_cache.jl")
@@ -69,7 +71,6 @@ include("data_structures/differentiator.jl")
 
 include("interpolation/extrapolation.jl")
 include("interpolation/interpolate.jl")
-include("interpolation/coordinates/main.jl")
 include("interpolation/coordinates/sibson.jl")
 include("interpolation/coordinates/triangle.jl")
 include("interpolation/coordinates/nearest.jl")

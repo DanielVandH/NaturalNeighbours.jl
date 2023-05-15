@@ -15,6 +15,6 @@ function _compute_nearest_coordinates(
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
 
-function compute_natural_coordinates(method::Nearest, tri, interpolation_point, cache; kwargs...) 
+function compute_natural_coordinates(::Nearest, tri, interpolation_point, cache=InterpolantCache(tri); kwargs...) 
     return _compute_nearest_coordinates(tri, interpolation_point, cache; kwargs...)
 end

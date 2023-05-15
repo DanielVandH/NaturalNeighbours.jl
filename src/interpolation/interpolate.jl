@@ -29,7 +29,7 @@ function interpolate(x::AbstractVector, y::AbstractVector, z; kwargs...)
     return interpolate(points, z; kwargs...)
 end
 
-function _eval_interp(itp::NaturalNeighboursInterpolant, p, cache, method=Sibson(); kwargs...)
+function _eval_interp(method, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     tri = get_triangulation(itp)
     nc = compute_natural_coordinates(method, tri, p, cache; kwargs...)
     z = get_z(itp)
@@ -47,7 +47,7 @@ end
 function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
     p = (x, y)
     cache = get_cache(itp, id)
-    return _eval_interp(itp, p, cache, wrap_interpolator(method); kwargs...)
+    return _eval_interp(wrap_interpolator(method), itp, p, cache; kwargs...)
 end
 
 function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)

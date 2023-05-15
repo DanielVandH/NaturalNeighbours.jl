@@ -31,6 +31,6 @@ function _compute_triangle_coordinates(
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
 
-function compute_natural_coordinates(method::Triangle, tri, interpolation_point, cache; kwargs...) 
+function compute_natural_coordinates(::Triangle, tri, interpolation_point, cache=InterpolantCache(tri); kwargs...) 
     return _compute_triangle_coordinates(tri, interpolation_point, cache; kwargs...)
 end
