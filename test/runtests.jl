@@ -5,7 +5,7 @@ using Test
     # Write your tests here.
 end
 
-using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra, ReferenceTests
+using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra, ReferenceTests, ElasticArrays
 const DT = DelaunayTriangulation
 const NNI = NaturalNeighbours
 
@@ -379,7 +379,7 @@ end
     @test NNI.get_z(itp) == z
     @test length(NNI.get_cache(itp)) == Base.Threads.nthreads()
     @test NNI.get_cache(itp, 1) == itp.cache[1]
-    @test itp isa NNI.NaturalNeighboursolant
+    @test itp isa NNI.NaturalNeighboursInterpolant
     DT.lock_convex_hull!(tri)
     @test_throws ArgumentError interpolate(tri, z)
     DT.unlock_convex_hull!(tri)
@@ -613,4 +613,59 @@ end
     end
 end
 
+@testset "DerivativeCache" begin
+    tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    derivative_cache = NNI.DerivativeCache(tri)
+    @test NNI.get_iterated_neighbourhood(derivative_cache) == derivative_cache.iterated_neighbourhood == Set{Int64}()
+    @test NNI.get_linear_matrix(derivative_cache) == derivative_cache.linear_matrix == ElasticMatrix{Float64}(undef, 2, 0)
+    @test NNI.get_quadratic_matrix(derivative_cache) == derivative_cache.quadratic_matrix == ElasticMatrix{Float64}(undef, 5, 0)
+    @test NNI.get_rhs_vector(derivative_cache) == derivative_cache.rhs_vector == Float64[]
+    @test NNI.get_linear_sol(derivative_cache) == derivative_cache.linear_sol == [0.0, 0.0]
+    @test NNI.get_quadratic_sol(derivative_cache) == derivative_cache.quadratic_sol == [0.0, 0.0, 0.0, 0.0, 0.0]
+end
 
+@testset "wrap_interpolator" begin
+    @test NNI.wrap_interpolator(NNI.Sibson()) == NNI.Sibson()
+    @test NNI.wrap_interpolator(NNI.Triangle()) == NNI.Triangle()
+    @test NNI.wrap_interpolator(NNI.Nearest()) == NNI.Nearest()
+    @test NNI.wrap_interpolator(NNI.Laplace()) == NNI.Laplace()
+    @test NNI.wrap_interpolator(:sibson) == NNI.Sibson()
+    @test NNI.wrap_interpolator(:triangle) == NNI.Triangle()
+    @test NNI.wrap_interpolator(:nearest) == NNI.Nearest()
+    @test NNI.wrap_interpolator(:laplace) == NNI.Laplace()
+    @test_throws ArgumentError NNI.wrap_interpolator(:lap)
+end
+
+tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+f = (x, y) -> sin(x - y) + cos(x + y)
+f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
+f′′ = (x, y) -> [-sin(x - y)-cos(x + y) sin(x - y)-cos(x + y)
+    sin(x - y)-cos(x + y) -sin(x - y)-cos(x + y)]
+f′′(0.5, 0.3)
+z = [f(x, y) for (x, y) in each_point(tri)]
+
+∇A = ElasticMatrix{Float64}(undef, 2, 0)
+∇ℋA = ElasticMatrix{Float64}(undef, 6, 0)
+∇f = zeros(2, num_points(tri))
+ℋ = zeros(3, num_points(tri))
+∇_rhs = Vector{Float64}(undef, 0)
+sizehint!(∇_rhs, 6)
+
+i = 5000
+p = get_point(tri, i)
+S = DT.iterated_neighbourhood(tri, i, 1)
+m = length(S)
+resize!(∇A, (2, m))
+resize!(∇_rhs, m)
+x, y = getxy(p)
+for (i, s) in enumerate(S)
+    pₛ = get_point(tri, s)
+    xₛ, yₛ = getxy(pₛ)
+    δ = sqrt((x - xₛ)^2 + (y - yₛ)^2)
+    βᵢ = inv(δ)
+    aᵢ₁ = βᵢ * xₛ
+    aᵢ₂ = βᵢ * yₛ
+    ∇A[1, i] = aᵢ₁
+    ∇A[2, i] = aᵢ₂
+    ∇_rhs[i] = βᵢ * z[s]
+end

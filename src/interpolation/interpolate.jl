@@ -1,4 +1,24 @@
-interpolate(tri::Triangulation, z; kwargs...) = NaturalNeighboursolant(tri, z)
+abstract type AbstractInterpolator end
+struct Sibson <: AbstractInterpolator end
+struct Triangle <: AbstractInterpolator end
+struct Nearest <: AbstractInterpolator end
+struct Laplace <: AbstractInterpolator end
+wrap_interpolator(s::AbstractInterpolator) = s
+function wrap_interpolator(s)
+    if s == :sibson
+        return Sibson()
+    elseif s == :triangle
+        return Triangle()
+    elseif s == :nearest
+        return Nearest()
+    elseif s == :laplace
+        return Laplace()
+    else
+        throw(ArgumentError("Unknown interpolator: $s"))
+    end
+end
+
+interpolate(tri::Triangulation, z; kwargs...) = NaturalNeighboursInterpolant(tri, z)
 function interpolate(points, z; kwargs...)
     tri = triangulate(points, delete_ghosts=false; kwargs...)
     return interpolate(tri, z)
@@ -9,9 +29,9 @@ function interpolate(x::AbstractVector, y::AbstractVector, z; kwargs...)
     return interpolate(points, z; kwargs...)
 end
 
-function _eval_interp(itp::NaturalNeighboursolant, p, cache; method=:sibson, kwargs...)
+function _eval_interp(itp::NaturalNeighboursInterpolant, p, cache, method=Sibson(); kwargs...)
     tri = get_triangulation(itp)
-    nc = compute_natural_coordinates(tri, p, cache; method, kwargs...)
+    nc = compute_natural_coordinates(method, tri, p, cache; kwargs...)
     z = get_z(itp)
     coordinates = get_coordinates(nc)
     indices = get_indices(nc)
@@ -24,13 +44,13 @@ function _eval_interp(itp::NaturalNeighboursolant, p, cache; method=:sibson, kwa
     return val
 end
 
-function (itp::NaturalNeighboursolant)(x, y, id::Integer=1; parallel=false, method=:sibson, kwargs...)
+function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
     p = (x, y)
     cache = get_cache(itp, id)
-    return _eval_interp(itp, p, cache; method, kwargs...)
+    return _eval_interp(itp, p, cache, wrap_interpolator(method); kwargs...)
 end
 
-function (itp::NaturalNeighboursolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=:sibson, kwargs...)
+function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
     if !parallel
         for i in eachindex(x, y)
@@ -48,7 +68,7 @@ function (itp::NaturalNeighboursolant)(vals::AbstractVector, x::AbstractVector, 
     end
     return nothing
 end
-function (itp::NaturalNeighboursolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=:sibson, kwargs...)
+function (itp::NaturalNeighboursInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
     @assert length(x) == length(y) "x and y must have the same length."
     n = length(x)
     tri = get_triangulation(itp)

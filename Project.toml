@@ -6,6 +6,7 @@ version = "1.0.0"
 [deps]
 ChunkSplitters = "ae650224-84b6-46f8-82ea-d812ca08434e"
 DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
+ElasticArrays = "fdbdab4c-e67f-52f5-8c3f-e7b388dad3d4"
 
 [compat]
 julia = "1"

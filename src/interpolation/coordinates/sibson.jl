@@ -78,3 +78,7 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
     points = (mpq, mpr, g1, g2, mpq)
     return polygon_area(points)
 end
+
+function compute_natural_coordinates(method::Sibson, tri, interpolation_point, cache; kwargs...) 
+    return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+end

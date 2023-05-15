@@ -30,3 +30,7 @@ function _compute_triangle_coordinates(
     envelope[3] = k
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
+
+function compute_natural_coordinates(method::Triangle, tri, interpolation_point, cache; kwargs...) 
+    return _compute_triangle_coordinates(tri, interpolation_point, cache; kwargs...)
+end

@@ -50,8 +50,11 @@ import DelaunayTriangulation: DelaunayTriangulation,
     replace_boundary_triangle_with_ghost_triangle,
     each_solid_triangle,
     jump_and_march,
-    jump_to_voronoi_polygon
+    jump_to_voronoi_polygon,
+    iterated_neighbourhood,
+    iterated_neighbourhood!
 import ChunkSplitters: chunks
+using ElasticArrays
 
 num_points(::NTuple{N,F}) where {N,F} = N
 getpoint(p::NTuple{N,F}, i::Integer) where {N,F} = p[i]
@@ -61,13 +64,19 @@ export interpolate
 include("data_structures/natural_coordinates.jl")
 include("data_structures/interpolation_cache.jl")
 include("data_structures/interpolant.jl")
-include("coordinates/main.jl")
-include("coordinates/sibson.jl")
-include("coordinates/triangle.jl")
-include("coordinates/nearest.jl")
-include("coordinates/laplace.jl")
-include("coordinates/extrapolation.jl")
-include("interpolate.jl")
+include("data_structures/derivative_cache.jl")
+include("data_structures/differentiator.jl")
+
+include("interpolation/extrapolation.jl")
+include("interpolation/interpolate.jl")
+include("interpolation/coordinates/main.jl")
+include("interpolation/coordinates/sibson.jl")
+include("interpolation/coordinates/triangle.jl")
+include("interpolation/coordinates/nearest.jl")
+include("interpolation/coordinates/laplace.jl")
+
+include("differentiation/generate.jl")
+include("differentiation/methods/direct.jl")
 include("utils.jl")
 
 end # module NaturalNeighbours
