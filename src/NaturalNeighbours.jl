@@ -1,4 +1,4 @@
-module NaturalNeighbourInterp
+module NaturalNeighbours
 
 import DelaunayTriangulation: DelaunayTriangulation,
     triangulate,
@@ -70,4 +70,4 @@ include("coordinates/extrapolation.jl")
 include("interpolate.jl")
 include("utils.jl")
 
-end # module NaturalNeighbourInterp
+end # module NaturalNeighbours

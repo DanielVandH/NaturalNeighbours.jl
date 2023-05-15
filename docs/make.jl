@@ -1,16 +1,16 @@
-using NaturalNeighbourInterp
+using NaturalNeighbours
 using Documenter
 
-DocMeta.setdocmeta!(NaturalNeighbourInterp, :DocTestSetup, :(using NaturalNeighbourInterp); recursive=true)
+DocMeta.setdocmeta!(NaturalNeighbours, :DocTestSetup, :(using NaturalNeighbours); recursive=true)
 
 makedocs(;
-    modules=[NaturalNeighbourInterp],
+    modules=[NaturalNeighbours],
     authors="Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>",
-    repo="https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/{commit}{path}#{line}",
-    sitename="NaturalNeighbourInterp.jl",
+    repo="https://github.com/DanielVandH/NaturalNeighbours.jl/blob/{commit}{path}#{line}",
+    sitename="NaturalNeighbours.jl",
     format=Documenter.HTML(;
         prettyurls=get(ENV, "CI", "false") == "true",
-        canonical="https://DanielVandH.github.io/NaturalNeighbourInterp.jl",
+        canonical="https://DanielVandH.github.io/NaturalNeighbours.jl",
         edit_link="main",
         assets=String[],
     ),
@@ -20,6 +20,6 @@ makedocs(;
 )
 
 deploydocs(;
-    repo="github.com/DanielVandH/NaturalNeighbourInterp.jl",
+    repo="github.com/DanielVandH/NaturalNeighbours.jl",
     devbranch="main",
 )

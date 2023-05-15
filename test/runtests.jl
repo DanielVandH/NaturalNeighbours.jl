@@ -1,13 +1,13 @@
-using NaturalNeighbourInterp
+using NaturalNeighbours
 using Test
 
-@testset "NaturalNeighbourInterp.jl" begin
+@testset "NaturalNeighbours.jl" begin
     # Write your tests here.
 end
 
 using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra, ReferenceTests
 const DT = DelaunayTriangulation
-const NNI = NaturalNeighbourInterp
+const NNI = NaturalNeighbours
 
 function random_points_in_convex_hull(tri::Triangulation, n) # bit slow. oh well
     boundary_nodes = get_convex_hull_indices(tri)
@@ -379,7 +379,7 @@ end
     @test NNI.get_z(itp) == z
     @test length(NNI.get_cache(itp)) == Base.Threads.nthreads()
     @test NNI.get_cache(itp, 1) == itp.cache[1]
-    @test itp isa NNI.NaturalNeighbourInterpolant
+    @test itp isa NNI.NaturalNeighboursolant
     DT.lock_convex_hull!(tri)
     @test_throws ArgumentError interpolate(tri, z)
     DT.unlock_convex_hull!(tri)
@@ -612,3 +612,5 @@ end
         @test nc.coordinates ≈ [w, ℓ, e, z, g, k] rtol = 1e-2
     end
 end
+
+

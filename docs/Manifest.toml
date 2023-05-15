@@ -58,7 +58,7 @@ uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 [[deps.Mmap]]
 uuid = "a63ad114-7e13-5084-954f-fe012c677804"
 
-[[deps.NaturalNeighbourInterp]]
+[[deps.NaturalNeighbours]]
 path = ".."
 uuid = "f16ad982-4edb-46b1-8125-78e5a8b5a9e6"
 version = "1.0.0-DEV"

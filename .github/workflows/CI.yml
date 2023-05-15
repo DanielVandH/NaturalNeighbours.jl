@@ -52,6 +52,6 @@ jobs:
       - run: |
           julia --project=docs -e '
             using Documenter: DocMeta, doctest
-            using NaturalNeighbourInterp
-            DocMeta.setdocmeta!(NaturalNeighbourInterp, :DocTestSetup, :(using NaturalNeighbourInterp); recursive=true)
-            doctest(NaturalNeighbourInterp)'
+            using NaturalNeighbours
+            DocMeta.setdocmeta!(NaturalNeighbours, :DocTestSetup, :(using NaturalNeighbours); recursive=true)
+            doctest(NaturalNeighbours)'

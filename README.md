@@ -1,8 +1,8 @@
-# NaturalNeighbourInterp
+# NaturalNeighbours
 
-[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://DanielVandH.github.io/NaturalNeighbourInterp.jl/stable/)
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbourInterp.jl/dev/)
-[![Build Status](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://DanielVandH.github.io/NaturalNeighbours.jl/stable/)
+[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbours.jl/dev/)
+[![Build Status](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
 This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets (amongst some others, like piecewise linear interpolation via triangles or nearest neighbour interpolation -- see the docs). This method of (scattered data) interpolation takes in some data $X = ((x_i,y_i))\_{i=1}^m \subset \mathbb R^2$ with corresponding data values $Z = (z_i)_{i=1}^m$ and constructs a function $f \colon \mathbb R^2 \to \mathbb R$ such that $f(x_i, y_i) = z_i$, $i=1,\ldots,m$, based on the _Voronoi tessellation_ of $X$. We use [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations. More detail is given in the docs.
 
@@ -13,7 +13,7 @@ This is a package for performing [natural neighbour interpolation](https://en.wi
 Let's give some quick examples. The first problem we consider is interpolating $f(x, y) = \sin(xy) - \cos(x-y)\exp[-(x-y)^2]$ for $(x, y) \in [0, 1]^2$. The first step is to define the interpolant, accomplished via `interpolate`.
 
 ```julia
-using NaturalNeighbourInterp
+using NaturalNeighbours
 f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
 x = vec([(i - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
 y = vec([(j - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
@@ -82,7 +82,7 @@ end
 resize_to_layout!(fig)
 ```
 
-![Interpolation examples](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/5fabee4777d18117bafe1a55b08ad93994fc1b5a/test/figures/example_1.png)
+![Interpolation examples](https://github.com/DanielVandH/NaturalNeighbours.jl/blob/5fabee4777d18117bafe1a55b08ad93994fc1b5a/test/figures/example_1.png)
 
 
 ## Example II: Some extrapolation 
@@ -90,7 +90,7 @@ resize_to_layout!(fig)
 Extrapolation is a difficult problem. We do not currently have the best methods available for this (e.g. with [dynamic ghost points](https://doi.org/10.1016/j.cad.2008.08.007)). Instead, any points that are outside of the convex hull of the boundary are projected onto an edge of the convex hull boundary, or at least the line through that edge, and two-point interpolation is applied to the projected point. Here is an example showing what we can expect from this.
 
 ```julia
-using NaturalNeighbourInterp, CairoMakie, StableRNGs, DelaunayTriangulation 
+using NaturalNeighbours, CairoMakie, StableRNGs, DelaunayTriangulation 
 
 ## Define the interpolant 
 rng = StableRNG(1235)
@@ -145,7 +145,7 @@ resize_to_layout!(fig)
 fig
 ```
 
-![Extrapolation examples](https://github.com/DanielVandH/NaturalNeighbourInterp.jl/blob/8f14a26d6726b78648261bbf12a4457de7d2cc0a/test/figures/example_2.png)
+![Extrapolation examples](https://github.com/DanielVandH/NaturalNeighbours.jl/blob/8f14a26d6726b78648261bbf12a4457de7d2cc0a/test/figures/example_2.png)
 
 It's not perfect, and it would be nice to eventually have good extrapolation tools. 
 

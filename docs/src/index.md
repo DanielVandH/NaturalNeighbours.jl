@@ -1,14 +1,14 @@
 ```@meta
-CurrentModule = NaturalNeighbourInterp
+CurrentModule = NaturalNeighbours
 ```
 
-# NaturalNeighbourInterp
+# NaturalNeighbours
 
-Documentation for [NaturalNeighbourInterp](https://github.com/DanielVandH/NaturalNeighbourInterp.jl).
+Documentation for [NaturalNeighbours](https://github.com/DanielVandH/NaturalNeighbours.jl).
 
 ```@index
 ```
 
 ```@autodocs
-Modules = [NaturalNeighbourInterp]
+Modules = [NaturalNeighbours]
 ```
