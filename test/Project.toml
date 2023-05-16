@@ -1,5 +1,6 @@
 [deps]
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
+Cthulhu = "f68482b8-f384-11e8-15f7-abe071a5a75f"
 DelaunayTriangulation = "927a84f5-c5f4-47a5-9785-b46e178433df"
 ElasticArrays = "fdbdab4c-e67f-52f5-8c3f-e7b388dad3d4"
 ReferenceTests = "324d217c-45ce-50fc-942e-d289b448e8cf"

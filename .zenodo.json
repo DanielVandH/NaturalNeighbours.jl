@@ -1,0 +1,23 @@
+{
+	"creators": [
+		{
+			"affiliation": "Queensland University of Technology",
+			"name": "VandenHeuvel, Daniel John",
+			"orcid": "0000-0001-6462-0135"
+		}
+	],
+	"description": "NaturalNeighbours.jl: Natural neighbour interpolation methods for scattered data interpolation and derivative generation of planar point sets.",
+	"keywords": [
+		"interpolation",
+		"tessellation",
+		"scattered-data-interpolation",
+		"spatial-interpolation",
+		"natural-neighbours",
+		"derivative-generation",
+		"derivative-estimation"
+	],
+	"license": "MIT",
+	"title": "NaturalNeighbours.jl",
+	"upload_type": "software",
+	"language": "eng"
+}

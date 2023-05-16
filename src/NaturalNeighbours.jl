@@ -54,7 +54,7 @@ import DelaunayTriangulation: DelaunayTriangulation,
     iterated_neighbourhood,
     iterated_neighbourhood!
 import ChunkSplitters: chunks
-using StaticArrays
+using ElasticArrays
 using LinearAlgebra
 
 num_points(::NTuple{N,F}) where {N,F} = N
@@ -64,7 +64,7 @@ export interpolate
 export generate_derivatives
 
 include("data_structures/natural_coordinates.jl")
-include("data_structures/interpolation_cache.jl")
+include("data_structures/neighbour_cache.jl")
 include("data_structures/interpolant.jl")
 include("data_structures/derivative_cache.jl")
 include("data_structures/differentiator.jl")
@@ -78,6 +78,7 @@ include("interpolation/coordinates/laplace.jl")
 
 include("differentiation/generate.jl")
 include("differentiation/methods/direct.jl")
+include("differentiation/methods/iterative.jl")
 include("utils.jl")
 
 end # module NaturalNeighbours

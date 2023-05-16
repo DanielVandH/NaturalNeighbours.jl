@@ -11,7 +11,7 @@ struct NaturalNeighboursInterpolant{T<:Triangulation,F,C,G,H}
             throw(ArgumentError("Natural neighbour interpolation is only defined over unconstrained triangulations."))
         end
         nt = Base.Threads.nthreads()
-        caches = [InterpolantCache(tri) for _ in 1:nt]
+        caches = [NaturalNeighboursCache(tri) for _ in 1:nt]
         return new{T,F,typeof(caches),typeof(gradient),typeof(hessian)}(tri, z, gradient, hessian, caches)
     end
 end
@@ -19,6 +19,8 @@ function Base.show(io::IO, ::MIME"text/plain", nc::NaturalNeighboursInterpolant)
     z = get_z(nc)
     println(io, "Natural Neighbour Interpolant")
     print(io, "    z: ", z)
+    print(io, "    ∇: ", get_gradient(nc))
+    print(io, "    H: ", get_hessian(nc))
 end
 get_triangulation(ni::NaturalNeighboursInterpolant) = ni.triangulation
 get_z(ni::NaturalNeighboursInterpolant) = ni.z

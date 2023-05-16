@@ -1,7 +1,7 @@
 function _compute_triangle_coordinates(
     tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
     interpolation_point,
-    cache::InterpolantCache{F}=InterpolantCache(tri);
+    cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
     kwargs...
 ) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
     coordinates = get_coordinates(cache)
@@ -31,6 +31,6 @@ function _compute_triangle_coordinates(
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
 
-function compute_natural_coordinates(::Triangle, tri, interpolation_point, cache=InterpolantCache(tri); kwargs...) 
+function compute_natural_coordinates(::Triangle, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...) 
     return _compute_triangle_coordinates(tri, interpolation_point, cache; kwargs...)
 end

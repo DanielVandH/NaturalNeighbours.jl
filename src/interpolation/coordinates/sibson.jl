@@ -1,7 +1,7 @@
 function _compute_sibson_coordinates(
     tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
     interpolation_point,
-    cache::InterpolantCache{F}=InterpolantCache(tri);
+    cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
     kwargs...
 ) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
     coordinates = get_coordinates(cache)
@@ -79,6 +79,10 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
     return polygon_area(points)
 end
 
-function compute_natural_coordinates(::Sibson, tri, interpolation_point, cache=InterpolantCache(tri); kwargs...) 
-    return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+function compute_natural_coordinates(::Sibson{N}, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...) where {N}
+    if N == 0
+        _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+    else 
+
+    end
 end

@@ -1,18 +1,24 @@
-abstract type AbstractInterpolator end
-struct Sibson <: AbstractInterpolator end
-struct Triangle <: AbstractInterpolator end
-struct Nearest <: AbstractInterpolator end
-struct Laplace <: AbstractInterpolator end
-wrap_interpolator(s::AbstractInterpolator) = s
-function wrap_interpolator(s)
+abstract type AbstractInterpolator{D} end # D is the order of continuity
+struct Sibson{D} <: AbstractInterpolator{D} end
+struct Triangle{D} <: AbstractInterpolator{D} end
+struct Nearest{D} <: AbstractInterpolator{D} end
+struct Laplace{D} <: AbstractInterpolator{D} end
+Sibson() = Sibson{0}()
+Triangle() = Triangle{0}()
+Nearest() = Nearest{0}()
+Laplace() = Laplace{0}()
+
+wrap_interpolator(s::AbstractInterpolator, gradient, hessian) = s
+function wrap_interpolator(s, gradient, hessian)
+    d = (isnothing(gradient) && isnothing(hessian)) ? 0 : (isnothing(hessian) ? 1 : 2) 
     if s == :sibson
-        return Sibson()
+        return Sibson{d}()
     elseif s == :triangle
-        return Triangle()
+        return Triangle{d}()
     elseif s == :nearest
-        return Nearest()
+        return Nearest{d}()
     elseif s == :laplace
-        return Laplace()
+        return Laplace{d}()
     else
         throw(ArgumentError("Unknown interpolator: $s"))
     end
