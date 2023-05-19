@@ -5,216 +5,13 @@ using Test
     # Write your tests here.
 end
 
-using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra, ReferenceTests, ElasticArrays
+using DelaunayTriangulation, Random, CairoMakie, StableRNGs, LinearAlgebra, ReferenceTests, ElasticArrays, Optimization, OptimizationNLopt, StatsBase
 const DT = DelaunayTriangulation
 const NNI = NaturalNeighbours
 
-function random_points_in_convex_hull(tri::Triangulation, n) # bit slow. oh well
-    boundary_nodes = get_convex_hull_indices(tri)
-    points = get_points(tri)
-    bbox = DT.polygon_bounds(points, boundary_nodes)
-    F = DT.number_type(tri)
-    pts = NTuple{2,F}[]
-    while length(pts) < n
-        p = (rand(F) * (bbox[2] - bbox[1]) + bbox[1], rand(F) * (bbox[4] - bbox[3]) + bbox[3])
-        δ = DT.distance_to_polygon(p, points, boundary_nodes)
-        if δ > 0
-            push!(pts, p)
-        end
-    end
-    return pts
-end
-
-# https://core.ac.uk/reader/36727660
-function test_1(x, y)
-    return 0.75exp(-((9x - 2)^2 + (9y - 2)^2) / 4) + 0.75exp(-(9x + 1)^2 / 49 - (9y + 1) / 10) + 0.5exp(-((9x - 7)^2 + (9y - 3)^2) / 4) - 0.2exp(-(9x - 4)^2 - (9y - 7)^2)
-end
-function test_2(x, y)
-    return (1 / 9) * (tanh(9y - 9x) + 1)
-end
-function test_3(x, y)
-    return (1.25 + cos(5.4y)) / (6(1 + (3x - 1)^2))
-end
-function test_4(x, y)
-    return (1 / 3) * exp(-(81 / 16) * ((x - 1 / 2)^2 + (y - 1 / 2)^2))
-end
-function test_5(x, y)
-    return (1 / 3) * exp(-(81 / 4) * ((x - 1 / 2)^2 + (y - 1 / 2)^2))
-end
-function test_6(x, y)
-    return (1 / 9) * (64 - 81 * ((x - 1 / 2)^2 + (y - 1 / 2)^2))^(1 / 2) - 1 / 2
-end
-function point_set_1()
-    A = [0.022703 -0.031021
-        0.021701 0.257692
-        0.001903 0.494360
-        0.039541 0.699342
-        0.031583 0.910765
-        0.132419 0.050133
-        0.125444 0.259297
-        0.076758 0.417112
-        0.062649 0.655223
-        0.095867 0.914652
-        0.264560 0.029294
-        0.208899 0.266878
-        0.171473 0.480174
-        0.190921 0.687880
-        0.230463 0.904651
-        0.366317 0.039695
-        0.383239 0.238955
-        0.346632 0.490299
-        0.387316 0.644523
-        0.379536 0.893803
-        0.414977 -0.028462
-        0.420001 0.226247
-        0.485566 0.389142
-        0.479258 0.632425
-        0.397776 0.848971
-        0.053989 0.158674
-        0.017513 0.341401
-        0.050968 0.578285
-        0.048706 0.747019
-        0.041878 0.996289
-        0.109027 0.091855
-        0.093454 0.338159
-        0.145187 0.561556
-        0.145273 0.752407
-        0.069556 0.963242
-        0.239164 0.060230
-        0.276733 0.369604
-        0.226678 0.594059
-        0.186765 0.818558
-        0.242622 0.980541
-        0.385766 0.068448
-        0.317909 0.312413
-        0.377659 0.519930
-        0.381292 0.820379
-        0.280351 0.971172
-        0.427768 0.156096
-        0.466363 0.317509
-        0.409203 0.508495
-        0.481228 0.751101
-        0.402732 0.997873
-        0.584869 -0.027195
-        0.606389 0.270927
-        0.574131 0.425942
-        0.599010 0.673378
-        0.609697 0.924241
-        0.661693 0.025596
-        0.639647 0.200834
-        0.700118 0.489070
-        0.690895 0.669783
-        0.671889 0.936610
-        0.773694 0.028537
-        0.741042 0.193658
-        0.730603 0.471423
-        0.821453 0.668505
-        0.807664 0.847679
-        0.842457 0.038050
-        0.836692 0.208309
-        0.847812 0.433563
-        0.917570 0.630738
-        0.927987 0.904231
-        1.044982 -0.012090
-        0.985788 0.269584
-        1.012929 0.439605
-        1.001985 0.694152
-        1.041468 0.868208
-        0.573008 0.127243
-        0.501389 0.347773
-        0.610695 0.608471
-        0.538062 0.723524
-        0.502619 1.030876
-        0.642784 0.070783
-        0.670396 0.325984
-        0.633359 0.509632
-        0.689564 0.775957
-        0.683767 1.006451
-        0.763533 0.102140
-        0.825898 0.323577
-        0.808661 0.609159
-        0.729064 0.802281
-        0.817095 1.051236
-        0.868405 0.090205
-        0.941846 0.331849
-        0.859958 0.591014
-        0.859633 0.814484
-        0.851280 0.969603
-        0.967063 0.133411
-        0.967631 0.379528
-        0.965704 0.504442
-        1.035930 0.745992
-        0.947151 0.980141]
-    return A[:, 1], A[:, 2]
-end
-function point_set_2()
-    A = [
-        0.00 0.00
-        0.00 1.00
-        0.00 0.50
-        0.50 1.00
-        0.10 0.15
-        0.15 0.30
-        0.30 0.35
-        0.10 0.75
-        0.05 0.45
-        1.00 0.00
-        1.00 1.00
-        0.50 0.00
-        1.00 0.50
-        0.20 0.10
-        0.25 0.20
-        0.60 0.25
-        0.90 0.35
-        0.80 0.40
-        0.70 0.20
-        0.95 0.90
-        0.60 0.65
-        0.65 0.70
-        0.35 0.85
-        0.60 0.85
-        0.90 0.80
-        0.85 0.25
-        0.80 0.65
-        0.75 0.85
-        0.70 0.90
-        0.70 0.65
-        0.75 0.10
-        0.75 0.35
-        0.55 0.95
-    ]
-    return A[:, 1], A[:, 2]
-end
-function point_set_3()
-    A = [
-        0.1375 0.97500
-        0.9125 0.98750
-        0.7125 0.76250
-        0.2250 0.83750
-        0.0500 0.41250
-        0.4750 0.63750
-        0.0500 -0.05000
-        0.4500 1.03750
-        1.0875 0.55000
-        0.5375 0.80000
-        0.0375 0.75000
-        0.1875 0.57500
-        0.7125 0.55000
-        0.8500 0.43750
-        0.7000 0.31250
-        0.2750 0.42500
-        0.4500 0.28750
-        0.8125 0.18750
-        0.4500 -0.03750
-        1.0000 0.26250
-        0.5000 0.46250
-        0.1875 0.26250
-        0.5875 0.12500
-        1.0500 -0.06125
-        0.1000 0.11250
-    ]
-    return A[:, 1], A[:, 2]
-end
+include("helper_functions/point_generator.jl")
+include("helper_functions/slow_derivative_tests.jl")
+include("helper_functions/test_functions.jl")
 
 @testset "Computing the Bowyer-Watson envelope" begin
     pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
@@ -284,7 +81,7 @@ end
 
 @testset "Natural coordinates" begin
     for method in (:sibson, :triangle, :nearest, :laplace)
-        method = NNI.wrap_interpolator(method)
+        method = NNI.iwrap(method)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
         n = 2500
@@ -342,25 +139,94 @@ end
     end
 end
 
-function test_interpolant(itp, x, y, f)
-    for method in (:sibson, :triangle, :nearest, :laplace)
-        for _ in 1:500
-            vals = itp(x, y; parallel=false, method)
-            vals2 = similar(vals)
-            itp(vals2, x, y; parallel=false, method)
-            vals3 = itp(x, y; parallel=true, method)
-            vals4 = similar(vals3)
-            itp(vals4, x, y; parallel=true, method)
-            for i in eachindex(x, y)
-                _x = x[i]
-                _y = y[i]
-                if method ≠ :nearest
-                    _z = f isa Function ? f(_x, _y) : f[i]
-                else
-                    m = DT.jump_to_voronoi_polygon(itp.triangulation, (_x, _y))
-                    _z = f isa Function ? f(get_point(itp.triangulation, m)...) : f[m]
-                end
-                @test all(val -> isapprox(val, _z, rtol=1e-1), (itp(_x, _y; method), vals[i], vals2[i], vals3[i], vals4[i]))
+@testset "iterated_neighbourhood!" begin
+    rng = StableRNG(123)
+    for _ in 1:50
+        pts = [(rand(rng), rand(rng)) for _ in 1:50]
+        tri = triangulate(pts, rng=rng, delete_ghosts=false)
+        f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
+        z = [f(x, y) for (x, y) in pts]
+        S = Set{Int64}()
+        S′ = Set{Int64}()
+        n_cache = NNI.NaturalNeighboursCache(tri)
+        i = 7
+        d = 1
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, i, d, n_cache)
+        @test all(isone, λ)
+        @test sort(collect(E)) == sort(collect(DT.iterated_neighbourhood(tri, i, 1)))
+        p = get_point(tri, i)
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, n_cache)
+        @test all(isone, λ)
+        @test λ == 1
+        @test sort(collect(E)) == sort(collect(DT.iterated_neighbourhood(tri, i, 1)))
+        p = random_points_in_convex_hull(tri, 1)[1]
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, NNI.NaturalNeighboursCache(tri); rng=StableRNG(881))
+        nc = NNI.compute_natural_coordinates(Sibson(), tri, p, NNI.NaturalNeighboursCache(tri); rng=StableRNG(881))
+        @test λ == nc.coordinates
+        @test E == nc.indices
+        p = random_points_in_convex_hull(tri, 1)[1]
+        for _ in 1:100 # test rng is passed correctly
+            λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, NNI.NaturalNeighboursCache(tri); rng=StableRNG(125))
+            nc = NNI.compute_natural_coordinates(Sibson(), tri, p, NNI.NaturalNeighboursCache(tri); rng=StableRNG(125))
+            @test λ == nc.coordinates
+            @test E == nc.indices
+        end
+
+        d = 2
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, i, d, n_cache)
+        @test λ == 1
+        _S = DT.iterated_neighbourhood(tri, i, 2)
+        @test sort(collect(E)) == sort(collect(_S))
+        p = get_point(tri, i)
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, n_cache)
+        @test λ == 1
+        @test sort(collect(E)) == sort(collect(_S))
+        p = random_points_in_convex_hull(tri, 1)[1]
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, n_cache)
+        nc = NNI.compute_natural_coordinates(Sibson(), tri, p)
+        _S = [get_neighbours(tri, i) for i in nc.indices]
+        _S1 = copy(nc.indices)
+        push!(_S1, reduce(union, _S)...)
+        filter!(!DT.is_boundary_index, _S1)
+        unique!(_S1)
+        @test sort(E) == sort(_S1)
+        for i in eachindex(E)
+            if 1 ≤ i ≤ length(λ)
+                @test NNI.get_λ(λ, i, true) == λ[i]
+                @test NNI.get_λ(λ, i, false) == 1
+            else
+                @test NNI.get_λ(λ, i, true) == NNI.get_λ(λ, i, false) == 1
+            end
+        end
+
+        d = 3
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, i, d, n_cache)
+        @test λ == 1
+        _S = DT.iterated_neighbourhood(tri, i, 3)
+        @test sort(collect(E)) == sort(collect(_S))
+        p = get_point(tri, i)
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, n_cache)
+        @test λ == 1
+        @test sort(collect(E)) == sort(collect(_S))
+        p = random_points_in_convex_hull(tri, 1)[1]
+        λ, E = NNI.get_taylor_neighbourhood!(S, S′, tri, p, d, n_cache)
+        nc = NNI.compute_natural_coordinates(Sibson(), tri, p)
+        _S = [get_neighbours(tri, i) for i in nc.indices]
+        _S1 = copy(nc.indices)
+        push!(_S1, reduce(union, _S)...)
+        filter!(!DT.is_boundary_index, _S1)
+        unique!(_S1)
+        _S2 = [get_neighbours(tri, i) for i in _S1]
+        push!(_S1, reduce(union, _S2)...)
+        filter!(!DT.is_boundary_index, _S1)
+        unique!(_S1)
+        @test sort(E) == sort(_S1)
+        for i in eachindex(E)
+            if 1 ≤ i ≤ length(λ)
+                @test NNI.get_λ(λ, i, true) == λ[i]
+                @test NNI.get_λ(λ, i, false) == 1
+            else
+                @test NNI.get_λ(λ, i, true) == NNI.get_λ(λ, i, false) == 1
             end
         end
     end
@@ -373,16 +239,39 @@ end
     f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
     z = [f(x, y) for (x, y) in pts]
 
-    itp = interpolate(tri, z)
+    itp = interpolate(tri, z; derivatives=true, parallel=false)
     @test DT.get_triangulation(itp) == tri
     @test NNI.get_z(itp) == z
-    @test length(NNI.get_cache(itp)) == Base.Threads.nthreads()
-    @test NNI.get_cache(itp, 1) == itp.cache[1]
+    @test length(NNI.get_neighbour_cache(itp)) == Base.Threads.nthreads()
+    @test length(NNI.get_derivative_cache(itp)) == Base.Threads.nthreads()
+    @test NNI.get_neighbour_cache(itp, 1) == itp.neighbour_cache[1]
+    @test NNI.get_neighbour_cache(itp, 2) == itp.neighbour_cache[2]
+    @test NNI.get_derivative_cache(itp) == itp.derivative_cache
+    @test NNI.get_derivative_cache(itp, 1) == itp.derivative_cache[1]
+    @test NNI.get_derivative_cache(itp, 2) == itp.derivative_cache[2]
+    @test NNI.get_gradient(itp) == itp.gradient
+    @test !isnothing(NNI.get_gradient(itp))
+    @test NNI.get_gradient(itp, 1) == itp.gradient[1]
+    @test NNI.get_gradient(itp, 2) == itp.gradient[2]
+    @test NNI.get_hessian(itp) == itp.hessian
+    @test !isnothing(NNI.get_hessian(itp))
+    @test NNI.get_hessian(itp, 1) == itp.hessian[1]
+    @test NNI.get_hessian(itp, 2) == itp.hessian[2]
+    _itp =  interpolate(tri, z; derivatives=false, parallel=false)
+    @test NNI.get_gradient(_itp) === nothing
+    @test NNI.get_hessian(_itp) === nothing
     @test itp isa NNI.NaturalNeighboursInterpolant
     DT.lock_convex_hull!(tri)
     @test_throws ArgumentError interpolate(tri, z)
     DT.unlock_convex_hull!(tri)
     @test_throws AssertionError interpolate(tri, z[1:end-1])
+    w =rand(length(z))
+    y = rand(length(z))
+    __itp =  interpolate(tri, z; derivatives=false, parallel=false, gradient = w)
+    @test NNI.get_gradient(__itp) === w
+    __itp =  interpolate(tri, z; derivatives=false, parallel=false, gradient = w, hessian = y)
+    @test NNI.get_gradient(__itp) === w
+    @test NNI.get_hessian(__itp) === y
 
     x = getx.(pts)
     y = gety.(pts)
@@ -391,7 +280,7 @@ end
 
     tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 30, 30, add_ghost_triangles=true)
     z = [f(x, y) for (x, y) in each_point(tri)]
-    itp = interpolate(get_points(tri), z)
+    itp = interpolate(get_points(tri), z; derivatives=true)
     xx = LinRange(0, 1, 50)
     yy = LinRange(0, 1, 50)
     x = vec([x for x in xx, _ in yy])
@@ -614,6 +503,33 @@ end
         nc = NNI.compute_natural_coordinates(NNI.Nearest(), tri, q; rng=rng)
         @test nc.indices == [5]
         @test nc.coordinates ≈ [1.0]
+
+        # Sibson(1)
+        tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+        tri = triangulate(get_points(tri), randomise=false)
+        f = (x, y) -> sin(x - y) + cos(x + y)
+        z = [f(x, y) for (x, y) in each_point(tri)]
+        itp = interpolate(tri, z; derivatives=true)
+        q = (5.0, 5.0) # a data site
+        nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q; rng=rng)
+        ∇ = NNI.get_gradient(itp)
+        ζ, α, β = NNI._compute_sibson_1_coordinates(nc, tri, z, ∇)
+        @test ζ == 0.0
+        @test α == 1.0
+        @test β == 0.0
+        q = (5.37841, 1.3881)
+        nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q; rng=rng)
+        ζ1, α1, β1 = NNI._compute_sibson_1_coordinates(nc, tri, z, ∇)
+        λ, N₀ = NNI.get_coordinates(nc), NNI.get_indices(nc)
+        r = [norm(q .- get_point(tri, i)) for i in N₀]
+        γ = λ ./ r
+        ζ = z[N₀] .+ [dot(∇[i], q .- get_point(tri, i)) for i in N₀]
+        α = dot(λ, r) / sum(γ)
+        β = dot(λ, r .^ 2)
+        ζ = dot(ζ, γ) / sum(γ)
+        @test α ≈ α1
+        @test β ≈ β1
+        @test ζ ≈ ζ1
     end
 end
 
@@ -621,130 +537,322 @@ end
     tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
     derivative_cache = NNI.DerivativeCache(tri)
     @test NNI.get_iterated_neighbourhood(derivative_cache) == derivative_cache.iterated_neighbourhood == Set{Int64}()
+    @test NNI.get_second_iterated_neighbourhood(derivative_cache) == derivative_cache.second_iterated_neighbourhood == Set{Int64}()
     @test NNI.get_linear_matrix(derivative_cache) == derivative_cache.linear_matrix == ElasticMatrix{Float64}(undef, 2, 0)
     @test NNI.get_quadratic_matrix(derivative_cache) == derivative_cache.quadratic_matrix == ElasticMatrix{Float64}(undef, 9, 0)
     @test NNI.get_rhs_vector(derivative_cache) == derivative_cache.rhs_vector == Float64[]
     @test NNI.get_linear_sol(derivative_cache) == derivative_cache.linear_sol == [0.0, 0.0]
     @test NNI.get_quadratic_sol(derivative_cache) == derivative_cache.quadratic_sol == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
+    @test NNI.get_quadratic_matrix_no_cubic(derivative_cache) == derivative_cache.quadratic_matrix_no_cubic == ElasticMatrix{Float64}(undef, 5, 0)
+    @test NNI.get_quadratic_sol_no_cubic(derivative_cache) == derivative_cache.quadratic_sol_no_cubic == [0.0, 0.0, 0.0, 0.0, 0.0]
 end
 
-@testset "wrap_interpolator" begin
-    @test NNI.wrap_interpolator(NNI.Sibson(),nothing,nothing) == NNI.Sibson()
-    @test NNI.wrap_interpolator(NNI.Triangle(),nothing,nothing) == NNI.Triangle()
-    @test NNI.wrap_interpolator(NNI.Nearest(),nothing,nothing) == NNI.Nearest()
-    @test NNI.wrap_interpolator(NNI.Laplace(),nothing,nothing) == NNI.Laplace()
-    @test NNI.wrap_interpolator(:sibson,nothing,nothing) == NNI.Sibson()
-    @test NNI.wrap_interpolator(:triangle,nothing,nothing) == NNI.Triangle()
-    @test NNI.wrap_interpolator(:nearest,nothing,nothing) == NNI.Nearest()
-    @test NNI.wrap_interpolator(:laplace,nothing,nothing) == NNI.Laplace()
-    @test_throws ArgumentError NNI.wrap_interpolator(:lap,nothing,nothing)
+@testset "iwrap" begin
+    @test NNI.iwrap(NNI.Sibson()) == NNI.Sibson()
+    @test NNI.iwrap(NNI.Triangle()) == NNI.Triangle()
+    @test NNI.iwrap(NNI.Nearest()) == NNI.Nearest()
+    @test NNI.iwrap(NNI.Laplace()) == NNI.Laplace()
+    @test NNI.iwrap(:sibson) == NNI.Sibson()
+    @test NNI.iwrap(:triangle) == NNI.Triangle()
+    @test NNI.iwrap(:nearest) == NNI.Nearest()
+    @test NNI.iwrap(:laplace) == NNI.Laplace()
+    @test_throws ArgumentError NNI.iwrap(:lap)
 
-    @test NNI.wrap_interpolator(NNI.Sibson(),1,nothing) == NNI.Sibson{0}()
-    @test NNI.wrap_interpolator(NNI.Triangle(),1,nothing) == NNI.Triangle{0}()
-    @test NNI.wrap_interpolator(NNI.Nearest(),1,nothing) == NNI.Nearest{0}()
-    @test NNI.wrap_interpolator(NNI.Laplace(),1,nothing) == NNI.Laplace{0}()
-    @test NNI.wrap_interpolator(:sibson,1,nothing) == NNI.Sibson{1}()
-    @test NNI.wrap_interpolator(:triangle,1,nothing) == NNI.Triangle{1}()
-    @test NNI.wrap_interpolator(:nearest,1,nothing) == NNI.Nearest{1}()
-    @test NNI.wrap_interpolator(:laplace,1,nothing) == NNI.Laplace{1}()
-
-    @test NNI.wrap_interpolator(NNI.Sibson(),1,2) == NNI.Sibson{0}()
-    @test NNI.wrap_interpolator(NNI.Triangle(),1,2) == NNI.Triangle{0}()
-    @test NNI.wrap_interpolator(NNI.Nearest(),1,2) == NNI.Nearest{0}()
-    @test NNI.wrap_interpolator(NNI.Laplace(),1,2) == NNI.Laplace{0}()
-    @test NNI.wrap_interpolator(:sibson,1,2) == NNI.Sibson{2}()
-    @test NNI.wrap_interpolator(:triangle,1,2) == NNI.Triangle{2}()
-    @test NNI.wrap_interpolator(:nearest,1,2) == NNI.Nearest{2}()
-    @test NNI.wrap_interpolator(:laplace,1,2) == NNI.Laplace{2}()
+    @test NNI.iwrap(NNI.Sibson(1)) == NNI.Sibson(1)
+    @test NNI.iwrap(NNI.Triangle(1)) == NNI.Triangle(0)
+    @test_throws ArgumentError NNI.Sibson(5)
+    @test NNI.iwrap(NNI.Laplace(1)) == NNI.Laplace(0)
 end
 
-@testset "wrap_differentiator" begin
-    @test NNI.wrap_differentiator(NNI.Direct()) == NNI.Direct()
-    @test NNI.wrap_differentiator(:direct) == NNI.Direct()
-    @test_throws ArgumentError NNI.wrap_differentiator(:dir)
-    @test NNI.wrap_differentiator(NNI.Iterative()) == NNI.Iterative()
-    @test NNI.wrap_differentiator(:iterative) == NNI.Iterative()
-    @test_throws ArgumentError NNI.wrap_differentiator(:iter)
+@testset "dwrap" begin
+    @test NNI.dwrap(NNI.Direct()) == NNI.Direct()
+    @test NNI.dwrap(:direct) == NNI.Direct()
+    @test_throws ArgumentError NNI.dwrap(:dir)
+    @test NNI.dwrap(NNI.Iterative()) == NNI.Iterative()
+    @test NNI.dwrap(:iterative) == NNI.Iterative()
+    @test_throws ArgumentError NNI.dwrap(:iter)
 end
 
 @testset "Estimating derivatives with weighted least squares" begin
     tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    tri = triangulate(get_points(tri), randomise=false)
     f = (x, y) -> sin(x - y) + cos(x + y)
     f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
     f′′ = (x, y) -> [-sin(x - y)-cos(x + y) sin(x - y)-cos(x + y)
         sin(x - y)-cos(x + y) -sin(x - y)-cos(x + y)]
     z = [f(x, y) for (x, y) in each_point(tri)]
-    i = 5000
-    p = get_point(tri, i)
+    @testset "Direct" begin
+        @testset "At data sites" begin
+            flag = 0
+            for _ in 1:100
+                i = rand(1:num_points(tri))
+                p = get_point(tri, i)
 
-    # Gradient
-    S = DT.iterated_neighbourhood(tri, i, 1)
-    m = length(S)
-    X1 = [getx(get_point(tri, s)) - getx(p) for s in S]
-    X2 = [gety(get_point(tri, s)) - gety(p) for s in S]
-    X = hcat(X1, X2)
-    W = [1 / norm(p .- get_point(tri, s)) for s in S]
-    W .= W .^ 2
-    W = Diagonal(W)
-    Z = [z[s] - z[i] for s in S]
-    ∇ = (X' * W * X) \ (X' * W * Z)
-    ∇2 = (
-        NNI.eval_gradient(NNI.Direct(), tri, z, i; use_sibson_weight=false),
-        NNI._eval_gradient_direct(tri, z, i; use_sibson_weight=false)
-    )
-    @test ∇2[1] == ∇2[2]
-    @test collect(∇2[1]) ≈ ∇
-    @test f′(p...) ≈ collect(∇2[1]) rtol = 1e-2
+                # Gradient
+                ∇opt, ∇ls = estimate_gradient_direct(tri, i, z)
+                @test ∇opt ≈ ∇ls rtol = 1e-2
+                λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, i, 1)
+                ∇2 = (
+                    NNI.generate_first_order_derivatives(NNI.Direct(), tri, z, z[i], i, λ, E),
+                    NNI._generate_first_order_derivatives_direct(tri, z, z[i], i, λ, E)
+                )
+                @test collect(∇2[1]) ≈ collect(∇2[2]) # not exactly == sometimes due to rng
+                @test collect(∇2[1]) ≈ ∇opt rtol = 1e-3
+                flag += isapprox(f′(p...), collect(∇2[1]), rtol=1e-1)
 
-    # Hessian: Cubic
-    S = DT.iterated_neighbourhood(tri, i, 3)
-    m = length(S)
-    x = [getx(get_point(tri, s)) - getx(p) for s in S]
-    y = [gety(get_point(tri, s)) - gety(p) for s in S]
-    X = @. [x y x^2 / 2 y^2 / 2 x * y x^3 / 6 y^3 / 6 x^2 * y / 2 x * y^2 / 2]
-    W = [1 / norm(p .- get_point(tri, s)) for s in S]
-    W .= W .^ 2
-    W = Diagonal(W)
-    Z = [z[s] - z[i] for s in S]
-    ∇ℋ = (X' * W * X) \ (X' * W * Z)
-    ∇ = ∇ℋ[1:2]
-    ℋ = ∇ℋ[3:5]
-    ∇ℋ2 = (
-        NNI.eval_gradient_and_hessian(NNI.Direct(), tri, z, i; use_sibson_weight=false),
-        NNI._eval_gradient_and_hessian_direct(tri, z, i, NNI.DerivativeCache(tri); use_sibson_weight=false)
-    )
-    ∇2_1, ℋ2_1 = ∇ℋ2[1]
-    ∇2_2, ℋ2_2 = ∇ℋ2[2]
-    @test ∇2_1 == ∇2_2
-    @test ℋ2_1 == ℋ2_2
-    @test collect(∇2_1) ≈ ∇ rtol = 1e-4
-    @test collect(ℋ2_1) ≈ ℋ rtol = 1e-4
-    @test f′(p...) ≈ collect(∇2_1) rtol = 1e-2
-    @test f′′(p...) ≈ [ℋ2_1[1] ℋ2_1[3]; ℋ2_1[3] ℋ2_1[2]] rtol = 1e-2
+                # Hessian: Cubic
+                (∇opt, ℋopt), (∇ls, ℋls) = estimate_gradient_hessian_cubic_direct(tri, i, z)
+                @test ∇opt ≈ ∇ls rtol = 1e-4
+                @test ℋopt ≈ ℋls rtol = 1e-4
+                λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, i, 3)
+                ∇ℋ2 = (
+                    NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, z[i], i, λ, E),
+                    NNI._generate_second_order_derivatives_direct(tri, z, z[i], i, E, NNI.DerivativeCache(tri))
+                )
+                ∇2_1, ℋ2_1 = ∇ℋ2[1]
+                ∇2_2, ℋ2_2 = ∇ℋ2[2]
+                @test collect(∇2_1) ≈ collect(∇2_2)
+                @test collect(ℋ2_1) ≈ collect(ℋ2_2)
+                @test collect(∇2_1) ≈ ∇opt rtol = 1e-4
+                @test collect(ℋ2_1) ≈ ℋopt rtol = 1e-4
+                @test f′(p...) ≈ collect(∇2_1) rtol = 1e-2
+                @test f′′(p...) ≈ [ℋ2_1[1] ℋ2_1[3]; ℋ2_1[3] ℋ2_1[2]] rtol = 1e-1
 
-    # Hessian: Quadratic 
-    S = DT.iterated_neighbourhood(tri, i, 2)
-    m = length(S)
-    x = [getx(get_point(tri, s)) - getx(p) for s in S]
-    y = [gety(get_point(tri, s)) - gety(p) for s in S]
-    X = @. [x y x^2 / 2 y^2 / 2 x * y]
-    W = [1 / norm(p .- get_point(tri, s)) for s in S]
-    W .= W .^ 2
-    W = Diagonal(W)
-    Z = [z[s] - z[i] for s in S]
-    ∇ℋ = (X' * W * X) \ (X' * W * Z)
-    ∇ = ∇ℋ[1:2]
-    ℋ = ∇ℋ[3:5]
-    ∇ℋ2 = (
-        NNI.eval_gradient_and_hessian(NNI.Direct(), tri, z, i; use_cubic_terms=false, use_sibson_weight=false),
-        NNI._eval_gradient_and_hessian_direct(tri, z, i, NNI.DerivativeCache(tri), NNI.NaturalNeighboursCache(tri); use_cubic_terms=false, use_sibson_weight=false)
-    )
-    ∇2_1, ℋ2_1 = ∇ℋ2[1]
-    ∇2_2, ℋ2_2 = ∇ℋ2[2]
-    @test ∇2_1 == ∇2_2
-    @test ℋ2_1 == ℋ2_2
-    @test collect(∇2_1) ≈ ∇ rtol = 1e-4
-    @test collect(ℋ2_1) ≈ ℋ rtol = 1e-4
-    @test f′(p...) ≈ collect(∇2_1) rtol = 1e-1
-    @test f′′(p...) ≈ [ℋ2_1[1] ℋ2_1[3]; ℋ2_1[3] ℋ2_1[2]] rtol = 1e-2
+                # Hessian: Quadratic 
+                (∇opt, ℋopt), (∇ls, ℋls) = estimate_gradient_hessian_quadratic_direct(tri, i, z)
+                @test ∇opt ≈ ∇ls rtol = 1e-4
+                @test ℋopt ≈ ℋls rtol = 1e-4
+                λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, i, 2)
+                ∇ℋ2 = (
+                    NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, z[i], i, λ, E; use_cubic_terms=false),
+                    NNI._generate_second_order_derivatives_direct(tri, z, z[i], i, E; use_cubic_terms=false)
+                )
+                ∇2_1, ℋ2_1 = ∇ℋ2[1]
+                ∇2_2, ℋ2_2 = ∇ℋ2[2]
+                @test collect(∇2_1) ≈ collect(∇2_2)
+                @test collect(ℋ2_1) ≈ collect(ℋ2_2)
+                @test collect(∇2_1) ≈ ∇opt rtol = 1e-5
+                @test collect(ℋ2_1) ≈ ℋopt rtol = 1e-5
+                @test f′(p...) ≈ collect(∇2_1) rtol = 1e-1
+                @test f′′(p...) ≈ [ℋ2_1[1] ℋ2_1[3]; ℋ2_1[3] ℋ2_1[2]] rtol = 0.5 atol = 1e-1
+            end
+            @test flag / 100 > 0.95
+        end
+
+        @testset "At off-site points" begin
+            flag = 0
+            rng = StableRNG(35)
+            for _ in 1:100
+                # Gradient
+                itp = interpolate(tri, z; derivatives=false)
+                p = random_points_in_convex_hull(tri, 1; rng)[1]
+                ∇opt, ∇ls = estimate_gradient_direct(tri, p, z)
+                @test ∇opt ≈ ∇ls rtol = 1e-1
+                λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, p, 1)
+                ∇2 = (
+                    NNI.generate_first_order_derivatives(NNI.Direct(), tri, z, itp(p...), p, λ, E),
+                    NNI._generate_first_order_derivatives_direct(tri, z, itp(p...), p, λ, E)
+                )
+                @test collect(∇2[1]) ≈ collect(∇2[2]) rtol = 1e-1
+                @test collect(∇2[1]) ≈ ∇opt rtol = 0.3
+                @test f′(p...) ≈ collect(∇2[1]) rtol = 1e-1 atol = 0.2
+
+                # Hessian: Cubic 
+                p = random_points_in_convex_hull(tri, 1; rng)[1]
+                (∇opt, ℋopt), (∇ls, ℋls) = estimate_gradient_hessian_cubic_direct(tri, p, z)
+                @test ∇opt ≈ ∇ls rtol = 1e-2
+                @test ℋopt ≈ ℋls rtol = 1e-2
+                λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, p, 3)
+                ∇ℋ2 = (
+                    NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, itp(p...), p, λ, E),
+                    NNI._generate_second_order_derivatives_direct(tri, z, itp(p...), p, E, NNI.DerivativeCache(tri))
+                )
+                ∇2_1, ℋ2_1 = ∇ℋ2[1]
+                ∇2_2, ℋ2_2 = ∇ℋ2[2]
+                @test collect(∇2_1) ≈ collect(∇2_2)
+                @test collect(ℋ2_1) ≈ collect(ℋ2_2)
+                @test collect(∇2_1) ≈ ∇opt rtol = 1e-4
+                @test collect(ℋ2_1) ≈ ℋopt rtol = 1e-4
+                @test f′(p...) ≈ collect(∇2_1) rtol = 1e-1
+                flag += isapprox(f′′(p...), [ℋ2_1[1] ℋ2_1[3]; ℋ2_1[3] ℋ2_1[2]], rtol=1e-1, atol=1e-1)
+
+                # Hessian: Quadratic 
+                (∇opt, ℋopt), (∇ls, ℋls) = estimate_gradient_hessian_quadratic_direct(tri, p, z)
+                @test ∇opt ≈ ∇ls rtol = 1e-4
+                @test ℋopt ≈ ℋls rtol = 1e-4
+                λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, p, 2)
+                ∇ℋ2 = (
+                    NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, itp(p...), p, λ, E; use_cubic_terms=false),
+                    NNI._generate_second_order_derivatives_direct(tri, z, itp(p...), p, E, NNI.DerivativeCache(tri); use_cubic_terms=false)
+                )
+                ∇2_1, ℋ2_1 = ∇ℋ2[1]
+                ∇2_2, ℋ2_2 = ∇ℋ2[2]
+                @test collect(∇2_1) ≈ collect(∇2_2)
+                @test collect(ℋ2_1) ≈ collect(ℋ2_2)
+                @test collect(∇2_1) ≈ ∇opt rtol = 1e-4
+                @test collect(ℋ2_1) ≈ ℋopt rtol = 1e-4
+                @test f′(p...) ≈ collect(∇2_1) rtol = 1e-1
+                flag += isapprox(f′′(p...), [ℋ2_1[1] ℋ2_1[3]; ℋ2_1[3] ℋ2_1[2]], rtol=0.2)
+            end
+            @test flag / 200 > 0.8
+        end
+    end
+
+    @testset "Iterative" begin
+        tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+        tri = triangulate(get_points(tri), randomise=false)
+        f = (x, y) -> sin(x - y) + cos(x + y)
+        f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
+        f′′ = (x, y) -> [-sin(x - y)-cos(x + y) sin(x - y)-cos(x + y)
+            sin(x - y)-cos(x + y) -sin(x - y)-cos(x + y)]
+        z = [f(x, y) for (x, y) in each_point(tri)]
+
+        nt = Base.Threads.nthreads()
+        derivative_caches = [NNI.DerivativeCache(tri) for _ in 1:nt]
+        neighbour_caches = [NNI.NaturalNeighboursCache(tri) for _ in 1:nt]
+
+        derivative_method = :iterative
+        method = NNI.dwrap(derivative_method)
+        parallel_derivatives = true
+        initial_gradients = NNI.generate_gradients(tri, z, derivative_caches, neighbour_caches; method, parallel=parallel_derivatives)
+        _initial_gradients = deepcopy(initial_gradients)
+        for i in eachindex(initial_gradients)
+            G1, G2 = estimate_gradient_direct(tri, i, z; use_sibson_weight=true)
+            G3 = collect(initial_gradients[i])
+            @test G1 ≈ G2 rtol = 1e-4
+            @test G1 ≈ G3 rtol = 1e-4
+            @test G2 ≈ G3 rtol = 1e-4
+        end
+        Gpar = NNI.generate_gradients(tri, z, derivative_caches, neighbour_caches; method, parallel=true)
+        Gser = NNI.generate_gradients(tri, z, derivative_caches, neighbour_caches; method, parallel=false)
+        @test Gpar == Gser
+        ∇par, ℋpar = NNI.generate_derivatives(tri, z, derivative_caches, neighbour_caches; method, initial_gradients, parallel=true)
+        ∇ser, ℋser = NNI.generate_derivatives(tri, z, derivative_caches, neighbour_caches; method, initial_gradients, parallel=false)
+        @test initial_gradients == _initial_gradients # make sure initial_gradients is not modified
+        @test ∇par == ∇ser
+        @test ℋpar == ℋser
+        _α = (0.0001, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5)
+        flags = zeros(Int64, 8, length(_α))
+        for (j, α) in enumerate(_α)
+            ∇, ℋ = NNI.generate_derivatives(tri, z, derivative_caches, neighbour_caches; method, initial_gradients, parallel=true, alpha=α)
+            for i in eachindex(initial_gradients)
+                (G1, H1), (G2, H2) = estimate_gradient_hessian_from_initial_gradients(tri, i, z, α; initial_gradients)
+                G3 = collect(∇[i])
+                H3 = collect(ℋ[i])
+                flags[1, j] += isapprox(G1, G2, rtol=1e-2)
+                flags[2, j] += isapprox(G1, G3, rtol=1e-2)
+                flags[3, j] += isapprox(G2, G3, rtol=1e-2)
+                flags[4, j] += isapprox(H1, H2, rtol=1e-1)
+                flags[5, j] += isapprox(H1, H3, rtol=1e-1)
+                flags[6, j] += isapprox(H2, H3, rtol=1e-1)
+                pᵢ = get_point(tri, i)
+                xᵢ, yᵢ = getxy(pᵢ)
+                G4 = f′(xᵢ, yᵢ)
+                H4 = f′′(xᵢ, yᵢ)[[1, 4, 2]]
+                flags[7, j] += isapprox(G3, G4, rtol=1e-1, atol=1e-1)
+                flags[8, j] += isapprox(H3, H4, rtol=1e-1, atol=1e-1)
+            end
+        end
+        normalised_flags = flags ./ length(initial_gradients)
+        @test all(>(0.85), normalised_flags[:, 1])
+        @test all(>(0.85), normalised_flags[:, 2])
+        @test all(>(0.85), normalised_flags[:, 3])
+        @test all(>(0.85), normalised_flags[:, 4])
+        @test all(>(0.85), normalised_flags[:, 5])
+        @test all(>(0.85), normalised_flags[:, 6])
+        @test all(>(0.75), normalised_flags[:, 7])
+        @test all(>(0.75), normalised_flags[[2, 4, 5, 6, 7, 8], 8])
+        @test all(>(0.15), normalised_flags[[1, 3], 8])
+    end
+end
+
+@testset "get_λ" begin
+    @test NNI.get_λ([1.0, 2.0, 3.0], 2, true) == 2.0
+    @test NNI.get_λ([1.0, 2.0, 3.0, 4.0], 5, true) == 1.0
+    @test NNI.get_λ([2.3, 5.0], 1, false) == 1.0
+    @test NNI.get_λ(1.0, 3, true) == 1.0
+end
+
+@testset "Checking that keyword arguments are passed fine" begin
+    tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    tri = triangulate(get_points(tri), randomise=false)
+    f = (x, y) -> x^2 + y^2 + x^3 * y
+    f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
+    f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
+    z = [f(x, y) for (x, y) in each_point(tri)]
+    itp = interpolate(tri, z)
+    ∂ = differentiate(itp, 2)
+    @test_throws ArgumentError ∂(0.0, 0.0; method=Iterative())
+    @test_throws ArgumentError ∂(0.0, 0.0; method=:iterative)
+    itp1 = interpolate(tri, z; derivatives=false)
+    itp2 = interpolate(tri, z; derivatives=true)
+    ∂11 = differentiate(itp1, 1)
+    ∂12 = differentiate(itp1, 2)
+    ∂21 = differentiate(itp2, 1)
+    ∂22 = differentiate(itp2, 2)
+
+    @test slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Direct(), interpolant_method=Sibson(),
+        alpha=0.01, use_cubic_terms=true,
+        use_sibson_weight=true,
+        tri=tri, z=z)
+    @test slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Direct(), interpolant_method=Laplace(),
+        alpha=0.01, use_cubic_terms=true,
+        use_sibson_weight=true,
+        tri=tri, z=z)
+    @test slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Direct(), interpolant_method=Laplace(),
+        alpha=0.01, use_cubic_terms=true,
+        use_sibson_weight=false,
+        tri=tri, z=z)
+    @test slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Direct(), interpolant_method=Sibson(),
+        alpha=0.01, use_cubic_terms=false,
+        use_sibson_weight=true,
+        tri=tri, z=z)
+    @test slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Direct(), interpolant_method=Sibson(),
+        alpha=0.13, use_cubic_terms=false,
+        use_sibson_weight=true,
+        tri=tri, z=z)
+    @test_throws ArgumentError slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Iterative(), interpolant_method=Sibson(),
+        alpha=0.01, use_cubic_terms=false,
+        use_sibson_weight=true,
+        tri=tri, z=z)
+    itp1 = interpolate(tri, z; derivatives=true)
+    itp2 = interpolate(tri, z; derivatives=true)
+    ∂11 = differentiate(itp1, 1)
+    ∂12 = differentiate(itp1, 2)
+    ∂21 = differentiate(itp2, 1)
+    ∂22 = differentiate(itp2, 2)
+    @test slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22;
+        x=5.872, y=3.45, rng=StableRNG(29991),
+        method=Iterative(), interpolant_method=Sibson(),
+        alpha=0.1, use_cubic_terms=false,
+        use_sibson_weight=true,
+        tri=tri, z=z)
+end
+
+@testset "Check multithreading is working" begin
+    tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    tri = triangulate(get_points(tri), randomise=false)
+    f = (x, y) -> x^2 + y^2 + x^3 * y
+    f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
+    f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
+    z = [f(x, y) for (x, y) in each_point(tri)]
+    itp = interpolate(tri, z; generate_derivatives=true)
+    ∂1 = differentiate(itp, 1)
+    ∂2 = differentiate(itp, 2)
+    x = 10rand(100)
+    y = 10rand(100)
+    @test collect.(∂1(x, y; parallel=true)) ≈ collect.(∂1(x, y; parallel=false)) # not == because of internal rng
+    @test collect.(∂1(x, y; interpolant_method = Sibson(1))) ≈ collect.(∂1(x, y; interpolant_method = Sibson(1)))
 end

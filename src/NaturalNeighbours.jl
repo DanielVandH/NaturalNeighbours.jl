@@ -12,6 +12,7 @@ import DelaunayTriangulation: DelaunayTriangulation,
     Triangulation,
     triangulate,
     is_boundary_index,
+    get_neighbours,
     construct_triangle,
     Adjacent,
     add_triangle!,
@@ -56,12 +57,15 @@ import DelaunayTriangulation: DelaunayTriangulation,
 import ChunkSplitters: chunks
 using ElasticArrays
 using LinearAlgebra
+using Random
 
 num_points(::NTuple{N,F}) where {N,F} = N
 getpoint(p::NTuple{N,F}, i::Integer) where {N,F} = p[i]
 
 export interpolate
-export generate_derivatives
+export differentiate
+export generate_derivatives, generate_gradients
+export Sibson, Triangle, Nearest, Laplace, Direct, Iterative
 
 include("data_structures/natural_coordinates.jl")
 include("data_structures/neighbour_cache.jl")
@@ -75,10 +79,12 @@ include("interpolation/coordinates/sibson.jl")
 include("interpolation/coordinates/triangle.jl")
 include("interpolation/coordinates/nearest.jl")
 include("interpolation/coordinates/laplace.jl")
+include("interpolation/utils.jl")
 
 include("differentiation/generate.jl")
+include("differentiation/differentiate.jl")
 include("differentiation/methods/direct.jl")
 include("differentiation/methods/iterative.jl")
-include("utils.jl")
+include("differentiation/utils.jl")
 
 end # module NaturalNeighbours

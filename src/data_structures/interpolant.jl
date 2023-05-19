@@ -1,32 +1,68 @@
-struct NaturalNeighboursInterpolant{T<:Triangulation,F,C,G,H}
+struct NaturalNeighboursInterpolant{T<:Triangulation,F,G,H,N,D}
     triangulation::T
     z::Vector{F}
     gradient::G # (∂ˣf, ∂ʸf)
     hessian::H # (∂ˣˣf, ∂ʸʸf, ∂ˣʸf)
-    cache::C
-    function NaturalNeighboursInterpolant(tri::T, z::Vector{F}, gradient=nothing, hessian=nothing) where {T,F}
+    neighbour_cache::N
+    derivative_cache::D
+    function NaturalNeighboursInterpolant(
+        tri::T,
+        z::Vector{F},
+        gradient=nothing,
+        hessian=nothing;
+        derivatives=false,
+        kwargs...
+    ) where {T,F}
         @assert num_solid_vertices(tri) == length(z) "The number of points in the triangulation must equal the length of the data vector."
         !has_ghost_triangles(tri) && add_ghost_triangles!(tri)
         if has_boundary_nodes(tri)
             throw(ArgumentError("Natural neighbour interpolation is only defined over unconstrained triangulations."))
         end
         nt = Base.Threads.nthreads()
-        caches = [NaturalNeighboursCache(tri) for _ in 1:nt]
-        return new{T,F,typeof(caches),typeof(gradient),typeof(hessian)}(tri, z, gradient, hessian, caches)
+        derivative_caches = [DerivativeCache(tri) for _ in 1:nt]
+        neighbour_caches = [NaturalNeighboursCache(tri) for _ in 1:nt]
+        D = typeof(derivative_caches)
+        N = typeof(neighbour_caches)
+        if derivatives
+            #=
+            method = wrap(derivative_method)
+            if method == Iterative()
+                initial_gradients = generate_gradients(tri, z, derivative_caches, neighbour_caches; method, parallel=parallel_derivatives, kwargs...)
+            else
+                initial_gradients = nothing
+            end
+            ∇, ℋ = generate_derivatives(tri, z, derivative_caches, neighbour_caches; method, initial_gradients, parallel=parallel_derivatives, kwargs...)
+            =#
+            ∇, ℋ = generate_derivatives(tri, z, derivative_caches, neighbour_caches; kwargs...)
+        else
+            ∇ = nothing
+            ℋ = nothing
+        end
+        if isnothing(gradient)
+            gradient = ∇
+        end
+        if isnothing(hessian)
+            hessian = ℋ
+        end
+        G = typeof(gradient)
+        H = typeof(hessian)
+        return new{T,F,G,H,N,D}(tri, z, gradient, hessian, neighbour_caches, derivative_caches)
     end
 end
 function Base.show(io::IO, ::MIME"text/plain", nc::NaturalNeighboursInterpolant)
     z = get_z(nc)
     println(io, "Natural Neighbour Interpolant")
-    print(io, "    z: ", z)
-    print(io, "    ∇: ", get_gradient(nc))
+    println(io, "    z: ", z)
+    println(io, "    ∇: ", get_gradient(nc))
     print(io, "    H: ", get_hessian(nc))
 end
 get_triangulation(ni::NaturalNeighboursInterpolant) = ni.triangulation
 get_z(ni::NaturalNeighboursInterpolant) = ni.z
 get_z(ni::NaturalNeighboursInterpolant, i) = ni.z[i]
-get_cache(ni::NaturalNeighboursInterpolant) = ni.cache
-get_cache(ni::NaturalNeighboursInterpolant, id) = ni.cache[id]
+get_neighbour_cache(ni::NaturalNeighboursInterpolant) = ni.neighbour_cache
+get_neighbour_cache(ni::NaturalNeighboursInterpolant, id) = ni.neighbour_cache[id]
+get_derivative_cache(ni::NaturalNeighboursInterpolant) = ni.derivative_cache
+get_derivative_cache(ni::NaturalNeighboursInterpolant, id) = ni.derivative_cache[id]
 get_gradient(ni::NaturalNeighboursInterpolant) = ni.gradient
 get_gradient(ni::NaturalNeighboursInterpolant, i) = ni.gradient[i]
 get_hessian(ni::NaturalNeighboursInterpolant) = ni.hessian

@@ -79,10 +79,39 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
     return polygon_area(points)
 end
 
-function compute_natural_coordinates(::Sibson{N}, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...) where {N}
-    if N == 0
-        _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
-    else 
+function compute_natural_coordinates(::Sibson{0}, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
+    return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+end
 
+function _compute_sibson_1_coordinates(nc::NaturalCoordinates, tri::Triangulation, z, ∇) # has to be a different form since Sib0 blends two functions 
+    λ = get_coordinates(nc)
+    N₀ = get_indices(nc)
+    p₀ = get_interpolation_point(nc)
+    x₀, y₀ = getxy(p₀)
+    F = number_type(tri)
+    α = zero(F)
+    β = zero(F)
+    ζ = zero(F)
+    γ = zero(F)
+    for (λₖ, k) in zip(λ, N₀)
+        ∇ₖ = ∇[k]
+        zₖ = z[k]
+        pₖ = get_point(tri, k)
+        xₖ, yₖ = getxy(pₖ)
+        rₖ² = (xₖ - x₀)^2 + (yₖ - y₀)^2
+        rₖ = sqrt(rₖ²)
+        γₖ = λₖ / rₖ 
+        ζₖ = zₖ + (x₀- xₖ) * ∇ₖ[1] + (y₀ - yₖ) * ∇ₖ[2]
+        αₖ = λₖ * rₖ 
+        γ += γₖ 
+        β += λₖ * rₖ² 
+        α += αₖ 
+        ζ += ζₖ * γₖ 
+        if !isfinite(γ)
+            return zero(F), one(F), zero(F)
+        end
     end
+    ζ /= γ 
+    α /= γ 
+    return ζ, α, β
 end
