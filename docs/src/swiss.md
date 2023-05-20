@@ -149,7 +149,7 @@ resize_to_layout!(fig)
 
 ```@raw html
 <figure>
-    <img src='../figs/swiss_heights.png', alt'Switzerland Data'><br>
+    <img src='../figures/swiss_heights.png', alt'Switzerland Data'><br>
 </figure>
 ```
 
@@ -224,7 +224,7 @@ fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, near
 
 ```@raw html
 <figure>
-    <img src='../figs/swiss_heights_interpolated.png', alt'Switzerland Data Interpolated'><br>
+    <img src='../figures/swiss_heights_interpolated.png', alt'Switzerland Data Interpolated'><br>
 </figure>
 ```
 
@@ -245,7 +245,7 @@ fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals
 
 ```@raw html
 <figure>
-    <img src='../figs/swiss_heights_interpolated_projected.png', alt'Switzerland Data Interpolated without Projection'><br>
+    <img src='../figures/swiss_heights_interpolated_projected.png', alt'Switzerland Data Interpolated without Projection'><br>
 </figure>
 ```
 
@@ -267,7 +267,7 @@ fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals
 
 ```@raw html
 <figure>
-    <img src='../figs/swiss_heights_interpolated_projected_boundary.png', alt'Switzerland Data Interpolated Complete'><br>
+    <img src='../figures/swiss_heights_interpolated_projected_boundary.png', alt'Switzerland Data Interpolated Complete'><br>
 </figure>
 ```
 

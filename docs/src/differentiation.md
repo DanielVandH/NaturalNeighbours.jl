@@ -65,7 +65,7 @@ fig
 
 ```@raw html
 <figure>
-    <img src='../figs/differentiation_exact_surfaces.png', alt'Plots of the interpolants'><br>
+    <img src='../figures/differentiation_exact_surfaces.png', alt'Plots of the interpolants'><br>
 </figure>
 ```
 
@@ -102,7 +102,7 @@ fig
 
 ```@raw html
 <figure>
-    <img src='../figs/example_data.png', alt'Plots of the data'><br>
+    <img src='../figures/example_data.png', alt'Plots of the data'><br>
 </figure>
 ```
 
@@ -158,7 +158,7 @@ julia> ε
 
 ```@raw html
 <figure>
-    <img src='../figs/gradient_data.png', alt'Gradients'><br>
+    <img src='../figures/gradient_data.png', alt'Gradients'><br>
 </figure>
 ```
 
@@ -178,7 +178,7 @@ julia> ε
 
 ```@raw html
 <figure>
-    <img src='../figs/joint_gradient_data.png', alt'Joint Gradients'><br>
+    <img src='../figures/joint_gradient_data.png', alt'Joint Gradients'><br>
 </figure>
 ```
 
@@ -217,7 +217,7 @@ julia> ε
 
 ```@raw html
 <figure>
-    <img src='../figs/hessian_data.png', alt'Cubic Hessians'><br>
+    <img src='../figures/hessian_data.png', alt'Cubic Hessians'><br>
 </figure>
 ```
 
@@ -237,7 +237,7 @@ julia> ε
 
 ```@raw html
 <figure>
-    <img src='../figs/hessian_data_no_cubic.png', alt'Quadratic Hessians'><br>
+    <img src='../figures/hessian_data_no_cubic.png', alt'Quadratic Hessians'><br>
 </figure>
 ```
 
@@ -257,7 +257,7 @@ julia> ε
 
 ```@raw html
 <figure>
-    <img src='../figs/hessian_data_iterative.png', alt'Iterative Hessians'><br>
+    <img src='../figures/hessian_data_iterative.png', alt'Iterative Hessians'><br>
 </figure>
 ```
 
@@ -338,7 +338,7 @@ julia> ε
 
 ```@raw html
 <figure>
-    <img src='../figs/gradient_surface.png', alt'Evaluated Gradient'><br>
+    <img src='../figures/gradient_surface.png', alt'Evaluated Gradient'><br>
 </figure>
 ```
 
@@ -401,13 +401,13 @@ julia> εH
 
 ```@raw html
 <figure>
-    <img src='../figs/gradient_surface_2.png', alt'Evaluated Gradient'><br>
+    <img src='../figures/gradient_surface_2.png', alt'Evaluated Gradient'><br>
 </figure>
 ```
 
 ```@raw html
 <figure>
-    <img src='../figs/hessian_surface.png', alt'Evaluated Hessian'><br>
+    <img src='../figures/hessian_surface.png', alt'Evaluated Hessian'><br>
 </figure>
 ```
 
@@ -434,13 +434,13 @@ julia> εH
 
 ```@raw html
 <figure>
-    <img src='../figs/gradient_surface_2_direct.png', alt'Evaluated Gradient'><br>
+    <img src='../figures/gradient_surface_2_direct.png', alt'Evaluated Gradient'><br>
 </figure>
 ```
 
 ```@raw html
 <figure>
-    <img src='../figs/hessian_surface_direct.png', alt'Evaluated Hessian'><br>
+    <img src='../figures/hessian_surface_direct.png', alt'Evaluated Hessian'><br>
 </figure>
 ```
 

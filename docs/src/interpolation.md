@@ -167,7 +167,7 @@ end
 
 ```@raw html
 <figure>
-    <img src='../figs/sibson_vs_sibson1.png', alt'Sibson and Sibson-1 Interpolation'><br>
+    <img src='../figures/sibson_vs_sibson1.png', alt'Sibson and Sibson-1 Interpolation'><br>
 </figure>
 ```
 
@@ -188,7 +188,7 @@ fig
 
 ```@raw html
 <figure>
-    <img src='../figs/sibson_vs_sibson1_project_false.png', alt'Sibson and Sibson-1 Interpolation without Extrapolation'><br>
+    <img src='../figures/sibson_vs_sibson1_project_false.png', alt'Sibson and Sibson-1 Interpolation without Extrapolation'><br>
 </figure>
 ```
 
@@ -210,7 +210,7 @@ fig
 
 ```@raw html
 <figure>
-    <img src='../figs/sibson_vs_sibson1_errors.png', alt'Sibson and Sibson-1 Interpolation Errors'><br>
+    <img src='../figures/sibson_vs_sibson1_errors.png', alt'Sibson and Sibson-1 Interpolation Errors'><br>
 </figure>
 ```
 

@@ -20,7 +20,7 @@ In particular, any point in $V_{\boldsymbol x_i}$ is closer to $\boldsymbol x_i$
 
 ```@raw html
 <figure>
-    <img src='../figs/example_tessellation.png', alt='Voronoi Tessellation'><br>
+    <img src='../figures/example_tessellation.png', alt='Voronoi Tessellation'><br>
 </figure>
 ```
 
@@ -78,7 +78,7 @@ where $\boldsymbol x \in \mathcal V_i$. An example of what this interpolant look
 
 ```@raw html
 <figure>
-    <img src='../figs/fnear_example.png', alt='Nearest Neighbour Interpolation'><br>
+    <img src='../figures/fnear_example.png', alt='Nearest Neighbour Interpolation'><br>
 </figure>
 ```
 
@@ -88,7 +88,7 @@ Here we introduce _Laplace coordinates_, also known as _non-Sibsonian coordinate
 
 ```@raw html
 <figure>
-    <img src='../figs/new_tile.png', alt='Tessellation with a new point'><br>
+    <img src='../figures/new_tile.png', alt='Tessellation with a new point'><br>
 </figure>
 ```
 
@@ -110,7 +110,7 @@ An example of what this interpolant looks like is given below.
 
 ```@raw html
 <figure>
-    <img src='../figs/flap_example.png', alt='Laplace Interpolation'><br>
+    <img src='../figures/flap_example.png', alt='Laplace Interpolation'><br>
 </figure>
 ```
 
@@ -120,7 +120,7 @@ Now we consider Sibson's coordinates. These coordinates are similar to Laplace's
 
 ```@raw html
 <figure>
-    <img src='../figs/new_tile.png', alt='Tessellation with a new point'><br>
+    <img src='../figures/new_tile.png', alt='Tessellation with a new point'><br>
 </figure>
 ```
 
@@ -154,7 +154,7 @@ An example of what this interpolant looks like is given below.
 
 ```@raw html
 <figure>
-    <img src='../figs/fsib0_example.png', alt='Sibson Interpolation'><br>
+    <img src='../figures/fsib0_example.png', alt='Sibson Interpolation'><br>
 </figure>
 ```
 
@@ -189,7 +189,7 @@ An example of what this interpolant looks like is given below.
 
 ```@raw html
 <figure>
-    <img src='../figs/fsib1_example.png', alt='Sibson-1 Interpolation'><br>
+    <img src='../figures/fsib1_example.png', alt='Sibson-1 Interpolation'><br>
 </figure>
 ```
 
@@ -222,7 +222,7 @@ An example of what this interpolant looks like is given below.
 
 ```@raw html
 <figure>
-    <img src='../figs/tri_example.png', alt='Triangle Interpolation'><br>
+    <img src='../figures/tri_example.png', alt='Triangle Interpolation'><br>
 </figure>
 ```
 
@@ -234,7 +234,7 @@ We take a set of data sites in $[-1, 1]^2$ such that all function values are zer
 
 ```@raw html
 <figure>
-    <img src='../figs/influence.png', alt='Region of Influence'><br>
+    <img src='../figures/influence.png', alt='Region of Influence'><br>
 </figure>
 ```
 
