@@ -20,10 +20,10 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
     @test length(NNI.get_neighbour_cache(itp)) == Base.Threads.nthreads()
     @test length(NNI.get_derivative_cache(itp)) == Base.Threads.nthreads()
     @test NNI.get_neighbour_cache(itp, 1) == itp.neighbour_cache[1]
-    @test NNI.get_neighbour_cache(itp, 2) == itp.neighbour_cache[2]
+    Base.Threads.nthreads() > 1 && @test NNI.get_neighbour_cache(itp, 2) == itp.neighbour_cache[2]
     @test NNI.get_derivative_cache(itp) == itp.derivative_cache
     @test NNI.get_derivative_cache(itp, 1) == itp.derivative_cache[1]
-    @test NNI.get_derivative_cache(itp, 2) == itp.derivative_cache[2]
+    Base.Threads.nthreads() > 1 && @test NNI.get_derivative_cache(itp, 2) == itp.derivative_cache[2]
     @test NNI.get_gradient(itp) == itp.gradient
     @test !isnothing(NNI.get_gradient(itp))
     @test NNI.get_gradient(itp, 1) == itp.gradient[1]

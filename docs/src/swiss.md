@@ -230,7 +230,7 @@ fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, near
 
 We see that the results are pretty similar across the methods except for `Nearest()`, with `Sibson(1)` probably the closest. We could compute the errors between the interpolant and the points that we removed from the dataset to quantify this better, but we won't do that --- we're not intending to a comprehensive analysis here.
 
-# Elimitating Points Outside of the Convex Hull
+# Eliminating Points Outside of the Convex Hull
 
 One issue with the interpolant is that the extrapolated results are distracting. Let's set `project=false` to remove values outside of the convex hull of our data sites.
 
