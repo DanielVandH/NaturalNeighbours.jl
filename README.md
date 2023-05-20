@@ -13,6 +13,7 @@ Here is a quick example of how to use the package, demonstrating the available m
 ```julia
 using NaturalNeighbours
 using CairoMakie
+using StableRNGs
 
 ## The data 
 rng = StableRNG(123)

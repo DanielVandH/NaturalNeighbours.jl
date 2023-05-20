@@ -1,6 +1,7 @@
 using ..NaturalNeighbours
 using CairoMakie
 using ReferenceTests
+using StableRNGs
 
 ## The data 
 rng = StableRNG(123)
