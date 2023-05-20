@@ -27,7 +27,7 @@ In each method, `method` defines the method used for evaluating the interpolant,
 method, `parallel` is ignored, but for the latter two methods it defines whether to use multithreading or not for evaluating the interpolant at 
 all the points. The `kwargs...` argument is passed into `add_point!` from DelaunayTriangulation.jl, e.g. you could pass some `rng`. Lastly, 
 the `project` argument determines whether extrapolation is performed by projecting any exterior points onto the boundary of the convex hull 
-of the data sites and performing two-point interpolation, or to simply replaced any extrapolated values with `NaN`.
+of the data sites and performing two-point interpolation, or to simply replaced any extrapolated values with `Inf`.
 """
 interpolate(tri::Triangulation, z; gradient=nothing, hessian=nothing, kwargs...) = NaturalNeighboursInterpolant(tri, z, gradient, hessian; kwargs...)
 

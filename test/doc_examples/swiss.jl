@@ -151,11 +151,11 @@ fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals
 
 ## Plot the results, replacing all points outside of the boundary 
 exterior_idx = identify_exterior_points(x, y, ds_data_sites, ds_boundary_nodes)
-sibson_vals_p[exterior_idx] .= NaN
-sibson_1_vals_p[exterior_idx] .= NaN
-laplace_vals_p[exterior_idx] .= NaN
-triangle_vals_p[exterior_idx] .= NaN
-nearest_vals_p[exterior_idx] .= NaN
+sibson_vals_p[exterior_idx] .= Inf
+sibson_1_vals_p[exterior_idx] .= Inf
+laplace_vals_p[exterior_idx] .= Inf
+triangle_vals_p[exterior_idx] .= Inf
+nearest_vals_p[exterior_idx] .= Inf
 
 fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated_projected_boundary.png"), fig)

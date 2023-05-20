@@ -2,6 +2,8 @@
 CurrentModule = NaturalNeighbours
 ```
 
+# Interpolation
+
 In this section, we give some of the mathematical background behind natural neighbour interpolation, and other interpolation methods provided from this package. The discussion here will be limited, but you can see this [thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf) or this [Wikipedia article](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) for more information. The discussion that follows is primarily sourced from the linked thesis. These ideas are implemented by the `interpolate` function.
 
 # Voronoi Tessellation 
@@ -223,6 +225,20 @@ An example of what this interpolant looks like is given below.
     <img src='../figs/tri_example.png', alt='Triangle Interpolation'><br>
 </figure>
 ```
+
+# Regions of Influence 
+
+The _region of influence_ for the natural neighbour coordinates associated with a point $\boldsymbol x_i$ is the interior the union of all circumcircles coming from the triangles of the underlying triangulation that pass through $\boldsymbol x_i$. We can visualise this for the coordinates we define above below. (this region of influence definition not necessarily generalise to the triangle and nearest neighbour coordinates, but we still compare them).
+
+We take a set of data sites in $[-1, 1]^2$ such that all function values are zero except for $z_1 = 0$ with $\boldsymbol x_1 = \boldsymbol 0$. Using this setup, we obtain the following results (see also Figure 3.6 of Bobach's thesis linked previously):_
+
+```@raw html
+<figure>
+    <img src='../figs/influence.png', alt='Region of Influence'><br>
+</figure>
+```
+
+We can indeed see the effect of the region of influence about this single point $\boldsymbol x_1$. Note also that $f^{\text{SIB}1}$ is much smoother than the others.
 
 # Extrapolation
 

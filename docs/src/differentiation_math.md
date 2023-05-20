@@ -2,6 +2,8 @@
 CurrentModule = NaturalNeighbours
 ```
 
+# Differentiation 
+
 In this section, we give some of the mathematical detail used for implementing derivative generation, following this [thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf). The discussion that follows is primarily sourced from Chapter 6 of the linked thesis. While it is possible to generate derivatives of arbitary order, our discussion here in this section will be limited to gradient and Hessian generation.  These ideas are implemented by the `generate_gradients` and `generate_derivatives` functions, which you should use via the `differentiate` function.
 
 # Generation at Data Sites 

@@ -38,6 +38,9 @@ end
     @safetestset "README Example" begin
         include("doc_examples/readme_example.jl")
     end
+    @safetestset "Interpolation Example" begin
+        include("doc_examples/interpolation.jl")
+    end
     @safetestset "Switzerland" begin
         include("doc_examples/swiss.jl")
     end

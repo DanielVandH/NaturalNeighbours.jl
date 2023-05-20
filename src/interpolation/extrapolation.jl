@@ -24,7 +24,7 @@ function two_point_interpolate!(coordinates::AbstractVector{F}, envelope, tri, i
     else
         resize!(coordinates, 1)
         resize!(envelope, 1)
-        coordinates[1] = F(NaN)
+        coordinates[1] = F(Inf)
         envelope[1] = i
     end
     return NaturalCoordinates(coordinates, envelope, r, tri)
