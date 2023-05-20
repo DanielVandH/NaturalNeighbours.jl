@@ -41,6 +41,12 @@ end
     @safetestset "Interpolation Example" begin
         include("doc_examples/interpolation.jl")
     end
+    @safetestset "Differentiation Example" begin
+        include("doc_examples/differentiation.jl")
+    end
+    @safetestset "Interpolation Math" begin
+        include("doc_examples/interpolation_math.jl")
+    end
     @safetestset "Switzerland" begin
         include("doc_examples/swiss.jl")
     end

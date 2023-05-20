@@ -32,10 +32,10 @@ The outputs are:
 """
 differentiate(itp::NaturalNeighboursInterpolant, order) = NaturalNeighboursDifferentiator(itp, order)
 
-function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighboursDifferentiator{I,O}, p, zᵢ, nc, id;
+function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighboursDifferentiator{I,O}, p, zᵢ::F, nc, id;
     use_cubic_terms=true,
     alpha=0.1,
-    use_sibson_weight=true) where {I,O}
+    use_sibson_weight=true) where {I,O,F}
     itp = get_interpolant(∂)
     tri = get_triangulation(itp)
     z = get_z(itp)
@@ -48,14 +48,24 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
     S′ = get_second_iterated_neighbourhood(d_cache)
     if O == 1
         λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
-        return generate_first_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
+        ∇ = generate_first_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
+        if isnan(∇[1]) || isnan(∇[2])
+            return (F(Inf), F(Inf))
+        else
+            return ∇
+        end
     else # O == 2
         if method == Direct()
             λ, E = get_taylor_neighbourhood!(S, S′, tri, 2 + use_cubic_terms, nc)
         else
             λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
         end
-        return generate_second_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
+        ∇, H = generate_second_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
+        if isnan(∇[1]) || isnan(∇[2]) || isnan(H[1]) || isnan(H[2]) || isnan(H[3])
+            return (F(Inf), F(Inf)), (F(Inf), F(Inf), F(Inf))
+        else
+            return ∇, H
+        end
     end
 end
 

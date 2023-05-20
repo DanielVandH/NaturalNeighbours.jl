@@ -1,4 +1,4 @@
-# https://core.ac.uk/reader/36727660
+# https://hdl.handle.net/10945/35052
 function test_1()
     f = (x, y) -> 0.75 * exp(-((9 * x - 2)^2 + (9 * y - 2)^2) / 4) + 0.75 * exp(-(9 * x + 1)^2 / 49 - (9 * y + 1) / 10) + 0.5 * exp(-((9 * x - 7)^2 + (9 * y - 3)^2) / 4) - 0.2 * exp(-(9 * x - 4)^2 - (9 * y - 7)^2)
     f′ = (x, y) -> [(exp(-(9 * x - 4)^2 - (9 * y - 7)^2) * (162 * x - 72)) / 5 - (3 * exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4) * ((81 * x) / 2 - 9)) / 4 - (exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4) * ((81 * x) / 2 - 63 / 2)) / 2 - (3 * exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10) * ((162 * x) / 49 + 18 / 49)) / 4
@@ -247,12 +247,12 @@ function rrmse(z, ẑ)
     num = 0.0
     den = 0.0
     for (zᵢ, ẑᵢ) in zip(z, ẑ)
-        if !any(isnan, (zᵢ..., ẑᵢ...))
+        if all(isfinite, (zᵢ..., ẑᵢ...))
             num += norm(zᵢ .- ẑᵢ)^2
             den += norm(ẑᵢ)^2
         end
     end
-    num /= length(ẑ)
+    # num /= length(ẑ)
     return 100sqrt(num / den)
 end
 

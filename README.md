@@ -54,6 +54,9 @@ for (i, (vals, title)) in enumerate(zip(all_vals, titles))
 end
 resize_to_layout!(fig)
 fig
+
+# could keep going and differentiating, etc...
+# ∂ = differentiate(itp, 2) -- see the docs.
 ```
 
 ![Interpolation example](https://github.com/DanielVandH/NaturalNeighbours.jl/blob/09708d95ca8b778a84fdf229dc26b51de333b7cd/example.png)

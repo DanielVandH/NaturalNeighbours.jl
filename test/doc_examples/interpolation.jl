@@ -27,10 +27,10 @@ function plot_itp(fig, x, y, vals, title, i, show_data_sites, itp, xd=nothing, y
     show_data_sites && scatter!(ax, xd, yd, color=:red, markersize=9)
     tri = itp.triangulation
     ch_idx = get_convex_hull_indices(tri)
-    lines!(ax, [get_point(tri, i) for i in ch_idx], color=:white, linewidth=4, linestyle=:dash)
+    lines!(ax, [get_point(tri, i) for i in ch_idx], color=:white, linewidth=4)
     if show_3d
         ax = Axis3(fig[2, i], xlabel="x", ylabel="y", zlabel=L"z", width=600, height=600, title=" ", titlealign=:left, azimuth=0.49)
-        surface!(ax, x, y, vals, color=vals, colormap=:viridis, colorrange=(-0.1, 0.3))
+        surface!(ax, x, y, vals, color=vals, colormap=:viridis, colorrange=extrema(levels))
         zlims!(ax, 0, 0.25)
     end
     return c
@@ -69,7 +69,7 @@ fig
 
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "sibson_vs_sibson1_errors.png") fig
 
-esib0 = 100sqrt(sum((sib_vals .- f.(_x, _y)).^2) / sum(f.(_x, _y).^2))
-esib1 = 100sqrt(sum((sib1_vals .- f.(_x, _y)).^2) / sum(f.(_x, _y).^2))
+esib0 = 100sqrt(sum((sib_vals .- f.(_x, _y)).^2) / sum(sib_vals.^2))
+esib1 = 100sqrt(sum((sib1_vals .- f.(_x, _y)).^2) / sum(sib_vals.^2))
 
 @test esib1 < esib0
