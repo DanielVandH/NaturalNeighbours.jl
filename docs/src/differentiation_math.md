@@ -70,7 +70,7 @@ We define the following loss function, where $\beta_i = 1/\|\boldsymbol x_i-\bol
 \begin{align*}
 \mathcal L(\boldsymbol g_0^2, \boldsymbol H_0^2) &= \sum_{i \in \mathcal N_0} W_i\left[\alpha \mathcal L_1^i(\boldsymbol g_0^2, \boldsymbol H_0^2)^2 + (1-\alpha)L_2^i(\boldsymbol g_0^2, \boldsymbol H_0^2)^2\right], \\
 \mathcal L_1^i(\boldsymbol g_0^2, \boldsymbol H_0^2)^2 &= \left[\frac12(\boldsymbol x_i-\boldsymbol x_0)^T\boldsymbol H_0^2(\boldsymbol x_i - \boldsymbol x_0) + (\boldsymbol x_i-\boldsymbol x_0)^T\boldsymbol g_0^2 + z_0-z_i\right]^2, \\
-\mathcal L_2^i(\boldsymbol g_0^2, \boldsymbol H_0^2) &= \left\|\boldsymbol H_0^2 \boldsymbol x_i + \boldsymbol g_062 - \boldsymbol g_i^1\right\|^2.
+\mathcal L_2^i(\boldsymbol g_0^2, \boldsymbol H_0^2) &= \left\|\boldsymbol H_0^2 \boldsymbol x_i + \boldsymbol g_0^2 - \boldsymbol g_i^1\right\|^2.
 \end{align*}
 ```
 
