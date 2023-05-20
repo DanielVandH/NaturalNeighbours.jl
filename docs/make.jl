@@ -22,8 +22,8 @@ makedocs(;
             "Switzerland Elevation Data" => "swiss.md"
         ],
         "Mathematical Details" => [
-            "Interpolation" => "interpolation_math.md",
-            "Differentiation" => "differentiation_math.md"
+            "Interpolation Details" => "interpolation_math.md",
+            "Differentiation Details" => "differentiation_math.md"
         ]
     ],
 )
