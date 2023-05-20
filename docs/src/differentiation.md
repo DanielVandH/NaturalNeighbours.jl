@@ -69,7 +69,7 @@ fig
 </figure>
 ```
 
-For our analysis, we use the following data set (this is the first point set from the report [here](https://hdl.handle.net/10945/35052)):
+For our analysis, we use the following data set:
 
 ```julia
 using StableRNGs 
