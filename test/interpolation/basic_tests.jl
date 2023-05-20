@@ -3,6 +3,7 @@ const NNI = NaturalNeighbours
 using DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StableRNGs
+using CairoMakie
 
 include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
 
