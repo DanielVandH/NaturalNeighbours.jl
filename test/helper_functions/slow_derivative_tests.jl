@@ -369,10 +369,10 @@ function slow_test_derivative(itp1, itp2, ∂11, ∂12, ∂21, ∂22; x, y, rng,
         flag10, flag11, flag12, flag13, flag14, flag15, flag16, flag17, flag18,
         flag19, flag20, flag21, flag22)
     final_flag = all(all_flags)
-    if !final_flag 
+    if !final_flag
         idx = findall(!, all_flags)
         println("Failed at index: $idx")
-        return false 
+        return false
     end
     return true
 end

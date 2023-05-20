@@ -65,6 +65,7 @@ getpoint(p::NTuple{N,F}, i::Integer) where {N,F} = p[i]
 export interpolate
 export differentiate
 export generate_derivatives, generate_gradients
+export identify_exterior_points
 export Sibson, Triangle, Nearest, Laplace, Direct, Iterative
 
 include("data_structures/natural_coordinates.jl")
@@ -86,5 +87,7 @@ include("differentiation/differentiate.jl")
 include("differentiation/methods/direct.jl")
 include("differentiation/methods/iterative.jl")
 include("differentiation/utils.jl")
+
+include("utils.jl")
 
 end # module NaturalNeighbours

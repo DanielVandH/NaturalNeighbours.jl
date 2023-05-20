@@ -54,7 +54,7 @@ Generate derivatives at the data sites defined by the triangulation `tri` with a
 - `method=Direct()`: The method used for generating the derivatives. See [`AbstractDifferentiator`](@ref).
 - `use_cubic_terms=true`: Whether to use cubic terms for estimating the second order derivatives. Only relevant for `method == Direct()`.
 - `alpha=0.1`: The weighting parameter used for estimating the second order derivatives. Only relevant for `method == Iterative()`.
-- `initial_gradients=dwrap(method) == Direct() ? nothing : generate_gradients(tri, z, derivative_caches, neighbour_caches; method=dwrap(method), parallel, rng)`: The initial gradients used for estimating the second order derivatives. Only relevant for `method == Iterative()`.
+- `initial_gradients=dwrap(method) == Direct() ? nothing : generate_gradients(tri, z, derivative_caches, neighbour_caches; method=dwrap(method), parallel)`: The initial gradients used for estimating the second order derivatives. Only relevant for `method == Iterative()`.
 
 # Output 
 - `∇`: A vector of gradients at the data sites. Each element is a `Tuple` defining the gradient entries.
@@ -69,7 +69,7 @@ function generate_derivatives(
     method=Direct(),
     use_cubic_terms=true,
     alpha=0.1,
-    initial_gradients=dwrap(method) == Direct() ? nothing : generate_gradients(tri, z, derivative_caches, neighbour_caches; method=dwrap(method), parallel, rng)
+    initial_gradients=dwrap(method) == Direct() ? nothing : generate_gradients(tri, z, derivative_caches, neighbour_caches; parallel)
 )
     n = length(z)
     F = number_type(tri)

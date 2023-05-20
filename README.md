@@ -4,7 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbours.jl/dev/)
 [![Build Status](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml?query=branch%3Amain)
 
-This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets (amongst some others, like piecewise linear interpolation via triangles or nearest neighbour interpolation -- see the docs). This method of (scattered data) interpolation takes in some data $X = ((x_i,y_i))\_{i=1}^m \subset \mathbb R^2$ with corresponding data values $Z = (z_i)_{i=1}^m$ and constructs a function $f \colon \mathbb R^2 \to \mathbb R$ such that $f(x_i, y_i) = z_i$, $i=1,\ldots,m$, based on the _Voronoi tessellation_ of $X$. We use [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations. More detail is given in the docs.
+This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets (amongst some others, like piecewise linear interpolation via triangles or nearest neighbour interpolation -- see the docs), using [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations. Most of the work in this package is based on [this great thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf).
 
 # Examples
 
@@ -146,6 +146,8 @@ fig
 ```
 
 ![Extrapolation examples](https://github.com/DanielVandH/NaturalNeighbours.jl/blob/8f14a26d6726b78648261bbf12a4457de7d2cc0a/test/figures/example_2.png)
+
+![Interpolation example]()
 
 It's not perfect, and it would be nice to eventually have good extrapolation tools. 
 

@@ -2,6 +2,7 @@ function _compute_triangle_coordinates(
     tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
     interpolation_point,
     cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
+    project=true,
     kwargs...
 ) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
     coordinates = get_coordinates(cache)
@@ -9,7 +10,7 @@ function _compute_triangle_coordinates(
     last_triangle = get_last_triangle(cache)
     V = jump_and_march(tri, interpolation_point; try_points=last_triangle[], kwargs...)
     i, j, return_flag = check_for_extrapolation(tri, V, interpolation_point, last_triangle)
-    return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
+    return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point, project)
     i, j, k = indices(V)
     resize!(coordinates, 3)
     resize!(envelope, 3)

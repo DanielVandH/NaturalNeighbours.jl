@@ -1,6 +1,6 @@
 """
     interpolate(tri::Triangulation, z; gradient=nothing, hessian=nothing, derivatives=false, kwargs...)
-    interpolate(points, z; gradient=nothing, hessian=nothing, derivatives=false kwargs...)
+    interpolate(points, z; gradient=nothing, hessian=nothing, derivatives=false, kwargs...)
     interpolate(x::AbstractVector, y::AbstractVector, z; gradient=nothing, hessian=nothing, derivatives=false, kwargs...)
 
 Construct an interpolant over the data `z` at the sites defined by the triangulation `tri` (or `points`, or `(x, y)`). See the Output 
@@ -15,9 +15,9 @@ section for a description of how to use the interpolant `itp`.
 # Output 
 The returned value is a `NaturalNeighboursInterpolant` struct. This struct is callable, with the following methods defined:
 
-    (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
-    (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
-    (itp::NaturalNeighboursInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
+    (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), project = true, kwargs...)
+    (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), project = true, kwargs...)
+    (itp::NaturalNeighboursInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), project = true, kwargs...)
 
 1. The first method is for scalars, with `id` referring to a thread id. 
 2. This method is an in-place method for vectors, storing `itp(x[i], y[i])` into `vals[i]`. 
@@ -25,7 +25,9 @@ The returned value is a `NaturalNeighboursInterpolant` struct. This struct is ca
 
 In each method, `method` defines the method used for evaluating the interpolant, which is some [`AbstractInterpolator`](@ref). For the first 
 method, `parallel` is ignored, but for the latter two methods it defines whether to use multithreading or not for evaluating the interpolant at 
-all the points. The `kwargs...` argument is passed into `add_point!` from DelaunayTriangulation.jl, e.g. you could pass some `rng`.
+all the points. The `kwargs...` argument is passed into `add_point!` from DelaunayTriangulation.jl, e.g. you could pass some `rng`. Lastly, 
+the `project` argument determines whether extrapolation is performed by projecting any exterior points onto the boundary of the convex hull 
+of the data sites and performing two-point interpolation, or to simply replaced any extrapolated values with `NaN`.
 """
 interpolate(tri::Triangulation, z; gradient=nothing, hessian=nothing, kwargs...) = NaturalNeighboursInterpolant(tri, z, gradient, hessian; kwargs...)
 
@@ -109,6 +111,10 @@ end
 
 function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
     sib0 = _eval_natural_coordinates(nc, z)
+    coordinates = get_coordinates(nc)
+    if length(coordinates) ≤ 2 # 2 means extrapolation, 1 means we're evaluating at a data site 
+        return sib0
+    end
     ζ, α, β = _compute_sibson_1_coordinates(nc, tri, z, gradients)
     num = α * sib0 + β * ζ
     den = α + β

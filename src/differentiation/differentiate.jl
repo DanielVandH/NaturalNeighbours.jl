@@ -7,7 +7,7 @@ Differentiate a given interpolant `itp` up to degree `order` (1 or 2). The retur
 For calling the resulting struct, we define the following methods:
 
     (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; parallel=false, method=default_diff_method(∂), kwargs...)
-    (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=false, method=default_diff_method(∂), interpolant_method=Sibson(), rng=Random.default_rng(), kwargs...)
+    (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=false, method=default_diff_method(∂), interpolant_method=Sibson(), rng=Random.default_rng(), project = true, kwargs...)
     (∂::NaturalNeighboursDifferentiator)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=default_diff_method(∂), interpolant_method=Sibson(), kwargs...)
     (∂::NaturalNeighboursDifferentiator{I, O})(x::AbstractVector, y::AbstractVector; parallel=true, method=default_diff_method(∂), interpolant_method=Sibson(), kwargs...) where {I, O}
 
@@ -21,6 +21,7 @@ The available keyword arguments are:
 - `method=default_diff_method(∂)`: Default method for evaluating the interpolant. `default_diff_method(∂)` returns `Direct()` if the underlying interpolant has no gradients, and `Iterative()` otherwise. The method must be a [`AbstractDifferentiator`](@ref).
 - `interpolant_method=Sibson()`: The method used for evaluating the interpolant to estimate `zᵢ` for the latter three methods. See [`AbstractInterpolator`](@ref) for the avaiable methods.
 - `rng=Random.default_rng()`: The random number generator used for estimating `zᵢ` for the latter three methods, or for constructing the natural coordinates.
+- `project=false`: Whether to project any extrapolated points onto the boundary of the convex hull of the data sites and perform two-point interpolation, or to simply replace any extrapolated values with `NaN`, when evaluating the interpolant in the latter three methods.
 - `use_cubic_terms=true`: If estimating second order derivatives, whether to use cubic terms. Only relevant for `method == Direct()`.
 - `alpha=0.1`: If estimating second order derivatives, the weighting parameter used for estimating the second order derivatives. Only relevant for `method == Iterative()`.
 - `use_sibson_weight=true`: Whether to weight the residuals in the associated least squares problems by the associated Sibson coordinates. Only relevant for `method == Iterative()` if `order == 2`.
@@ -40,13 +41,20 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
     z = get_z(itp)
     d_cache = get_derivative_cache(itp, id)
     initial_gradients = get_gradient(itp)
+    if method == Iterative() && isnothing(initial_gradients)
+        throw(ArgumentError("initial_gradients must be provided for iterative derivative estimation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
+    end
     S = get_iterated_neighbourhood(d_cache)
     S′ = get_second_iterated_neighbourhood(d_cache)
     if O == 1
         λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
         return generate_first_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
     else # O == 2
-        λ, E = get_taylor_neighbourhood!(S, S′, tri, 2 + use_cubic_terms, nc)
+        if method == Direct()
+            λ, E = get_taylor_neighbourhood!(S, S′, tri, 2 + use_cubic_terms, nc)
+        else
+            λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
+        end
         return generate_second_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
     end
 end
@@ -58,7 +66,7 @@ function (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; p
     p = (x, y)
     return _eval_differentiator(method, ∂, p, zᵢ, nc, id; kwargs...)
 end
-function (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=false, method=default_diff_method(∂), interpolant_method=Sibson(), rng=Random.default_rng(), kwargs...)
+function (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=false, method=default_diff_method(∂), interpolant_method=Sibson(), project=false, rng=Random.default_rng(), kwargs...)
     method = dwrap(method)
     interpolant_method = iwrap(interpolant_method)
     p = (x, y)
@@ -67,15 +75,15 @@ function (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=fa
     n_cache = get_neighbour_cache(itp, id)
     z = get_z(itp)
     if interpolant_method == Sibson(1)
-        nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng)
+        nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng, project)
         gradients = get_gradient(itp)
         zᵢ = _eval_natural_coordinates(nc, z, gradients, tri)
     else
-        nc = compute_natural_coordinates(interpolant_method, tri, p, n_cache; rng)
+        nc = compute_natural_coordinates(interpolant_method, tri, p, n_cache; rng, project)
         zᵢ = _eval_natural_coordinates(nc, z)
     end
     if interpolant_method == Triangle() || interpolant_method == Nearest() # coordinates need to be the natural neighbours
-        nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng)
+        nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng, project)
     end
     return ∂(x, y, zᵢ, nc, id; parallel, method, kwargs...)
 end

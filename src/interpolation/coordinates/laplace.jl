@@ -2,6 +2,7 @@ function _compute_laplace_coordinates(
     tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
     interpolation_point,
     cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
+    project=true,
     kwargs...
 ) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
     coordinates = get_coordinates(cache)
@@ -11,7 +12,7 @@ function _compute_laplace_coordinates(
     last_triangle = get_last_triangle(cache)
     envelope, temp_adjacent, insertion_event_history, V = compute_bowyer_envelope!(envelope, tri, insertion_event_history, temp_adjacent, interpolation_point; try_points=last_triangle[], kwargs...) #kwargs are add_point! kwargs
     i, j, return_flag = check_for_extrapolation(tri, V, interpolation_point, last_triangle)
-    return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point)
+    return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point, project)
     resize!(coordinates, length(envelope) - 1)
     w = zero(number_type(tri))
     for i in firstindex(envelope):(lastindex(envelope)-1)

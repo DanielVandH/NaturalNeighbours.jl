@@ -12,14 +12,21 @@ function two_point_interpolate!(tri, i, j, c)
     return t
 end
 
-function two_point_interpolate!(coordinates, envelope, tri, i, j, r) #interpolate r using two points i, j
-    t = two_point_interpolate!(tri, i, j, r)
-    resize!(coordinates, 2)
-    resize!(envelope, 2)
-    coordinates[1] = one(t) - t
-    coordinates[2] = t
-    envelope[1] = i
-    envelope[2] = j
+function two_point_interpolate!(coordinates::AbstractVector{F}, envelope, tri, i, j, r, project=true) where {F} #interpolate r using two points i, j
+    if project
+        t = two_point_interpolate!(tri, i, j, r)
+        resize!(coordinates, 2)
+        resize!(envelope, 2)
+        coordinates[1] = one(t) - t
+        coordinates[2] = t
+        envelope[1] = i
+        envelope[2] = j
+    else
+        resize!(coordinates, 1)
+        resize!(envelope, 1)
+        coordinates[1] = F(NaN)
+        envelope[1] = i
+    end
     return NaturalCoordinates(coordinates, envelope, r, tri)
 end
 

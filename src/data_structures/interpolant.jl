@@ -7,7 +7,7 @@ struct NaturalNeighboursInterpolant{T<:Triangulation,F,G,H,N,D}
     derivative_cache::D
     function NaturalNeighboursInterpolant(
         tri::T,
-        z::Vector{F},
+        z::AbstractVector{F},
         gradient=nothing,
         hessian=nothing;
         derivatives=false,
@@ -24,15 +24,6 @@ struct NaturalNeighboursInterpolant{T<:Triangulation,F,G,H,N,D}
         D = typeof(derivative_caches)
         N = typeof(neighbour_caches)
         if derivatives
-            #=
-            method = wrap(derivative_method)
-            if method == Iterative()
-                initial_gradients = generate_gradients(tri, z, derivative_caches, neighbour_caches; method, parallel=parallel_derivatives, kwargs...)
-            else
-                initial_gradients = nothing
-            end
-            ∇, ℋ = generate_derivatives(tri, z, derivative_caches, neighbour_caches; method, initial_gradients, parallel=parallel_derivatives, kwargs...)
-            =#
             ∇, ℋ = generate_derivatives(tri, z, derivative_caches, neighbour_caches; kwargs...)
         else
             ∇ = nothing
