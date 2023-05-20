@@ -6,7 +6,7 @@
 
 This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets (amongst some others, like piecewise linear interpolation via triangles or nearest neighbour interpolation -- see the docs), using [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations that represents the spatial information. Most of the work in this package is based on [this great thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf).
 
-This is not the only package for interpolation. If the methods available here do not suit your needs, see [https://github.com/JuliaMath/Interpolations.jl](Interpolation.jl) and the packages it links to in its README.
+This is not the only package for interpolation. If the methods available here do not suit your needs, see [Interpolations.jl](https://github.com/JuliaMath/Interpolations.jl) and the packages it links to in its README.
 
 Here is a quick example of how to use the package, demonstrating the available methods for interpolation. See the docs for more examples, including examples for derivative generation. In this example, note that even though we evaluate the interpolant at $100^2$ points, the runtime is extremely fast thanks to the interpolant being local rather than global.
 
