@@ -10,6 +10,18 @@ This is a package for working with natural neighbours of planar point sets, enab
 
 Please see the sections in the sidebar for some more discussion. The relevant docstrings for this package are shown below.
 
-```@autodocs
-Modules = [NaturalNeighbours]
+```@docs
+interpolate
+differentiate 
+generate_gradients
+generate_derivatives
+AbstractInterpolator
+AbstractDifferentiator
+Sibson
+Laplace
+Triangle
+Nearest
+Direct
+Iterative
+identify_exterior_points
 ```
