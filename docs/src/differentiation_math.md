@@ -74,7 +74,7 @@ We define the following loss function, where $\beta_i = 1/\|\boldsymbol x_i-\bol
 \end{align*}
 ```
 
-This objective function combines the losses between $\tilde f(\boldsymbol x_i) and $z_i$, and between $\boldsymbol \nabla \tilde f(\boldsymbol x_i)$ and $\boldsymbol g_i^1$, weighting them by some parameter $\alpha \in (0, 1)$ (typically $\alpha \approx 0.1$ is a reasonable default). After some basic algebra and calculus,  it is possible to show that minimising $\mathcal L$ is the same as solving 
+This objective function combines the losses between $\tilde f(\boldsymbol x_i)$ and $z_i$, and between $\boldsymbol \nabla \tilde f(\boldsymbol x_i)$ and $\boldsymbol g_i^1$, weighting them by some parameter $\alpha \in (0, 1)$ (typically $\alpha \approx 0.1$ is a reasonable default). After some basic algebra and calculus,  it is possible to show that minimising $\mathcal L$ is the same as solving 
 
 ```math 
 \overline{\boldsymbol A}^T\overline{\boldsymbol w} + \overline{\boldsymbol B}^T\overline{\boldsymbol g}_1 + \overline{\boldsymbol C}^T\overline{\boldsymbol g}_2 = \left(\overline{\boldsymbol A}^T\overline{\boldsymbol A} + \overline{\boldsymbol B}^T\overline{\boldsymbol B} + \overline{\boldsymbol C}^T\overline{\boldsymbol C}\right)\boldsymbol \theta,
