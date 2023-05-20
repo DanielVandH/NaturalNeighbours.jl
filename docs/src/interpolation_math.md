@@ -222,7 +222,7 @@ An example of what this interpolant looks like is given below.
 
 ```@raw html
 <figure>
-    <img src='../figures/tri_example.png', alt='Triangle Interpolation'><br>
+    <img src='../figures/ftri_example.png', alt='Triangle Interpolation'><br>
 </figure>
 ```
 

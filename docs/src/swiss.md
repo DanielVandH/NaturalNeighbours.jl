@@ -4,7 +4,7 @@ CurrentModule = NaturalNeighbours
 
 # Switzerland Elevation Data
 
-Here we consider a more involved example, constructing an interpolant over elevation data of Switzerland. We use data from [geoBoundaries](https://www.geoboundaries.org) who credits [OpenStreetMap](openstreetmap.org) for the data (available under an [Open Database License](https://www.openstreetmap.org/copyright)). The data is available as a [gist](https://gist.github.com/DanielVandH/13687b0918e45a416a5c93cd52c91449), which was generated with the following R code (you don't need to run this code - we will download it directly from the gist soon):
+Here we consider a more involved example, constructing an interpolant over elevation data of Switzerland. We use data from [geoBoundaries](https://www.geoboundaries.org) who credits [OpenStreetMap](https://www.openstreetmap.org/) for the data (available under an [Open Database License](https://www.openstreetmap.org/copyright)). The data is available as a [gist](https://gist.github.com/DanielVandH/13687b0918e45a416a5c93cd52c91449), which was generated with the following R code (you don't need to run this code - we will download it directly from the gist soon):
 
 ```R
 ## Install and load the packages
