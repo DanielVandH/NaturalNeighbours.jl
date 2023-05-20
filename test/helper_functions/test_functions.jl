@@ -419,7 +419,7 @@ function complete_test_function_analysis(id)
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 1)
-                    ∇ = ∂(x, y; method=method, interpolant_method=interpolant_method[1])
+                    ∇ = _∂(x, y; method=method, interpolant_method=interpolant_method[1])
                 end
                 all_errs = norm.(collect.(∇) .- ∇e)
                 err = rrmse(∇e, ∇)
@@ -437,7 +437,7 @@ function complete_test_function_analysis(id)
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 2)
-                    ∇H = ∂(x, y; method=method, interpolant_method=interpolant_method[1])
+                    ∇H = _∂(x, y; method=method, interpolant_method=interpolant_method[1])
                 end
                 ∇ = first.(∇H)
                 H = last.(∇H)
@@ -475,7 +475,7 @@ function complete_test_function_analysis(id)
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 1)
-                    ∇ = ∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1])
+                    ∇ = _∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1])
                 end
                 all_errs = norm.(collect.(∇) .- ∇t[i])
                 err = rrmse(∇t[i], ∇)
@@ -493,7 +493,7 @@ function complete_test_function_analysis(id)
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 2)
-                    ∇H = ∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1])
+                    ∇H = _∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1])
                 end
                 ∇ = first.(∇H)
                 H = last.(∇H)

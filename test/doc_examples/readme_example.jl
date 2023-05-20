@@ -35,19 +35,13 @@ function plot_3d(i, j, title, vals, xg, yg)
     surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
 end
 
+all_vals = (sibson_vals, triangle_vals, laplace_vals, sibson_1_vals, nearest, exact)
+titles = ("(a): Sibson", "(b): Triangle", "(c): Laplace", "(d): Sibson-1", "(e): Nearest", "(f): Exact")
 fig = Figure(fontsize=36)
-plot_2d(1, 1, "(a): Sibson", sibson_vals, xg, yg, x, y)
-plot_2d(1, 2, "(b): Triangle", triangle_vals, xg, yg, x, y)
-plot_2d(1, 3, "(c): Laplace", laplace_vals, xg, yg, x, y)
-plot_2d(1, 4, "(d): Sibson-1", sibson_1_vals, xg, yg, x, y)
-plot_2d(1, 5, "(e): Nearest", nearest, xg, yg, x, y)
-plot_2d(1, 6, "(f): Exact", exact, xg, yg, x, y, false)
-plot_3d(2, 1, " ", sibson_vals, xg, yg)
-plot_3d(2, 2, " ", triangle_vals, xg, yg)
-plot_3d(2, 3, " ", laplace_vals, xg, yg)
-plot_3d(2, 4, " ", sibson_1_vals, xg, yg)
-plot_3d(2, 5, " ", nearest, xg, yg)
-plot_3d(2, 6, " ", exact, xg, yg)
+for (i, (vals, title)) in enumerate(zip(all_vals, titles))
+    plot_2d(1, i, title, vals, xg, yg, x, y, !(vals === exact))
+    plot_3d(2, i, " ", vals, xg, yg)
+end
 resize_to_layout!(fig)
 fig
 

@@ -41,6 +41,8 @@ the smoothness at the data sites (currently only relevant for `Sibson`). The ava
 - `Triangle(d)`: Interpolate based on vertices of the triangle that the point resides in, with `C(0)` continuity at the data sites. `D` is ignored.
 - `Nearest(d)`: Interpolate by returning the function value at the nearest data site. `D` doesn't mean much here (it could be `D = ∞`), and so it is ignored and replaced with `0`.
 - `Laplace(d)`: Interpolate via the Laplace interpolant, with `C(0)` continuity at the data sites. `D` is ignored.
+
+Our implementation of `Sibson(0)`'s coordinates follows [this article](https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html) with some simple modifications.
 """
 abstract type AbstractInterpolator{D} end
 @doc """

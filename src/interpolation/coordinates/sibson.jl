@@ -1,3 +1,4 @@
+# Our implementation of these coordinates follows https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html with some simple modifications.
 function _compute_sibson_coordinates(
     tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
     interpolation_point,
