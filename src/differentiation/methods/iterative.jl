@@ -51,9 +51,12 @@ function _generate_second_order_derivatives_iterative(
         b[j′] = γₛ′ * ∇ₛ¹
         b[j′′] = γₛ′ * ∇ₛ²
     end
-    # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
-    qr_X = qr!(X')
-    ∇ℋ = copy(b)
+    @static if VERSION < v"1.7.0"
+        qr_X = qr!(permutedims(X))
+    else
+        qr_X = qr!(X')
+    end
+    ∇ℋ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
     ldiv!(qr_X, ∇ℋ)
     return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
 end
