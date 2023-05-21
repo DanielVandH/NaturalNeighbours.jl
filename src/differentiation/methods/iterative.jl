@@ -12,7 +12,6 @@ function _generate_second_order_derivatives_iterative(
 )
     X = get_quadratic_matrix_no_cubic(d_cache)
     b = get_rhs_vector(d_cache)
-    ∇ℋ = get_quadratic_sol_no_cubic(d_cache)
     p = get_point(tri, i)
     xᵢ, yᵢ = getxy(p)
     m = length(E)
@@ -52,8 +51,10 @@ function _generate_second_order_derivatives_iterative(
         b[j′] = γₛ′ * ∇ₛ¹
         b[j′′] = γₛ′ * ∇ₛ²
     end
+    # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
     qr_X = qr!(X')
-    ldiv!(∇ℋ, qr_X, b)
+    ∇ℋ = copy(b)
+    ldiv!(qr_X, ∇ℋ)
     return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
 end
 

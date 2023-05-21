@@ -12,10 +12,7 @@ using ElasticArrays
     @test NNI.get_linear_matrix(derivative_cache) == derivative_cache.linear_matrix == ElasticMatrix{Float64}(undef, 2, 0)
     @test NNI.get_quadratic_matrix(derivative_cache) == derivative_cache.quadratic_matrix == ElasticMatrix{Float64}(undef, 9, 0)
     @test NNI.get_rhs_vector(derivative_cache) == derivative_cache.rhs_vector == Float64[]
-    @test NNI.get_linear_sol(derivative_cache) == derivative_cache.linear_sol == [0.0, 0.0]
-    @test NNI.get_quadratic_sol(derivative_cache) == derivative_cache.quadratic_sol == [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0]
     @test NNI.get_quadratic_matrix_no_cubic(derivative_cache) == derivative_cache.quadratic_matrix_no_cubic == ElasticMatrix{Float64}(undef, 5, 0)
-    @test NNI.get_quadratic_sol_no_cubic(derivative_cache) == derivative_cache.quadratic_sol_no_cubic == [0.0, 0.0, 0.0, 0.0, 0.0]
 end
 
 @testset "dwrap" begin

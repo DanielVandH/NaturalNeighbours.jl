@@ -1,4 +1,5 @@
 using ..NaturalNeighbours
+using DelaunayTriangulation
 const NNI = NaturalNeighbours
 
 @testset "iwrap" begin

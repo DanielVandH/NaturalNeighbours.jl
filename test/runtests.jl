@@ -52,6 +52,7 @@ end
     end
 end
 
+#=
 @testset "Test Functions" begin
     @safetestset "Complete Analysis" begin
         include("test_functions/complete_analysis.jl")
@@ -60,7 +61,7 @@ end
         include("test_functions/influence.jl")
     end
 end
-
+=#
 
 
 

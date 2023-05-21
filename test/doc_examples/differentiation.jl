@@ -103,6 +103,20 @@ fig, ε = plot_gradients(∇g, tri, f′, x, y)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_data.png") fig
 @test ε ≈ 10.2511800
 
+#=
+julia> @benchmark $generate_gradients($tri, $z)
+BenchmarkTools.Trial: 10000 samples with 1 evaluation.
+ Range (min … max):   63.400 μs … 23.279 ms  ┊ GC (min … max):  0.00% … 98.33%
+ Time  (median):     213.200 μs              ┊ GC (median):     0.00%
+ Time  (mean ± σ):   264.281 μs ±  1.002 ms  ┊ GC (mean ± σ):  20.06% ±  5.28%
+
+     █▂            ▁▃▅▃▂▁
+  ▃▃▆██▇▅▃▂▁▂▂▃▄▄▅▅██████▇▅▄▄▃▃▃▃▃▃▃▃▃▃▃▂▂▂▂▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁ ▃
+  63.4 μs         Histogram: frequency by time          532 μs <
+
+ Memory estimate: 630.94 KiB, allocs estimate: 4221.
+ =#
+
 ∇gr, _ = generate_derivatives(tri, z; method=Direct())
 fig, ε = plot_gradients(∇gr, tri, f′, x, y)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "joint_gradient_data.png") fig

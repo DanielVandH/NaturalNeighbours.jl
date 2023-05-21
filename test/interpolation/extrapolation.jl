@@ -67,4 +67,3 @@ end
     @test all(isinf, ∂(getx(p), gety(p); project=false)[1])
     @test all(isinf, ∂(getx(p), gety(p); project=false)[2])
 end
-
