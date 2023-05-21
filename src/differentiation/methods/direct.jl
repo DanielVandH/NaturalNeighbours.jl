@@ -26,7 +26,7 @@ function _generate_first_order_derivatives_direct(
         b[j] = βₛ * (zₛ - zᵢ)
     end
     @static if VERSION < v"1.7.0"
-        qr_X = qr!(permutedims(X))
+        qr_X = qr!(Matrix(X'))
     else
         qr_X = qr!(X')
     end
@@ -74,7 +74,7 @@ function _generate_second_order_derivatives_direct(
         b[j] = βₛ * (zₛ - zᵢ)
     end
     @static if VERSION < v"1.7.0"
-        qr_X = qr!(permutedims(X))
+        qr_X = qr!(Matrix(X'))
     else
         qr_X = qr!(X')
     end

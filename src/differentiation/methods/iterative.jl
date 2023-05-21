@@ -52,7 +52,7 @@ function _generate_second_order_derivatives_iterative(
         b[j′′] = γₛ′ * ∇ₛ²
     end
     @static if VERSION < v"1.7.0"
-        qr_X = qr!(permutedims(X))
+        qr_X = qr!(Matrix(X'))
     else
         qr_X = qr!(X')
     end
