@@ -161,18 +161,18 @@ include(normpath(@__DIR__, "../.", "helper_functions", "point_generator.jl"))
             @test G1 ≈ G3 rtol = 1e-4
             @test G2 ≈ G3 rtol = 1e-4
         end
-        Gpar = NNI.generate_gradients(tri, z, deepcopy(derivative_caches), neighbour_caches; parallel=true)
-        Gser = NNI.generate_gradients(tri, z, deepcopy(derivative_caches), neighbour_caches; parallel=false)
+        Gpar = NNI.generate_gradients(tri, z, (derivative_caches), neighbour_caches; parallel=true)
+        Gser = NNI.generate_gradients(tri, z, (derivative_caches), neighbour_caches; parallel=false)
         @test Gpar == Gser
-        ∇par, ℋpar = NNI.generate_derivatives(tri, z, deepcopy(derivative_caches), neighbour_caches; method, initial_gradients, parallel=true)
-        ∇ser, ℋser = NNI.generate_derivatives(tri, z, deepcopy(derivative_caches), neighbour_caches; method, initial_gradients, parallel=false)
+        ∇par, ℋpar = NNI.generate_derivatives(tri, z, (derivative_caches), neighbour_caches; method, initial_gradients, parallel=true)
+        ∇ser, ℋser = NNI.generate_derivatives(tri, z, (derivative_caches), neighbour_caches; method, initial_gradients, parallel=false)
         @test initial_gradients == _initial_gradients # make sure initial_gradients is not modified
         @test ∇par == ∇ser
         @test ℋpar == ℋser
         _α = (0.0001, 0.001, 0.01, 0.1, 0.2, 0.3, 0.4, 0.5)
         flags = zeros(Int64, 8, length(_α))
         for (j, α) in enumerate(_α)
-            ∇, ℋ = NNI.generate_derivatives(tri, z, deepcopy(derivative_caches), neighbour_caches; method, initial_gradients, parallel=true, alpha=α)
+            ∇, ℋ = NNI.generate_derivatives(tri, z, (derivative_caches), neighbour_caches; method, initial_gradients, parallel=true, alpha=α)
             for i in eachindex(initial_gradients)
                 (G1, H1), (G2, H2) = estimate_gradient_hessian_from_initial_gradients(tri, i, z, α; initial_gradients)
                 G3 = collect(∇[i])
