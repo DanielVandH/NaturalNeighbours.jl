@@ -97,7 +97,7 @@ In the figure above, the tiles with the black boundaries and no fill are the til
 For a given generator $\boldsymbol x_i \in N(\boldsymbol x_0)$, we see that there is a corresponding blue line passing through its tile. Denote this blue line by $\mathcal F_{0i}$, and let $r_i = \|\boldsymbol x_0 - \boldsymbol x_i\|$. With this definition, we define 
 
 ```math
-\lambda_i^{\text{LAP}} = \frac{1}{\sum_{j \in N_0} \hat\lambda_j^{\text{LAP}}}, \quad \hat\lambda_i^{\text{LAP}} = \frac{\ell(\mathcal F_{0i})}{r_i},
+\lambda_i^{\text{LAP}} = \frac{\hat\lambda_i^{\text{LAP}}}{\sum_{j \in N_0} \hat\lambda_j^{\text{LAP}}}, \quad \hat\lambda_i^{\text{LAP}} = \frac{\ell(\mathcal F_{0i})}{r_i},
 ```
 
 where $\ell(\mathcal F_{0i})$ is the length of the facet $\mathcal F_{0i}$. In particular, $\hat\lambda_i^{\text{LAP}}$ is the ratio of the blue line inside the tile and the distance between the generator $\boldsymbol x_i$ and the query point $\boldsymbol x_0$. These coordinates are continuous in $\mathcal C(\boldsymbol X)$ with derivative discontinuities at the data sites $\boldsymbol X$. The resulting interpolant $f^{\text{LAP}}$ inherits these properties, where 
@@ -133,7 +133,7 @@ The idea is to consider how much area this new blue tile "steals" from the tiles
 where $\mathcal V_{\boldsymbol x_0}$ is the new tile shown in blue, and $\mathcal V_{\boldsymbol x_i}^{\boldsymbol x_0}$ is the tile associated with $\boldsymbol x_i$ in the original tessellation, i.e. prior to the insertion of $\boldsymbol x_0$, we define _Sibson's coordinates_ as 
 
 ```math
-\lambda_i^{\text{SIB}} = \frac{1}{\sum_{j \in N_0} \hat\lambda_j^{\text{SIB}}}, \quad \hat\lambda_i^{\text{SIB}} = \text{Area}(\mathcal V_{\boldsymbol x_0} \cap \mathcal V_{\boldsymbol x_i}^{\boldsymbol x_0}).
+\lambda_i^{\text{SIB}} = \frac{\hat\lambda_i^{\text{SIB}}}{\sum_{j \in N_0} \hat\lambda_j^{\text{SIB}}}, \quad \hat\lambda_i^{\text{SIB}} = \text{Area}(\mathcal V_{\boldsymbol x_0} \cap \mathcal V_{\boldsymbol x_i}^{\boldsymbol x_0}).
 ```
 
 A clearer way to write this is as 
