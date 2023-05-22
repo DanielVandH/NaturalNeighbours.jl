@@ -46,7 +46,7 @@ Let's now use the notation defined above to define how gradients are generated i
 (\beta_x, \beta_y) = \text{argmin}_{(\beta_x, \beta_y)} \sum_{i \in \mathcal N_0^1} W_i \left(\tilde z_i - \beta_1\tilde x_i - \beta_2\tilde y_i\right)^2,
 ```
 
-where $W_i = 1/\|\boldsymbol x_i - \boldsymbol x_i\|^2$, $\tilde z_i = z_i-z_0$, $\tilde x_i=x_i-x_0$, and $\tilde y_i = y_i-y_0$. This weighted least squares problem is solved by solving the associated linear system $\tilde{\boldsymbol X}\boldsymbol{\beta} = \tilde{\boldsymbol z}$, where $\tilde{\boldsymbol X} \in \mathbb R^{m \times 2}$ is defined by $(\tilde{\boldsymbol X})_{i1} = \beta_i(x_i - x_0)$ and $(\tilde{\boldsymbol X})_{i2} = \beta_i(y_i - y_0)$, $\boldsymbol{\beta} = (\beta_1,\beta_2)^T$, and $\tilde{\boldsymbol z} = (\tilde z_1,\ldots,\tilde z_m)^T$.
+where $W_i = 1/\|\boldsymbol x_i - \boldsymbol x_i\|^2$, $\tilde z_i = z_i-z_0$, $\tilde x_i=x_i-x_0$, and $\tilde y_i = y_i-y_0$. This weighted least squares problem is solved by solving the associated linear system $\tilde{\boldsymbol X}\boldsymbol{\beta} = \tilde{\boldsymbol z}$, where $\tilde{\boldsymbol X} \in \mathbb R^{m \times 2}$ is defined by $(\tilde{\boldsymbol X})_{i1} = \sqrt{W_i}(x_i - x_0)$ and $(\tilde{\boldsymbol X})_{i2} = \sqrt{W_i}(y_i - y_0)$, $\boldsymbol{\beta} = (\beta_1,\beta_2)^T$, and $\tilde{\boldsymbol z} = (\tilde z_1,\ldots,\tilde z_m)^T$.
 
 ### Joint Gradients and Hessians
 
@@ -58,7 +58,7 @@ Defining $\beta_1 = \partial f(\boldsymbol x_0)/\partial x$, $\beta_2 = \partial
 \boldsymbol{\beta} = \text{argmin}_{\boldsymbol{\beta}} \sum_{i \in N_0^2} W_i\left(\tilde z_i - \beta_1\tilde x_i - \beta_2\tilde y_i - \frac12\beta_3\tilde x_i^2 - \frac12\beta_4\tilde y_i^2 - \beta_5\tilde x_i\tilde y_i\right)^2,
 ```
 
-using similar notation as in the gradient case. (In the cubic case, use $N_0^3$ and go up to $\beta_9$, discarding $\beta_6,\ldots,\beta_9$ at the end.) The associated linear system in this case has matrix $\tilde{\boldsymbol X} \in \mathbb R^{m \times 2}$ ($m = |N_0^2|$) defined by $(\tilde{\boldsymbol X})_{i1} = \beta_i\tilde x_i$, $(\tilde{\boldsymbol X})_{i2} = \beta_i\tilde y_i$, $(\tilde{\boldsymbol X})_{i3} = \beta_i\tilde x_i^2$, $(\tilde{\boldsymbol X})_{i4} = \beta_i\tilde y_i^2$, and $(\tilde{\boldsymbol X})_{i5} = \beta_i\tilde x_i\tilde y_i$.
+using similar notation as in the gradient case. (In the cubic case, use $N_0^3$ and go up to $\beta_9$, discarding $\beta_6,\ldots,\beta_9$ at the end.) The associated linear system in this case has matrix $\tilde{\boldsymbol X} \in \mathbb R^{m \times 2}$ ($m = |N_0^2|$) defined by $(\tilde{\boldsymbol X})_{i1} = \sqrt{W_i}\tilde x_i$, $(\tilde{\boldsymbol X})_{i2} = \sqrt{W_i}\tilde y_i$, $(\tilde{\boldsymbol X})_{i3} = \sqrt{W_i}\tilde x_i^2$, $(\tilde{\boldsymbol X})_{i4} = \sqrt{W_i}\tilde y_i^2$, and $(\tilde{\boldsymbol X})_{i5} = \sqrt{W_i}\tilde x_i\tilde y_i$.
 
 ## Iterative Generation
 
