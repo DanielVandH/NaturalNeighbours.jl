@@ -292,3 +292,15 @@ end
     @test collect.(getindex.(∂2(x, y; parallel=true, interpolant_method=Sibson(1)), 1)) ≈ collect.(getindex.(∂2(x, y; parallel=false, interpolant_method=Sibson(1)), 1)) rtol = 1e-13
     @test collect.(getindex.(∂2(x, y; parallel=true, interpolant_method=Sibson(1)), 2)) ≈ collect.(getindex.(∂2(x, y; parallel=false, interpolant_method=Sibson(1)), 2)) rtol = 1e-13
 end
+
+@testset "Check that Iterative() errors without gradients" begin
+    tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+    tri = triangulate(get_points(tri), randomise=false)
+    f = (x, y) -> x^2 + y^2 + x^3 * y
+    f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
+    f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
+    z = [f(x, y) for (x, y) in each_point(tri)]
+    itp = interpolate(tri, z; derivatives=false)
+    ∂2 = differentiate(itp, 2)
+    @test_throws ArgumentError("initial_gradients must be provided for iterative derivative estimation. Consider using e.g. interpolate(tri, z; derivatives = true).") ∂2(0.5, 0.5; method=Iterative())
+end
