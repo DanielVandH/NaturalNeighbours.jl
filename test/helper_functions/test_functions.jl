@@ -1,4 +1,4 @@
-using CairoMakie, ReferenceTests
+using CairoMakie, ReferenceTests, StableRNGs
 
 # https://hdl.handle.net/10945/35052
 function test_1()
@@ -284,7 +284,7 @@ function plot_3d_vals(fig, method, xp, yp, vals, errs, ε, i, ij, a, b, c, d, zm
     xlims!(ax, a, b)
     ylims!(ax, c, d)
     zlims!(ax, zmin, zmax)
-    tri = triangulate([x'; y'])
+    tri = triangulate([x'; y']; rng = StableRNG(123))
     triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
     xyz = hcat(x, y, vals)
     m = mesh!(ax, xyz, triangles, color=vals, colorrange=(zmin, zmax))
@@ -401,10 +401,10 @@ function complete_test_function_analysis(id)
     for method in interpolant_methods
         for (i, itp) in pairs((itp1, itp2, itp3))
             if !(method isa Tuple)
-                vals = itp(x, y; method=method)
+                vals = itp(x, y; method=method, rng = StableRNG(123))
             else
                 _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=method[2])
-                vals = _itp(x, y; method=method[1])
+                vals = _itp(x, y; method=method[1], rng = StableRNG(123))
             end
             all_errs = norm.(vals .- ze)
             err = rrmse(ze, vals)
@@ -417,11 +417,11 @@ function complete_test_function_analysis(id)
         for interpolant_method in interpolant_methods
             for (i, ∂) in pairs((∂11, ∂21, ∂31))
                 if !(interpolant_method isa Tuple)
-                    ∇ = ∂(x, y; method=method, interpolant_method=interpolant_method)
+                    ∇ = ∂(x, y; method=method, interpolant_method=interpolant_method, rng = StableRNG(123))
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 1)
-                    ∇ = _∂(x, y; method=method, interpolant_method=interpolant_method[1])
+                    ∇ = _∂(x, y; method=method, interpolant_method=interpolant_method[1], rng = StableRNG(123))
                 end
                 all_errs = norm.(collect.(∇) .- ∇e)
                 err = rrmse(∇e, ∇)
@@ -435,11 +435,11 @@ function complete_test_function_analysis(id)
         for interpolant_method in interpolant_methods
             for (i, ∂) in pairs((∂12, ∂22, ∂32))
                 if !(interpolant_method isa Tuple)
-                    ∇H = ∂(x, y; method=method, interpolant_method=interpolant_method)
+                    ∇H = ∂(x, y; method=method, interpolant_method=interpolant_method, rng = StableRNG(123))
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 2)
-                    ∇H = _∂(x, y; method=method, interpolant_method=interpolant_method[1])
+                    ∇H = _∂(x, y; method=method, interpolant_method=interpolant_method[1], rng = StableRNG(123))
                 end
                 ∇ = first.(∇H)
                 H = last.(∇H)
@@ -473,11 +473,11 @@ function complete_test_function_analysis(id)
         for interpolant_method in interpolant_methods
             for (i, ∂) in pairs((∂11, ∂21, ∂31))
                 if !(interpolant_method isa Tuple)
-                    ∇ = ∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method)
+                    ∇ = ∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method, rng = StableRNG(123))
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 1)
-                    ∇ = _∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1])
+                    ∇ = _∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1], rng = StableRNG(123))
                 end
                 all_errs = norm.(collect.(∇) .- ∇t[i])
                 err = rrmse(∇t[i], ∇)
@@ -491,11 +491,11 @@ function complete_test_function_analysis(id)
         for interpolant_method in interpolant_methods
             for (i, ∂) in pairs((∂12, ∂22, ∂32))
                 if !(interpolant_method isa Tuple)
-                    ∇H = ∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method)
+                    ∇H = ∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method, rng = StableRNG(123))
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 2)
-                    ∇H = _∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1])
+                    ∇H = _∂(xyt[i][1], xyt[i][2]; method=method, interpolant_method=interpolant_method[1], rng = StableRNG(123))
                 end
                 ∇ = first.(∇H)
                 H = last.(∇H)
@@ -760,7 +760,7 @@ function complete_test_function_analysis(id)
     end
     m = []
     for i in 1:12
-        i, _m = plot_3d_vals(fig, (), (),(), norm.(He), (),(), i, [(4, i) for i in 1:12], a, b, c, d, zmin, zmax, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3, L"|H|")
+        i, _m = plot_3d_vals(fig, (), (), (), norm.(He), (), (), i, [(4, i) for i in 1:12], a, b, c, d, zmin, zmax, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3, L"|H|")
         push!(m, _m)
     end
     Colorbar(fig[1:4, 13], m[1])
