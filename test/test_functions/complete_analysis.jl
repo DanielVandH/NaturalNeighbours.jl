@@ -12,4 +12,4 @@ to_mat(H) = H
 
 include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
 
-map(complete_test_function_analysis, [1,2,3,4,6])
+map(complete_test_function_analysis, [1,2,3,4,5,6])

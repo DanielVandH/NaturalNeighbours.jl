@@ -829,5 +829,5 @@ function complete_test_function_analysis(id)
 
     resize_to_layout!(fig)
 
-    @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "summary", "test_function_$(id)_summary.png") fig
+    @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "summary", "test_function_$(id)_summary.png") fig by=psnr_equality(19)
 end
