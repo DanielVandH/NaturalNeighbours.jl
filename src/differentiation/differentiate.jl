@@ -52,11 +52,7 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
             return (F(Inf), F(Inf))
         end 
         ∇ = generate_first_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
-        if isnan(∇[1]) || isnan(∇[2]) # this can also happen when we extrapolate
-            return (F(Inf), F(Inf))
-        else
-            return ∇
-        end
+        return ∇
     else # O == 2
         if method == Direct()
             λ, E = get_taylor_neighbourhood!(S, S′, tri, 2 + use_cubic_terms, nc)
@@ -67,11 +63,7 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
             return (F(Inf), F(Inf)), (F(Inf), F(Inf), F(Inf))
         end 
         ∇, H = generate_second_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
-        if isnan(∇[1]) || isnan(∇[2]) || isnan(H[1]) || isnan(H[2]) || isnan(H[3])
-            return (F(Inf), F(Inf)), (F(Inf), F(Inf), F(Inf))
-        else
-            return ∇, H
-        end
+        return ∇, H
     end
 end
 

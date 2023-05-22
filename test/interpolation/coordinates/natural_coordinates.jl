@@ -148,3 +148,14 @@ end
         @test ζ ≈ ζ1
     end
 end
+
+@testset "show" begin
+    interpolation_point = (0.3, 0.7)
+    indices = [1, 4, 6, 10]
+    coordinates = [0.371, 0.392, 0.4991, 491.20]
+    triangulation = triangulate(rand(2, 50))
+    nc = NNI.NaturalCoordinates(coordinates, indices, interpolation_point, triangulation)
+    @test sprint() do io
+        Base.show(io, MIME"text/plain"(), nc)
+    end == "NaturalCoordinates{Float64,Int64}\n    u: (0.3, 0.7)\n    λ: [0.371, 0.392, 0.4991, 491.2]\n    k: [1, 4, 6, 10]"
+end
