@@ -9,7 +9,6 @@ function _generate_first_order_derivatives_direct(
     use_sibson_weight=!(i isa Integer))
     X = get_linear_matrix(d_cache)
     b = get_rhs_vector(d_cache)
-    ∇ = get_linear_sol(d_cache)
     p = get_point(tri, i)
     xᵢ, yᵢ = getxy(p)
     m = length(E)
@@ -26,8 +25,13 @@ function _generate_first_order_derivatives_direct(
         X[2, j] = βₛ * (yₛ - yᵢ)
         b[j] = βₛ * (zₛ - zᵢ)
     end
-    qr_X = qr!(X')
-    ldiv!(∇, qr_X, b)
+    @static if VERSION < v"1.7.0"
+        qr_X = qr!(Matrix(X'))
+    else
+        qr_X = qr!(X')
+    end
+    ∇ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
+    ldiv!(qr_X, ∇)
     return (∇[1], ∇[2])
 end
 
@@ -43,11 +47,6 @@ function _generate_second_order_derivatives_direct(
         get_quadratic_matrix(d_cache)
     else
         get_quadratic_matrix_no_cubic(d_cache)
-    end
-    ∇ℋ = if use_cubic_terms
-        get_quadratic_sol(d_cache)
-    else
-        get_quadratic_sol_no_cubic(d_cache)
     end
     b = get_rhs_vector(d_cache)
     p = get_point(tri, i)
@@ -74,8 +73,13 @@ function _generate_second_order_derivatives_direct(
         end
         b[j] = βₛ * (zₛ - zᵢ)
     end
-    qr_X = qr!(X')
-    ldiv!(∇ℋ, qr_X, b)
+    @static if VERSION < v"1.7.0"
+        qr_X = qr!(Matrix(X'))
+    else
+        qr_X = qr!(X')
+    end
+    ∇ℋ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
+    ldiv!(qr_X, ∇ℋ)
     return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
 end
 
