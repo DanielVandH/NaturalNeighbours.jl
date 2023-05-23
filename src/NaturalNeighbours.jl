@@ -75,11 +75,13 @@ include("data_structures/derivative_cache.jl")
 include("data_structures/differentiator.jl")
 
 include("interpolation/extrapolation.jl")
+include("interpolation/eval.jl")
 include("interpolation/interpolate.jl")
 include("interpolation/coordinates/sibson.jl")
 include("interpolation/coordinates/triangle.jl")
 include("interpolation/coordinates/nearest.jl")
 include("interpolation/coordinates/laplace.jl")
+include("interpolation/coordinates/farin.jl")
 include("interpolation/utils.jl")
 
 include("differentiation/generate.jl")

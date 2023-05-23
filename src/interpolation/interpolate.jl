@@ -41,6 +41,7 @@ the smoothness at the data sites (currently only relevant for `Sibson`). The ava
 - `Triangle(d)`: Interpolate based on vertices of the triangle that the point resides in, with `C(0)` continuity at the data sites. `D` is ignored.
 - `Nearest(d)`: Interpolate by returning the function value at the nearest data site. `D` doesn't mean much here (it could be `D = ∞`), and so it is ignored and replaced with `0`.
 - `Laplace(d)`: Interpolate via the Laplace interpolant, with `C(0)` continuity at the data sites. `D` is ignored.
+- `Farin(d)`: Interpolate using the Farin interpolant, with `C(1)` continuity at the data sites. `d` is ignored.
 
 Our implementation of `Sibson(0)`'s coordinates follows [this article](https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html) with some simple modifications.
 """
@@ -70,6 +71,11 @@ Interpolate by taking the function value at the nearest data site.
 
 Interpolate using Laplace's coordinates.
 """ Laplace(d=0) = Laplace{0}()
+@doc """
+    Farin()
+
+Interpolate using Farin's C(1) interpolant.
+""" Farin(d=0) = Farin{1}()
 
 iwrap(s::AbstractInterpolator) = s
 function iwrap(s::Symbol)
@@ -81,6 +87,8 @@ function iwrap(s::Symbol)
         return Nearest()
     elseif s == :laplace
         return Laplace()
+    elseif s == :farin
+        return Farin()
     else
         throw(ArgumentError("Unknown interpolator: $s"))
     end
@@ -94,51 +102,6 @@ function interpolate(x::AbstractVector, y::AbstractVector, z; gradient=nothing, 
     @assert length(x) == length(y) == length(z) "x, y, and z must have the same length."
     points = [(ξ, η) for (ξ, η) in zip(x, y)]
     return interpolate(points, z; gradient, hessian, kwargs...)
-end
-
-function _eval_natural_coordinates(coordinates, indices, z)
-    val = zero(eltype(z))
-    for (λ, k) in zip(coordinates, indices)
-        zₖ = z[k]
-        val += λ * zₖ
-    end
-    return val
-end
-
-function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z) where {F}
-    coordinates = get_coordinates(nc)
-    indices = get_indices(nc)
-    return _eval_natural_coordinates(coordinates, indices, z)
-end
-
-function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
-    sib0 = _eval_natural_coordinates(nc, z)
-    coordinates = get_coordinates(nc)
-    if length(coordinates) ≤ 2 # 2 means extrapolation, 1 means we're evaluating at a data site 
-        return sib0
-    end
-    ζ, α, β = _compute_sibson_1_coordinates(nc, tri, z, gradients)
-    num = α * sib0 + β * ζ
-    den = α + β
-    return num / den
-end
-
-function _eval_interp(method, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
-    tri = get_triangulation(itp)
-    nc = compute_natural_coordinates(method, tri, p, cache; kwargs...)
-    z = get_z(itp)
-    return _eval_natural_coordinates(nc, z)
-end
-
-function _eval_interp(method::Sibson{1}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...) # # has to be a different form since Sib0 blends two functions 
-    gradients = get_gradient(itp)
-    if isnothing(gradients)
-        throw(ArgumentError("Gradients must be provided for Sibson-1 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
-    end
-    tri = get_triangulation(itp)
-    nc = compute_natural_coordinates(Sibson(), tri, p, cache; kwargs...)
-    z = get_z(itp)
-    return _eval_natural_coordinates(nc, z, gradients, tri)
 end
 
 function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
