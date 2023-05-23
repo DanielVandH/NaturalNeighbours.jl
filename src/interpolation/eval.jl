@@ -32,10 +32,14 @@ function _eval_natural_coordinates(::Sibson{1}, nc::NaturalCoordinates{F}, z, gr
     return num / den
 end
 
-function _eval_interp(method::Sibson{1}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...) # # has to be a different form since Sib0 blends two functions 
+function _eval_natural_coordinates(::Farin{1}, nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
+    return _compute_farin_coordinates(nc,tri,z,gradients)
+end
+
+function _eval_interp(method::Union{Farin{1},Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     gradients = get_gradient(itp)
     if isnothing(gradients)
-        throw(ArgumentError("Gradients must be provided for Sibson-1 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
+        throw(ArgumentError("Gradients must be provided for Sibson-1 or Farin interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
     end
     tri = get_triangulation(itp)
     nc = compute_natural_coordinates(Sibson(), tri, p, cache; kwargs...)

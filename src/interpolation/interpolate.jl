@@ -56,6 +56,7 @@ end
 struct Triangle{D} <: AbstractInterpolator{D} end
 struct Nearest{D} <: AbstractInterpolator{D} end
 struct Laplace{D} <: AbstractInterpolator{D} end
+struct Farin{D} <: AbstractInterpolator{D} end
 @doc """
     Triangle()
 
