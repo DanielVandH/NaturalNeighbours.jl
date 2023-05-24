@@ -16,9 +16,9 @@ function _compute_laplace_coordinates(
     resize!(coordinates, length(envelope) - 1)
     w = zero(number_type(tri))
     for i in firstindex(envelope):(lastindex(envelope)-1)
-        ratio = laplace_ratio(tri, envelope, i, interpolation_point) # could reuse a circumcenter here, but it's not the dominating part of the computation anyway.
-        isnan(ratio) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope)
-        coordinates[i] = ratio
+        ratio, u, prev_u, next_u = laplace_ratio(tri, envelope, i, interpolation_point) # could reuse a circumcenter here, but it's not the dominating part of the computation anyway.
+        isnan(ratio) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope, u, prev_u, next_u)
+        coordinates[i] = max(ratio, zero(ratio)) # coordinate types like Float32 can sometimes get e.g. -1f-8
         w += coordinates[i]
     end
     pop!(envelope)
@@ -40,7 +40,7 @@ function laplace_ratio(tri, envelope, i, interpolation_point)
     x, y = getxy(interpolation_point)
     d² = (px - x)^2 + (py - y)^2
     w = sqrt(ℓ² / d²)
-    return w
+    return w, u, prev_u, next_u
 end
 
 function compute_natural_coordinates(::Laplace, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...) 
