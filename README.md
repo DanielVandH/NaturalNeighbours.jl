@@ -4,6 +4,7 @@
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbours.jl/dev/)
 [![Build Status](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/DanielVandH/NaturalNeighbours.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/DanielVandH/NaturalNeighbours.jl)
+[![DOI](https://zenodo.org/badge/638929469.svg)](https://zenodo.org/badge/latestdoi/638929469)
 
 This is a package for performing [natural neighbour interpolation](https://en.wikipedia.org/wiki/Natural_neighbor_interpolation) over planar data sets (amongst some others, like piecewise linear interpolation via triangles or nearest neighbour interpolation -- see the docs), using [DelaunayTriangulation.jl](https://github.com/DanielVandH/DelaunayTriangulation.jl) to construct the Voronoi tessellations that represents the spatial information. Most of the work in this package is based on [this great thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf).
 
