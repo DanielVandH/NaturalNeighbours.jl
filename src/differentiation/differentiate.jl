@@ -29,6 +29,13 @@ The available keyword arguments are:
 The outputs are:
 - `order == 1`: The scalar methods return a `Tuple` of the form `(∂x, ∂y)`, while the vector methods return a vector of `Tuple`s of the form `(∂x, ∂y)`.
 - `order == 2`: The scalar methods return a `(∇, ℋ)`, where `∇` is a `Tuple` of the form `(∂x, ∂y)` and `ℋ` is a `Tuple` of the form `(∂xx, ∂yy, ∂xy)`. The vector methods return a vector of `(∇, ℋ)`s.
+
+!!! warning
+
+    Until we implement ghost point extrapolation, behaviour near the convex hull of your data sites may in some cases be undesirable,
+    despite the extrapolation method we describe above, even for points that are inside the convex hull. If you want to control this 
+    behaviour so that you discard any points that are very close to the convex hull, see `identify_exterior_points` and the `tol` 
+    keyword argument.
 """
 differentiate(itp::NaturalNeighboursInterpolant, order) = NaturalNeighboursDifferentiator(itp, order)
 
@@ -50,7 +57,7 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
         λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
         if length(λ) == 1 && !isfinite(λ[1]) # this happens when we extrapolate 
             return (F(Inf), F(Inf))
-        end 
+        end
         ∇ = generate_first_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
         return ∇
     else # O == 2
@@ -61,25 +68,27 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
         end
         if length(λ) == 1 && !isfinite(λ[1]) # this happens when we extrapolate 
             return (F(Inf), F(Inf)), (F(Inf), F(Inf), F(Inf))
-        end 
+        end
         ∇, H = generate_second_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
         return ∇, H
     end
 end
 
-default_diff_method(∂) = isnothing(get_gradient(get_interpolant(∂))) ? Direct() : Iterative()
+@inline default_diff_method(∂) = isnothing(get_gradient(get_interpolant(∂))) ? Direct() : Iterative()
 
-function (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; parallel=false, method=default_diff_method(∂), kwargs...)
+@inline function (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; parallel=false, method=default_diff_method(∂), kwargs...)
     method = dwrap(method)
-    p = (x, y)
+    F = (number_type ∘ get_triangulation ∘ get_interpolant)(∂)
+    p = (F(x), F(y))
     return _eval_differentiator(method, ∂, p, zᵢ, nc, id; kwargs...)
 end
 function (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=false, method=default_diff_method(∂), interpolant_method=Sibson(), project=false, rng=Random.default_rng(), kwargs...)
     method = dwrap(method)
     interpolant_method = iwrap(interpolant_method)
-    p = (x, y)
     itp = get_interpolant(∂)
     tri = get_triangulation(itp)
+    F = number_type(tri)
+    p = (F(x), F(y))
     n_cache = get_neighbour_cache(itp, id)
     z = get_z(itp)
     if interpolant_method == Sibson(1)
@@ -93,7 +102,7 @@ function (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=fa
     if interpolant_method == Triangle() || interpolant_method == Nearest() # coordinates need to be the natural neighbours
         nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng, project)
     end
-    return ∂(x, y, zᵢ, nc, id; parallel, method, kwargs...)
+    return ∂(F(x), F(y), zᵢ, nc, id; parallel, method, kwargs...)
 end
 function (∂::NaturalNeighboursDifferentiator)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=default_diff_method(∂), interpolant_method=Sibson(), kwargs...)
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."

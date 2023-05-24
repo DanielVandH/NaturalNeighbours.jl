@@ -53,7 +53,8 @@ import DelaunayTriangulation: DelaunayTriangulation,
     jump_and_march,
     jump_to_voronoi_polygon,
     iterated_neighbourhood,
-    iterated_neighbourhood!
+    iterated_neighbourhood!,
+    triangle_area
 import ChunkSplitters: chunks
 using ElasticArrays
 using LinearAlgebra

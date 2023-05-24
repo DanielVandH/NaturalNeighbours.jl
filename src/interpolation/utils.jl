@@ -68,9 +68,20 @@ function get_barycentric_deviation(natural_coordinates::NaturalCoordinates{F}) w
     return sqrt(δ²)
 end
 
-function handle_duplicate_points!(tri, interpolation_point, coordinates::AbstractVector{F}, envelope) where {F}
-    idx = findfirst(i -> get_point(tri, i) == getxy(interpolation_point), envelope)
-    envelope_idx = envelope[idx]
+function handle_duplicate_points!(tri, interpolation_point, coordinates::AbstractVector{F}, envelope, u, prev_u, next_u) where {F}
+    p, q, r = get_point(tri, u, prev_u, next_u)
+    xy = getxy(interpolation_point)
+    envelope_idx = if xy == p 
+        u
+    elseif xy == q
+        prev_u
+    elseif xy == r
+        next_u
+    else
+        error("This should not happen")
+    end
+    #idx = findfirst(i -> get_point(tri, i) == getxy(interpolation_point), envelope)
+    #envelope_idx = envelope[idx]
     resize!(coordinates, 1)
     resize!(envelope, 1)
     envelope[begin] = envelope_idx

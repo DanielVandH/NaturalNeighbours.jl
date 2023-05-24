@@ -19,9 +19,9 @@ function _compute_sibson_coordinates(
     w = zero(number_type(tri))
     for i in firstindex(envelope):(lastindex(envelope)-1)
         pre = pre_insertion_area!(poly_points, envelope, i, tri)
-        post = post_insertion_area(envelope, i, tri, interpolation_point)
-        isnan(post) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope)
-        coordinates[i] = pre - post
+        post, u, prev_u, next_u = post_insertion_area(envelope, i, tri, interpolation_point)
+        isnan(post) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope,u, prev_u, next_u)
+        coordinates[i] = max(pre - post, zero(pre)) # coordinate types like Float32 can sometimes get e.g. -1f-8
         w += coordinates[i]
     end
     pop!(envelope)
@@ -54,6 +54,7 @@ function pre_insertion_area!(poly_points, envelope, i, tri::Triangulation)
 end
 
 # post-insertion area component from the envelope[i]th generator
+# returns: AREA, (G1_NAN, G2_NAN), u, prev_u, next_u
 function post_insertion_area(envelope, i, tri::Triangulation, interpolation_point)
     u = envelope[i]
     prev_u = envelope[previndex_circular(envelope, i)]
@@ -66,19 +67,19 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
     mpr = (px + rx) / 2, (py + ry) / 2
     g1 = triangle_circumcenter(p, r, interpolation_point)
     F = number_type(tri)
-    if any(isnan, g1)
+    if !all(isfinite, g1)
         # The circumcenter is NaN when the triangle is degenerate, 
         # meaning one of the points is a duplicate with another.
         # Since the triangulation is assumed to be valid, it must be that
         # interpolation_point is one of p or r. In particular, the new point 
         # is just one of the others, and so there will be no changes 
         # in the area. We return NaN as a flag.
-        return F(NaN)
+        return F(NaN), u, prev_u, next_u
     end
     g2 = triangle_circumcenter(q, p, interpolation_point)
-    any(isnan, g2) && return F(NaN)
+    !all(isfinite, g2) && return F(NaN), (false, true), u, prev_u, next_u
     points = (mpq, mpr, g1, g2, mpq)
-    return polygon_area(points)
+    return polygon_area(points),  u, prev_u, next_u
 end
 
 function compute_natural_coordinates(::Sibson{0}, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
