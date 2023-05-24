@@ -127,7 +127,7 @@ Now we consider Sibson's coordinates. These coordinates are similar to Laplace's
 The idea is to consider how much area this new blue tile "steals" from the tiles of its natural neighbours. Based on the following identity ([Sibson, 1980](https://doi.org/10.1017/S0305004100056589)),
 
 ```math
-\text{Area}(\mathcal V_{\boldsymbol x_0}) \boldsymbol x = \sum_{i \in N_0} \text{Area}(\mathcal V_{\boldsymbol x} \cap \mathcal V_{\boldsymbol x_i}^{\boldsymbol x_0}),
+\text{Area}(\mathcal V_{\boldsymbol x_0}) \boldsymbol x = \sum_{i \in N_0} \text{Area}(\mathcal V_{\boldsymbol x} \cap \mathcal V_{\boldsymbol x_i}^{\boldsymbol x_0})\boldsymbol x_i,
 ```
 
 where $\mathcal V_{\boldsymbol x_0}$ is the new tile shown in blue, and $\mathcal V_{\boldsymbol x_i}^{\boldsymbol x_0}$ is the tile associated with $\boldsymbol x_i$ in the original tessellation, i.e. prior to the insertion of $\boldsymbol x_0$, we define _Sibson's coordinates_ as 
