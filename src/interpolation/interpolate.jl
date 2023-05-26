@@ -158,7 +158,7 @@ end
 end
 
 function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
-    tri = get_triangulation(otp)
+    tri = get_triangulation(itp)
     F = number_type(tri)
     p = (F(x), F(y))
     cache = get_neighbour_cache(itp, id)
