@@ -3,6 +3,7 @@ const NNI = NaturalNeighbours
 using DelaunayTriangulation
 const DT = DelaunayTriangulation
 using StableRNGs
+using LinearAlgebra
 using CairoMakie
 
 include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
@@ -102,4 +103,83 @@ end
     z = [f(x, y) for (x, y) in each_point(tri)]
     itp = interpolate(tri, z; derivatives=false)
     @test_throws ArgumentError("Gradients must be provided for Sibson-1 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Sibson(1))
+end
+
+@testset "Test Float32" begin
+    rng = StableRNG(123)
+    xs = randn(rng, 100)
+    ys = randn(rng, 100)
+    tri1 = triangulate([Float32.(xs)'; Float32.(ys)']; rng)
+    tri2 = triangulate([xs'; ys']; rng)
+    zs = sin.(xs) .* cos.(ys)
+    itp1 = interpolate(tri1, Float32.(zs); derivatives=true)
+    itp2 = interpolate(tri2, zs; derivatives=true)
+    for itp in (itp1, itp2)
+        @inferred itp(0.5, 0.5; method=Sibson(1))
+        @inferred itp(0.5, 0.5; method=Sibson())
+        @inferred itp(0.5, 0.5; method=Laplace())
+        @inferred itp(0.5, 0.5; method=Triangle())
+        @inferred itp(0.5, 0.5; method=Nearest())
+        @inferred itp(0.5, 0.5; method=Sibson(), project=false)
+        @inferred itp(0.5, 0.5; method=Laplace(), project=false)
+        @inferred itp(0.5, 0.5; method=Triangle(), project=false)
+        @inferred itp(0.5, 0.5; method=Nearest(), project=false)
+        @inferred itp(0.5, 0.5; method=Sibson(1), project=false)
+        @inferred itp(0.5f0, 0.5f0; method=Sibson(1))
+        @inferred itp(0.5f0, 0.5f0; method=Sibson())
+        @inferred itp(0.5f0, 0.5f0; method=Laplace())
+        @inferred itp(0.5f0, 0.5f0; method=Triangle())
+        @inferred itp(0.5f0, 0.5f0; method=Nearest())
+        @inferred itp(0.5f0, 0.5f0; method=Sibson(), project=false)
+        @inferred itp(0.5f0, 0.5f0; method=Laplace(), project=false)
+        @inferred itp(0.5f0, 0.5f0; method=Triangle(), project=false)
+        @inferred itp(0.5f0, 0.5f0; method=Nearest(), project=false)
+        @inferred itp(0.5f0, 0.5f0; method=Sibson(1), project=false)
+        @inferred itp(0.5f0, 0.5; method=Sibson(1))
+        @inferred itp(0.5f0, 0.5; method=Sibson())
+        @inferred itp(0.5f0, 0.5; method=Laplace())
+        @inferred itp(0.5f0, 0.5; method=Triangle())
+        @inferred itp(0.5f0, 0.5; method=Nearest())
+        @inferred itp(0.5f0, 0.5; method=Sibson(), project=false)
+        @inferred itp(0.5f0, 0.5; method=Laplace(), project=false)
+        @inferred itp(0.5f0, 0.5; method=Triangle(), project=false)
+        @inferred itp(0.5f0, 0.5; method=Nearest(), project=false)
+        @inferred itp(0.5f0, 0.5; method=Sibson(1), project=false)
+        @inferred itp(0.5, 0.5f0; method=Sibson(1))
+        @inferred itp(0.5, 0.5f0; method=Sibson())
+        @inferred itp(0.5, 0.5f0; method=Laplace())
+        @inferred itp(0.5, 0.5f0; method=Triangle())
+        @inferred itp(0.5, 0.5f0; method=Nearest())
+        @inferred itp(0.5, 0.5f0; method=Sibson(), project=false)
+        @inferred itp(0.5, 0.5f0; method=Laplace(), project=false)
+        @inferred itp(0.5, 0.5f0; method=Triangle(), project=false)
+        @inferred itp(0.5, 0.5f0; method=Nearest(), project=false)
+        @inferred itp(0.5, 0.5f0; method=Sibson(1), project=false)
+    end
+    @test itp1(0.5f0, 0.5f0; method=Sibson(1)) ≈ itp2(0.5f0, 0.5f0; method=Sibson(1))
+    @test itp1(0.5f0, 0.5f0; method=Sibson()) ≈ itp2(0.5f0, 0.5f0; method=Sibson())
+    @test itp1(0.5f0, 0.5f0; method=Laplace()) ≈ itp2(0.5f0, 0.5f0; method=Laplace())
+    @test itp1(0.5f0, 0.5f0; method=Triangle()) ≈ itp2(0.5f0, 0.5f0; method=Triangle())
+    @test itp1(0.5f0, 0.5f0; method=Nearest()) ≈ itp2(0.5f0, 0.5f0; method=Nearest())
+    @test itp1(0.5f0, 0.5f0; method=Sibson(), project=false) ≈ itp2(0.5f0, 0.5f0; method=Sibson(), project=false)
+    @test itp1(0.5f0, 0.5f0; method=Laplace(), project=false) ≈ itp2(0.5f0, 0.5f0; method=Laplace(), project=false)
+    @test itp1(0.5f0, 0.5f0; method=Triangle(), project=false) ≈ itp2(0.5f0, 0.5f0; method=Triangle(), project=false)
+    @test itp1(0.5f0, 0.5f0; method=Nearest(), project=false) ≈ itp2(0.5f0, 0.5f0; method=Nearest(), project=false)
+    test_interpolant(itp1, xs, ys, zs)
+    test_interpolant(itp2, xs, ys, zs)
+
+    xrange = LinRange(-3, 3, 1000) .|> Float32
+    yrange = LinRange(-3, 3, 1000) .|> Float32
+    itp_xs = [xrange[i] for i in 1:length(xrange), j in 1:length(yrange)]
+    itp_ys = [yrange[j] for i in 1:length(xrange), j in 1:length(yrange)]
+    _itp_xs = vec(itp_xs)
+    _itp_ys = vec(itp_ys)
+    vals1 = itp1(_itp_xs, _itp_ys; method=Sibson(1))
+    vals2 = itp2(_itp_xs, _itp_ys; method=Sibson(1))
+    err = abs.(vals1 .- vals2)
+    points = get_points(tri1)
+    ch = get_convex_hull_indices(tri1)
+    bad_idx = identify_exterior_points(_itp_xs, _itp_ys, points, ch; tol=1e-3) # boundary effects _really_ matter...
+    deleteat!(err, bad_idx)
+    @test norm(err) ≈ 0 atol = 1e-2
 end

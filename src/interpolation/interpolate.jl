@@ -28,6 +28,13 @@ method, `parallel` is ignored, but for the latter two methods it defines whether
 all the points. The `kwargs...` argument is passed into `add_point!` from DelaunayTriangulation.jl, e.g. you could pass some `rng`. Lastly, 
 the `project` argument determines whether extrapolation is performed by projecting any exterior points onto the boundary of the convex hull 
 of the data sites and performing two-point interpolation, or to simply replaced any extrapolated values with `Inf`.
+
+!!! warning
+
+    Until we implement ghost point extrapolation, behaviour near the convex hull of your data sites may in some cases be undesirable,
+    despite the extrapolation method we describe above, even for points that are inside the convex hull. If you want to control this 
+    behaviour so that you discard any points that are very close to the convex hull, see `identify_exterior_points` and the `tol` 
+    keyword argument.
 """
 interpolate(tri::Triangulation, z; gradient=nothing, hessian=nothing, kwargs...) = NaturalNeighboursInterpolant(tri, z, gradient, hessian; kwargs...)
 
@@ -78,8 +85,8 @@ Interpolate using Laplace's coordinates.
 Interpolate using Farin's C(1) interpolant.
 """ Farin(d=0) = Farin{1}()
 
-iwrap(s::AbstractInterpolator) = s
-function iwrap(s::Symbol)
+@inline iwrap(s::AbstractInterpolator) = s
+@inline function iwrap(s::Symbol)
     if s == :sibson
         return Sibson()
     elseif s == :triangle
@@ -91,28 +98,77 @@ function iwrap(s::Symbol)
     elseif s == :farin
         return Farin()
     else
-        throw(ArgumentError("Unknown interpolator: $s"))
+        throw(ArgumentError("Unknown interpolator."))
     end
 end
 
-function interpolate(points, z; gradient=nothing, hessian=nothing, kwargs...)
+@inline function interpolate(points, z; gradient=nothing, hessian=nothing, kwargs...)
     tri = triangulate(points, delete_ghosts=false)
     return interpolate(tri, z; gradient, hessian, kwargs...)
 end
-function interpolate(x::AbstractVector, y::AbstractVector, z; gradient=nothing, hessian=nothing, kwargs...)
+@inline function interpolate(x::AbstractVector, y::AbstractVector, z; gradient=nothing, hessian=nothing, kwargs...)
     @assert length(x) == length(y) == length(z) "x, y, and z must have the same length."
     points = [(ξ, η) for (ξ, η) in zip(x, y)]
     return interpolate(points, z; gradient, hessian, kwargs...)
 end
 
+@inline function _eval_natural_coordinates(coordinates, indices, z)
+    val = zero(eltype(z))
+    for (λ, k) in zip(coordinates, indices)
+        zₖ = z[k]
+        val += λ * zₖ
+    end
+    return val
+end
+
+@inline function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z) where {F}
+    coordinates = get_coordinates(nc)
+    indices = get_indices(nc)
+    return _eval_natural_coordinates(coordinates, indices, z)
+end
+
+function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
+    sib0 = _eval_natural_coordinates(nc, z)
+    coordinates = get_coordinates(nc)
+    if length(coordinates) ≤ 2 # 2 means extrapolation, 1 means we're evaluating at a data site 
+        return sib0
+    end
+    ζ, α, β = _compute_sibson_1_coordinates(nc, tri, z, gradients)
+    num = α * sib0 + β * ζ
+    den = α + β
+    return num / den
+end
+
+@inline function _eval_interp(method, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
+    tri = get_triangulation(itp)
+    nc = compute_natural_coordinates(method, tri, p, cache; kwargs...)
+    z = get_z(itp)
+    return _eval_natural_coordinates(nc, z)
+end
+
+@inline function _eval_interp(method::Sibson{1}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...) # # has to be a different form since Sib0 blends two functions 
+    gradients = get_gradient(itp)
+    if isnothing(gradients)
+        throw(ArgumentError("Gradients must be provided for Sibson-1 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
+    end
+    tri = get_triangulation(itp)
+    nc = compute_natural_coordinates(Sibson(), tri, p, cache; kwargs...)
+    z = get_z(itp)
+    return _eval_natural_coordinates(nc, z, gradients, tri)
+end
+
 function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
-    p = (x, y)
+    tri = get_triangulation(otp)
+    F = number_type(tri)
+    p = (F(x), F(y))
     cache = get_neighbour_cache(itp, id)
-    return _eval_interp(iwrap(method), itp, p, cache; kwargs...)
+    method = iwrap(method)
+    return _eval_interp(method, itp, p, cache; kwargs...)
 end
 
 function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
+    method = iwrap(method)
     if !parallel
         for i in eachindex(x, y)
             vals[i] = itp(x[i], y[i], 1; method, kwargs...)
@@ -129,12 +185,13 @@ function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVe
     end
     return nothing
 end
-function (itp::NaturalNeighboursInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
+@inline function (itp::NaturalNeighboursInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
     @assert length(x) == length(y) "x and y must have the same length."
     n = length(x)
     tri = get_triangulation(itp)
     F = number_type(tri)
     vals = zeros(F, n)
+    method = iwrap(method)
     itp(vals, x, y; method, parallel, kwargs...)
     return vals
 end

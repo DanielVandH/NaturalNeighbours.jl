@@ -7,6 +7,7 @@ using Optimization
 using OptimizationNLopt
 using Random
 using StableRNGs
+using LinearAlgebra
 
 include(normpath(@__DIR__, "../.", "helper_functions", "slow_derivative_tests.jl"))
 include(normpath(@__DIR__, "../.", "helper_functions", "point_generator.jl"))
@@ -303,4 +304,130 @@ end
     itp = interpolate(tri, z; derivatives=false)
     ∂2 = differentiate(itp, 2)
     @test_throws ArgumentError("initial_gradients must be provided for iterative derivative estimation. Consider using e.g. interpolate(tri, z; derivatives = true).") ∂2(0.5, 0.5; method=Iterative())
+end
+
+@testset "Test Float32" begin
+    rng = StableRNG(123)
+    xs = randn(rng, 100)
+    ys = randn(rng, 100)
+    tri1 = triangulate([Float32.(xs)'; Float32.(ys)']; rng)
+    tri2 = triangulate([xs'; ys']; rng)
+    zs = sin.(xs) .* cos.(ys)
+    itp1 = interpolate(tri1, Float32.(zs); derivatives=true)
+    itp2 = interpolate(tri2, zs; derivatives=true)
+    ∂1 = differentiate(itp1, 2)
+    ∂2 = differentiate(itp2, 2)
+    for ∂ in (∂1, ∂2)
+        @inferred ∂(0.5, 0.5; method=Iterative())
+        @inferred ∂(0.5, 0.5; method=Direct())
+        @inferred ∂(0.5, 0.5; method=Iterative(), project=false)
+        @inferred ∂(0.5, 0.5; method=Direct(), project=false)
+        @inferred ∂(0.5f0, 0.5f0; method=Iterative())
+        @inferred ∂(0.5f0, 0.5f0; method=Direct())
+        @inferred ∂(0.5f0, 0.5f0; method=Iterative(), project=false)
+        @inferred ∂(0.5f0, 0.5f0; method=Direct(), project=false)
+        @inferred ∂(0.5f0, 0.5; method=Iterative())
+        @inferred ∂(0.5f0, 0.5; method=Direct())
+        @inferred ∂(0.5f0, 0.5; method=Iterative(), project=false)
+        @inferred ∂(0.5f0, 0.5; method=Direct(), project=false)
+        @inferred ∂(0.5, 0.5f0; method=Iterative())
+        @inferred ∂(0.5, 0.5f0; method=Direct())
+        @inferred ∂(0.5, 0.5f0; method=Iterative(), project=false)
+        @inferred ∂(0.5, 0.5f0; method=Direct(), project=false)
+    end
+    let ∇H1 = ∂1(0.5f0, 0.5f0; method=Iterative()), ∇H2 = ∂2(0.5f0, 0.5f0; method=Iterative())
+        ∇1, H1 = ∇H1
+        ∇2, H2 = ∇H2
+        @test collect(∇1) ≈ collect(∇2)
+        @test collect(H1) ≈ collect(H2)
+    end
+    let ∇H1 = ∂1(0.5f0, 0.5f0; method=Direct()), ∇H2 = ∂2(0.5f0, 0.5f0; method=Direct())
+        ∇1, H1 = ∇H1
+        ∇2, H2 = ∇H2
+        @test collect(∇1) ≈ collect(∇2)
+        @test collect(H1) ≈ collect(H2)
+    end
+    let ∇H1 = ∂1(0.5f0, 0.5f0; method=Iterative(), project=false), ∇H2 = ∂2(0.5f0, 0.5f0; method=Iterative(), project=false)
+        ∇1, H1 = ∇H1
+        ∇2, H2 = ∇H2
+        @test collect(∇1) ≈ collect(∇2)
+        @test collect(H1) ≈ collect(H2)
+    end
+    let ∇H1 = ∂1(0.5f0, 0.5f0; method=Direct(), project=false), ∇H2 = ∂2(0.5f0, 0.5f0; method=Direct(), project=false)
+        ∇1, H1 = ∇H1
+        ∇2, H2 = ∇H2
+        @test collect(∇1) ≈ collect(∇2)
+        @test collect(H1) ≈ collect(H2)
+    end
+    ∂1 = differentiate(itp1, 1)
+    ∂2 = differentiate(itp2, 1)
+    for ∂ in (∂1, ∂2)
+        @inferred ∂(0.5, 0.5; method=Iterative())
+        @inferred ∂(0.5, 0.5; method=Direct())
+        @inferred ∂(0.5, 0.5; method=Iterative(), project=false)
+        @inferred ∂(0.5, 0.5; method=Direct(), project=false)
+        @inferred ∂(0.5f0, 0.5f0; method=Iterative())
+        @inferred ∂(0.5f0, 0.5f0; method=Direct())
+        @inferred ∂(0.5f0, 0.5f0; method=Iterative(), project=false)
+        @inferred ∂(0.5f0, 0.5f0; method=Direct(), project=false)
+        @inferred ∂(0.5f0, 0.5; method=Iterative())
+        @inferred ∂(0.5f0, 0.5; method=Direct())
+        @inferred ∂(0.5f0, 0.5; method=Iterative(), project=false)
+        @inferred ∂(0.5f0, 0.5; method=Direct(), project=false)
+        @inferred ∂(0.5, 0.5f0; method=Iterative())
+        @inferred ∂(0.5, 0.5f0; method=Direct())
+        @inferred ∂(0.5, 0.5f0; method=Iterative(), project=false)
+        @inferred ∂(0.5, 0.5f0; method=Direct(), project=false)
+    end
+    let ∇1 = ∂1(0.5f0, 0.5f0; method=Iterative()), ∇2 = ∂2(0.5f0, 0.5f0; method=Iterative())
+        @test collect(∇1) ≈ collect(∇2)
+    end
+    let ∇1 = ∂1(0.5f0, 0.5f0; method=Direct()), ∇2 = ∂2(0.5f0, 0.5f0; method=Direct())
+        @test collect(∇1) ≈ collect(∇2)
+    end
+    let ∇1 = ∂1(0.5f0, 0.5f0; method=Iterative(), project=false), ∇2 = ∂2(0.5f0, 0.5f0; method=Iterative(), project=false)
+        @test collect(∇1) ≈ collect(∇2)
+    end
+    let ∇1 = ∂1(0.5f0, 0.5f0; method=Direct(), project=false), ∇2 = ∂2(0.5f0, 0.5f0; method=Direct(), project=false)
+        @test collect(∇1) ≈ collect(∇2)
+    end
+
+    xrange = LinRange(-3, 3, 1000) .|> Float32
+    yrange = LinRange(-3, 3, 1000) .|> Float32
+    itp_xs = [xrange[i] for i in 1:length(xrange), j in 1:length(yrange)]
+    itp_ys = [yrange[j] for i in 1:length(xrange), j in 1:length(yrange)]
+    _itp_xs = vec(itp_xs)
+    _itp_ys = vec(itp_ys)
+    ∂1 = differentiate(itp1, 2)
+    ∂2 = differentiate(itp2, 2)
+
+    vals1 = ∂1(_itp_xs, _itp_ys; method=Iterative())
+    vals2 = ∂2(_itp_xs, _itp_ys; method=Iterative())
+
+    ∇err = [norm(g1 .- g2) for (g1, g2) in zip(first.(vals1), first.(vals2))]
+    Herr = [norm(h1 .- h2) for (h1, h2) in zip(last.(vals1), last.(vals2))]
+
+    points = get_points(tri1)
+    ch = get_convex_hull_indices(tri1)
+    bad_idx = identify_exterior_points(_itp_xs, _itp_ys, points, ch; tol=1e-2) # boundary effects _really_ matter...
+    deleteat!(∇err, bad_idx)
+    deleteat!(Herr, bad_idx)
+
+    @test norm(∇err) ≈ 0 atol = 1e-2
+    @test norm(Herr) ≈ 0 atol = 1e-1
+
+    ∂1 = differentiate(itp1, 1)
+    ∂2 = differentiate(itp2, 1)
+
+    vals1 = ∂1(_itp_xs, _itp_ys; method=Iterative())
+    vals2 = ∂2(_itp_xs, _itp_ys; method=Iterative())
+
+    ∇err = [norm(g1 .- g2) for (g1, g2) in zip(first.(vals1), first.(vals2))]
+
+    points = get_points(tri1)
+    ch = get_convex_hull_indices(tri1)
+    bad_idx = identify_exterior_points(_itp_xs, _itp_ys, points, ch; tol=1e-2) # boundary effects _really_ matter...
+    deleteat!(∇err, bad_idx)
+
+    @test norm(∇err) ≈ 0 atol = 1e-1
 end

@@ -38,6 +38,7 @@ function check_for_extrapolation(tri, V, interpolation_point, last_triangle)
     else
         last_triangle[] = indices(V)
     end
+    F = number_type(tri)
     if is_boundary_triangle(tri, V)
         _V = replace_boundary_triangle_with_ghost_triangle(tri, V)
         _u, _w, _ = indices(_V)
@@ -45,6 +46,16 @@ function check_for_extrapolation(tri, V, interpolation_point, last_triangle)
         if is_collinear(cert)
             cert = point_position_on_line_segment(tri, _u, _w, interpolation_point)
             if is_on(cert) || is_degenerate(cert)
+                V = _V
+            end
+        elseif F ≠ Float64
+            # DelaunayTriangulation.jl only guarantees exact triangulations for Float64 types, 
+            # due to limitations in ExactPredicates.jl. If you use Float64 everywhere, then this check 
+            # is redundant. But if you use Float32 anywhere, then the predicate above could fail. Even 
+            # missing a Float32 triangulation and a provided Float64 query point can cause issues.
+            p, q = get_point(tri, _u, _w)
+            A = triangle_area(p, q, interpolation_point)
+            if abs(A) < F(1e-14)
                 V = _V
             end
         end

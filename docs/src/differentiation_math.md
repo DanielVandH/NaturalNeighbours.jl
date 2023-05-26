@@ -36,7 +36,13 @@ To choose the neighbourhood, define the $d$-times iterated neighbourhood of $\bo
 N_0^d = \bigcup_{i \in N_0^{d-1}} N_i \setminus \{0\}, \quad N_0^1 = N_0.
 ```
 
-Here, the neighbourhoods are the _Delaunay neighbourhoods_, not the natural neighbours -- for points $\boldsymbol x_0$ that are not one of the existing data sites, natural neighbours are used instead.
+Here, the neighbourhoods are the _Delaunay neighbourhoods_, not the natural neighbours -- for points $\boldsymbol x_0$ that are not one of the existing data sites, natural neighbours are used instead. An example of $N_0^1$ and $N_0^2$ both at a data site and away from a data site is shown below, where $\boldsymbol x_0$ is shown in magenta, $N_0^1$ in blue, and $N_0^2$ in red (and also includes the blue points).
+
+```@raw html
+<figure>
+    <img src='../figures/taylor_neighbourhood.png', alt'Iterated neighbourhood examples'><br>
+</figure>
+```
 
 ### Gradients 
 
