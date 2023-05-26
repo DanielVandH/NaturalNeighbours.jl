@@ -1,4 +1,4 @@
-function _eval_natural_coordinates(coordinates, indices, z)
+@inline function _eval_natural_coordinates(coordinates, indices, z)
     val = zero(eltype(z))
     for (λ, k) in zip(coordinates, indices)
         zₖ = z[k]
@@ -7,13 +7,13 @@ function _eval_natural_coordinates(coordinates, indices, z)
     return val
 end
 
-function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z) where {F}
+@inline function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z) where {F}
     coordinates = get_coordinates(nc)
     indices = get_indices(nc)
     return _eval_natural_coordinates(coordinates, indices, z)
 end
 
-function _eval_interp(method, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
+@inline function _eval_interp(method, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     tri = get_triangulation(itp)
     nc = compute_natural_coordinates(method, tri, p, cache; kwargs...)
     z = get_z(itp)
@@ -32,11 +32,11 @@ function _eval_natural_coordinates(::Sibson{1}, nc::NaturalCoordinates{F}, z, gr
     return num / den
 end
 
-function _eval_natural_coordinates(::Farin{1}, nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
+@inline function _eval_natural_coordinates(::Farin{1}, nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
     return _compute_farin_coordinates(nc,tri,z,gradients)
 end
 
-function _eval_interp(method::Union{Farin{1},Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
+@inline function _eval_interp(method::Union{Farin{1},Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     gradients = get_gradient(itp)
     if isnothing(gradients)
         throw(ArgumentError("Gradients must be provided for Sibson-1 or Farin interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
