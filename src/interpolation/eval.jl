@@ -76,7 +76,7 @@ end
 end
 
 function _get_nc_and_z(method::AbstractInterpolator{D}, p, z, gradients, hessians, tri, cache=NaturalNeighboursCache(tri); rng=Random.default_rng(), project=true) where {D}
-    if interpolant_method == Triangle() || interpolant_method == Nearest() # coordinates need to be the natural neighbours
+    if method == Triangle() || method == Nearest() # coordinates need to be the natural neighbours
         nc = compute_natural_coordinates(Sibson(), tri, p, cache; rng, project)
     else
         nc = compute_natural_coordinates(method, tri, p, cache; rng, project)
