@@ -25,6 +25,7 @@ laplace_vals = itp(_x, _y; method=Laplace())
 sibson_1_vals = itp(_x, _y; method=Sibson(1))
 nearest_vals = itp(_x, _y; method=Nearest())
 farin_vals = itp(_x, _y; method=Farin())
+hiyoshi_vals = itp(_x, _y; method=Hiyoshi(2))
 
 ## Plot 
 function plot_2d(fig, i, j, title, vals, xg, yg, x, y, show_scatter=true)
@@ -37,8 +38,8 @@ function plot_3d(fig, i, j, title, vals, xg, yg)
     surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
 end
 
-all_vals = (sibson_vals, triangle_vals, laplace_vals, sibson_1_vals, nearest_vals, farin_vals, exact)
-titles = ("(a): Sibson", "(b): Triangle", "(c): Laplace", "(d): Sibson-1", "(e): Nearest", "(f): Farin", "(g): Exact")
+all_vals = (sibson_vals, triangle_vals, laplace_vals, sibson_1_vals, nearest_vals, farin_vals, hiyoshi_vals, exact)
+titles = ("(a): Sibson", "(b): Triangle", "(c): Laplace", "(d): Sibson-1", "(e): Nearest", "(f): Farin", "(g): Hiyoshi", "(h): Exact")
 fig = Figure(fontsize=55)
 for (i, (vals, title)) in enumerate(zip(all_vals, titles))
     plot_2d(fig, 1, i, title, vals, xg, yg, x, y, !(vals === exact))

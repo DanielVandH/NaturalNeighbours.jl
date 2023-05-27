@@ -17,18 +17,6 @@ end
 is_bezier_point(i, j, k) = i == j == k
 is_bezier_edge(i, j, k) = (i == j) || (j == k) || (k == i)
 is_bezier_face(i, j, k) = (i ≠ j) && (j ≠ k) && (k ≠ i)
-function directional_derivative(tri, i, j, N₀, ∇)
-    u = N₀[i]
-    v = N₀[j]
-    p, q = get_point(tri, u, v)
-    px, py = getxy(p)
-    qx, qy = getxy(q)
-    dx = qx - px
-    dy = qy - py
-    ∇ᵤ = ∇[u]
-    ∇ᵤx, ∇ᵤy = getxy(∇ᵤ)
-    return dx * ∇ᵤx + dy * ∇ᵤy
-end
 function find_bezier_edge(i, j, k)
     if i == j
         return (i, k)

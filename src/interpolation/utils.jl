@@ -87,3 +87,151 @@ function handle_duplicate_points!(tri, interpolation_point, coordinates::Abstrac
     coordinates[begin] = one(F)
     return NaturalCoordinates(coordinates, envelope, interpolation_point, tri)
 end
+
+function sort_five(i, j, k, ℓ, m)
+    if j < i
+        i, j = j, i
+    end
+    if k < i
+        i, k = k, i
+    end
+    if ℓ < i
+        i, ℓ = ℓ, i
+    end
+    if m < i
+        i, m = m, i
+    end
+    if k < j
+        j, k = k, j
+    end
+    if ℓ < j
+        j, ℓ = ℓ, j
+    end
+    if m < j
+        j, m = m, j
+    end
+    if ℓ < k
+        k, ℓ = ℓ, k
+    end
+    if m < k
+        k, m = m, k
+    end
+    if m < ℓ
+        ℓ, m = m, ℓ
+    end
+    return i, j, k, ℓ, m
+end
+
+function count_unique_sorted(i, j, k, ℓ, m) # assumes sorted
+    n = 5
+    if i == j
+        n -= 1
+    end
+    if j == k
+        n -= 1
+    end
+    if k == ℓ
+        n -= 1
+    end
+    if ℓ == m
+        n -= 1
+    end
+    return n
+end
+
+#=
+Returns (standard_sort, case)
+Standard forms:
+    Case 1. iiiii 
+    Case 2. iiiij 
+    Case 3. iiijj 
+    Case 4. iiijk 
+    Case 5. iijjk 
+    Case 6. iijkℓ 
+    Case 7. ijkℓm
+=#
+function group_sort(i, j, k, ℓ, m)
+    i′, j′, k′, ℓ′, m′ = sort_five(i, j, k, ℓ, m)
+    num_unique = count_unique_sorted(i′, j′, k′, ℓ′, m′)
+    if num_unique == 1
+        # uuuuu 
+        u = i′
+        return (u, u, u, u, u), 1
+    elseif num_unique == 2
+        if i′ == j′ == k′ == ℓ′         # iiiij
+            u, v = i′, m′
+            return (u, u, u, u, v), 2
+        elseif j′ == k′ == ℓ′ == m′     # jiiii
+            u, v = j′, i′
+            return (u, u, u, u, v), 2
+        elseif i′ == j′ == k′           # iiijj
+            u, v = i′, ℓ′
+            return (u, u, u, v, v), 3
+        else                            # jjiii
+            u, v = k′, i′
+            return (u, u, u, v, v), 3
+        end
+    elseif num_unique == 3
+        if i′ == j′ == k′               # iiijk
+            u, v, w = i′, ℓ′, m′
+            return (u, u, u, v, w), 4
+        elseif k′ == ℓ′ == m′           # jkiii
+            u, v, w, = k′, i′, j′
+            return (u, u, u, v, w), 4
+        elseif j′ == k′ == ℓ′           # ijjjk 
+            u, v, w = j′, i′, m′
+            return (u, u, u, v, w), 4
+        elseif (i′ == j′) && (k′ == ℓ′) # iijjk
+            u, v, w = i′, k′, m′
+            return (u, u, v, v, w), 5
+        elseif (j′ == k′) && (ℓ′ == m′) # kiijj
+            u, v, w = j′, ℓ′, i′
+            return (u, u, v, v, w), 5
+        else                            # iikjj
+            u, v, w = i′, ℓ′, k′
+            return (u, u, v, v, w), 5
+        end
+    elseif num_unique == 4
+        if i′ == j′                     # iijkℓ
+            u, v, w, x = i′, k′, ℓ′, m′
+        elseif j′ == k′                 # jiikℓ
+            u, v, w, x = j′, i′, ℓ′, m′
+        elseif k′ == ℓ′                 # jkiiℓ
+            u, v, w, x = k′, i′, j′, m′
+        else                            # jkℓii
+            u, v, w, x = ℓ′, i′, j′, k′
+        end
+        return (u, u, v, w, x), 6
+    else                                # ijkℓm
+        return (i′, j′, k′, ℓ′, m′), 7
+    end
+end
+
+# computes dot(∇ᵢ, xⱼ - xᵢ)
+function directional_derivative(tri, i, j, N₀, ∇) # zᵢⱼ
+    u = N₀[i]
+    v = N₀[j]
+    p, q = get_point(tri, u, v)
+    px, py = getxy(p)
+    qx, qy = getxy(q)
+    dx = qx - px
+    dy = qy - py
+    ∇ᵤ = ∇[u]
+    ∇ᵤx, ∇ᵤy = getxy(∇ᵤ)
+    return dx * ∇ᵤx + dy * ∇ᵤy
+end
+
+# computes dot(xⱼ - xᵢ, B(xₖ - xᵢ))
+function hessian_form(tri, u, v, w, N₀, H) # zᵢ,ⱼₖ
+    i = N₀[u]
+    j = N₀[v]
+    k = N₀[w]
+    xᵢ, xⱼ, xₖ = get_point(tri, i, j, k)
+    B = H[i]
+    B₁₁, B₂₂, B₁₂ = B
+    dxᵢⱼ = xⱼ[1] - xᵢ[1]
+    dyᵢⱼ = xⱼ[2] - xᵢ[2]
+    dxᵢₖ = xₖ[1] - xᵢ[1]
+    dyᵢₖ = xₖ[2] - xᵢ[2]
+    return dxᵢⱼ * (dxᵢₖ * B₁₁ + dyᵢₖ * B₁₂) + dyᵢⱼ * (dxᵢₖ * B₁₂ + dyᵢₖ * B₂₂)
+end

@@ -8,6 +8,7 @@ const NNI = NaturalNeighbours
 
 include(normpath(@__DIR__, "../..", "helper_functions", "point_generator.jl"))
 
+to_mat(H) = [H[1] H[3]; H[3] H[2]]
 @testset "Natural coordinates" begin
     for method in (Sibson(), Triangle(), Nearest(), Laplace())
         method = NNI.iwrap(method)
@@ -195,7 +196,7 @@ end
         @test NNI._eval_natural_coordinates(Farin(1), nc, z, ∇, tri) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
         @test itp(q..., method=Farin(1)) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
         @test itp(5.0, 5.0, method=Farin(1)) ≈ f(5.0, 5.0)
-        @test itp(5.0632, 5.0632, method=Farin(1)) ≈ f(5.0632, 5.0632) rtol=1e-3
+        @test itp(5.0632, 5.0632, method=Farin(1)) ≈ f(5.0632, 5.0632) rtol = 1e-3
 
         tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 300, 300, add_ghost_triangles=true)
         z = [f(x, y) for (x, y) in each_point(tri)]
@@ -219,6 +220,123 @@ end
         @test NNI._eval_natural_coordinates(Farin(1), nc, z, ∇, tri) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
         @test itp(q..., method=Farin(1)) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
         @test itp(q..., method=Farin(1)) ≈ f(q...) rtol = 1e-4
+
+        # Hiyoshi(2)
+        tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+        tri = triangulate(get_points(tri), randomise=false)
+        f = (x, y) -> sin(x - y) + cos(x + y)
+        z = [f(x, y) for (x, y) in each_point(tri)]
+        itp = interpolate(tri, z; derivatives=true)
+        q = (5.37841, 1.3881)
+        nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q)
+        ∇ = NNI.get_gradient(itp)
+        λ = NNI.get_coordinates(nc)
+        N₀ = NNI.get_indices(nc)
+        H = NNI.get_hessian(itp)
+        _z(i) = z[N₀[i]]
+        _z(i, j) = dot(∇[N₀[i]], get_point(tri, N₀[j]) .- get_point(tri, N₀[i]))
+        _z(i, j, k) = collect(get_point(tri, N₀[j]) .- get_point(tri, N₀[i]))' * to_mat(H[N₀[i]]) * collect(get_point(tri, N₀[k]) .- get_point(tri, N₀[i]))
+        @test NNI._hiyoshi_case_1(1, N₀, z) ≈ _z(1)
+        let i = 1, j = 2
+            @test NNI._hiyoshi_case_2(tri, i, j, N₀, ∇, z) ≈ _z(i) + _z(i, j) / 5
+        end
+        let i = 1, j = 2
+            @test NNI._hiyoshi_case_3(tri, i, j, N₀, ∇, H, z) ≈ _z(i) + 2_z(i, j) / 5 + _z(i, j, j) / 20
+        end
+        let i = 1, j = 2, k = 3
+            @test NNI._hiyoshi_case_4(tri, i, j, k, N₀, ∇, H, z) ≈ _z(i) + (_z(i, j) + _z(i, k)) / 5 + _z(i, j, k) / 20
+        end
+        let i = 1, j = 2, k = 3
+            @test NNI._hiyoshi_case_5(tri, i, j, k, N₀, ∇, H, z) ≈
+                  (13 / 30) * (_z(i) + _z(j)) + (2 / 15) * _z(k) +
+                  (1 / 9) * (_z(i, j) + _z(j, i)) + (7 / 90) * (_z(i, k) + _z(j, k)) +
+                  (2 / 45) * (_z(k, i) + _z(k, j)) + (1 / 45) * (_z(i, j, k) + _z(j, i, k) + _z(k, i, j))
+        end
+        let i = 1, j = 2, k = 3, ℓ = 4
+            @test NNI._hiyoshi_case_6(tri, i, j, k, ℓ, N₀, ∇, H, z) ≈
+                  (1 / 2) * _z(i) + (1 / 6) * (_z(j) + _z(k) + _z(ℓ)) +
+                  (7 / 90) * (_z(i, j) + _z(i, k) + _z(i, ℓ)) +
+                  (2 / 45) * (_z(j, i) + _z(k, i) + _z(ℓ, i)) +
+                  (1 / 30) * (_z(j, k) + _z(j, ℓ) + _z(k, j) + _z(k, ℓ) + _z(ℓ, j) + _z(ℓ, k)) +
+                  (1 / 90) * (_z(i, j, k) + _z(i, j, ℓ) + _z(i, k, ℓ)) +
+                  (1 / 90) * (_z(j, i, k) + _z(j, i, ℓ) + _z(k, i, j) + _z(k, i, ℓ) + _z(ℓ, i, j) + _z(ℓ, i, k)) +
+                  (1 / 180) * (_z(j, k, ℓ) + _z(k, j, ℓ) + _z(ℓ, j, k))
+        end
+        let i = 1, j = 2, k = 3, ℓ = 4, m = 5
+            @test NNI._hiyoshi_case_7(tri, i, j, k, ℓ, m, N₀, ∇, H, z) ≈
+                  (_z(i) + _z(j) + _z(k) + _z(ℓ) + _z(m)) / 5 +
+                  (1 / 30) * (_z(i, j) + _z(i, k) + _z(i, ℓ) + _z(i, m) + _z(j, i) + _z(j, k) + _z(j, ℓ) +
+                              _z(j, m) + _z(k, i) + _z(k, j) + _z(k, ℓ) + _z(k, m) + _z(ℓ, i) + _z(ℓ, j) + _z(ℓ, k) + _z(ℓ, m) +
+                              _z(m, i) + _z(m, j) + _z(m, k) + _z(m, ℓ)) +
+                  (1 / 180) * (_z(i, j, k) + _z(i, j, ℓ) + _z(i, j, m) + _z(i, k, ℓ) + _z(i, k, m) + _z(i, ℓ, m) +
+                               _z(j, i, ℓ) + _z(j, i, k) + _z(i, i, m) + _z(j, k, ℓ) + _z(j, k, m) + _z(j, ℓ, m) + _z(k, i, j) +
+                               _z(k, i, ℓ) + _z(k, i, m) + _z(k, j, ℓ) + _z(k, j, m) + _z(k, ℓ, m) + _z(ℓ, i, j) + _z(ℓ, i, k) +
+                               _z(ℓ, i, m) + _z(ℓ, j, k) + _z(ℓ, j, m) + _z(ℓ, k, m) + _z(m, i, j) + _z(m, i, k) + _z(m, i, ℓ) +
+                               _z(m, j, k) + _z(m, j, ℓ) + _z(m, k, ℓ))
+        end
+        n = length(λ)
+        global ss = 0.0
+        for a in 1:n, b in 1:n, c in 1:n, d in 1:n, e in 1:n
+            prod = λ[a] * λ[b] * λ[c] * λ[d] * λ[e]
+            (i, j, k, ℓ, m), case = NNI.group_sort(a, b, c, d, e)
+            local s = 0.0
+            if case == 1
+                let i = i
+                    s += _z(i)
+                    s *= prod
+                end
+            elseif case == 2
+                let i = ℓ, j = m
+                    s += _z(i) + _z(i, j) / 5
+                    s *= prod
+                end
+            elseif case == 3
+                let i = i, j = m
+                    s += _z(i) + 2_z(i, j) / 5 + _z(i, j, j) / 20
+                    s *= prod
+                end
+            elseif case == 4
+                let i = i, j = ℓ, k = m
+                    s += _z(i) + (_z(i, j) + _z(i, k)) / 5 + _z(i, j, k) / 20
+                    s *= prod
+                end
+            elseif case == 5
+                let i = i, j = k, k = m
+                    s += (13 / 30) * (_z(i) + _z(j)) + (2 / 15) * _z(k) +
+                         (1 / 9) * (_z(i, j) + _z(j, i)) + (7 / 90) * (_z(i, k) + _z(j, k)) +
+                         (2 / 45) * (_z(k, i) + _z(k, j)) + (1 / 45) * (_z(i, j, k) + _z(j, i, k) + _z(k, i, j))
+                    s *= prod
+                end
+            elseif case == 6
+                let i = i, j = k, k = ℓ, ℓ = m
+                    s += (1 / 2) * _z(i) + (1 / 6) * (_z(j) + _z(k) + _z(ℓ)) +
+                         (7 / 90) * (_z(i, j) + _z(i, k) + _z(i, ℓ)) +
+                         (2 / 45) * (_z(j, i) + _z(k, i) + _z(ℓ, i)) +
+                         (1 / 30) * (_z(j, k) + _z(j, ℓ) + _z(k, j) + _z(k, ℓ) + _z(ℓ, j) + _z(ℓ, k)) +
+                         (1 / 90) * (_z(i, j, k) + _z(i, j, ℓ) + _z(i, k, ℓ)) +
+                         (1 / 90) * (_z(j, i, k) + _z(j, i, ℓ) + _z(k, i, j) + _z(k, i, ℓ) + _z(ℓ, i, j) + _z(ℓ, i, k)) +
+                         (1 / 180) * (_z(j, k, ℓ) + _z(k, j, ℓ) + _z(ℓ, j, k))
+                    s *= prod
+                end
+            elseif case == 7
+                s += (_z(i) + _z(j) + _z(k) + _z(ℓ) + _z(m)) / 5 +
+                     (1 / 30) * (_z(i, j) + _z(i, k) + _z(i, ℓ) + _z(i, m) + _z(j, i) + _z(j, k) + _z(j, ℓ) +
+                                 _z(j, m) + _z(k, i) + _z(k, j) + _z(k, ℓ) + _z(k, m) + _z(ℓ, i) + _z(ℓ, j) + _z(ℓ, k) + _z(ℓ, m) +
+                                 _z(m, i) + _z(m, j) + _z(m, k) + _z(m, ℓ)) +
+                     (1 / 180) * (_z(i, j, k) + _z(i, j, ℓ) + _z(i, j, m) + _z(i, k, ℓ) + _z(i, k, m) + _z(i, ℓ, m) +
+                                  _z(j, i, ℓ) + _z(j, i, k) + _z(i, i, m) + _z(j, k, ℓ) + _z(j, k, m) + _z(j, ℓ, m) + _z(k, i, j) +
+                                  _z(k, i, ℓ) + _z(k, i, m) + _z(k, j, ℓ) + _z(k, j, m) + _z(k, ℓ, m) + _z(ℓ, i, j) + _z(ℓ, i, k) +
+                                  _z(ℓ, i, m) + _z(ℓ, j, k) + _z(ℓ, j, m) + _z(ℓ, k, m) + _z(m, i, j) + _z(m, i, k) + _z(m, i, ℓ) +
+                                  _z(m, j, k) + _z(m, j, ℓ) + _z(m, k, ℓ))
+                s *= prod
+            end
+            ss += s
+        end
+        @test ss ≈ NNI._compute_hiyoshi_coordinates(nc, tri, z, ∇, H) rtol = 1e-3
+        @test NNI._eval_interp(Hiyoshi(2), itp, q, NNI.NaturalNeighboursCache(tri)) ≈ NNI._compute_hiyoshi_coordinates(nc, tri, z, ∇, H)
+        @test NNI._eval_natural_coordinates(Hiyoshi(2), nc, z, ∇, H, tri) ≈ NNI._compute_hiyoshi_coordinates(nc, tri, z, ∇, H)
+        @test itp(q..., method=Hiyoshi(2)) ≈ NNI._compute_hiyoshi_coordinates(nc, tri, z, ∇, H)
+        @test itp(q..., method=Hiyoshi(2)) ≈ f(q...) rtol = 1e-4
     end
 end
 

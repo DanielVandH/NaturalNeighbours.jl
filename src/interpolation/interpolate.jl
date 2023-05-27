@@ -49,6 +49,7 @@ the smoothness at the data sites (currently only relevant for `Sibson`). The ava
 - `Nearest(d)`: Interpolate by returning the function value at the nearest data site. `D` doesn't mean much here (it could be `D = ∞`), and so it is ignored and replaced with `0`.
 - `Laplace(d)`: Interpolate via the Laplace interpolant, with `C(0)` continuity at the data sites. `D` is ignored.
 - `Farin(d)`: Interpolate using the Farin interpolant, with `C(1)` continuity at the data sites. `d` is ignored.
+- `Hiyoshi(d)`: Interpolate using the Hiyoshi interpolant, with `C(d)` continuity at the data sites. Currently, only defined for `d == 2`.
 
 Our implementation of `Sibson(0)`'s coordinates follows [this article](https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html) with some simple modifications.
 """
@@ -64,6 +65,7 @@ struct Triangle{D} <: AbstractInterpolator{D} end
 struct Nearest{D} <: AbstractInterpolator{D} end
 struct Laplace{D} <: AbstractInterpolator{D} end
 struct Farin{D} <: AbstractInterpolator{D} end
+struct Hiyoshi{D} <: AbstractInterpolator{D} end
 @doc """
     Triangle()
 
@@ -84,11 +86,21 @@ Interpolate using Laplace's coordinates.
 
 Interpolate using Farin's C(1) interpolant.
 """ Farin(d=0) = Farin{1}()
+@doc """
+    Hiyoshi(d=2)
+
+Interpolate using Hiyoshi's C(2) interpolant. Hiyoshi's interpolant C(0) is not yet implemented, 
+but we do not make any conversions to C(2) like in e.g. `Farin()`, e.g. `Farin()` gets 
+converted to `Farin(1)` but, to support possible later versions, `Hiyoshi()` does not get 
+converted to `Hiyoshi(2)`.
+""" Hiyoshi(d=0) = Hiyoshi{d}()
 
 @inline iwrap(s::AbstractInterpolator) = s
 @inline function iwrap(s::Symbol)
     if s == :sibson
         return Sibson()
+    elseif s == :sibson_1
+        return Sibson(1)
     elseif s == :triangle
         return Triangle()
     elseif s == :nearest
@@ -97,6 +109,8 @@ Interpolate using Farin's C(1) interpolant.
         return Laplace()
     elseif s == :farin
         return Farin()
+    elseif s == :hiyoshi_2
+        return Hiyoshi(2)
     else
         throw(ArgumentError("Unknown interpolator."))
     end

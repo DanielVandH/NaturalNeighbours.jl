@@ -67,7 +67,7 @@ export interpolate
 export differentiate
 export generate_derivatives, generate_gradients
 export identify_exterior_points
-export Sibson, Triangle, Nearest, Laplace, Direct, Iterative, Farin
+export Sibson, Triangle, Nearest, Laplace, Direct, Iterative, Farin, Hiyoshi
 
 include("data_structures/natural_coordinates.jl")
 include("data_structures/neighbour_cache.jl")
@@ -83,6 +83,7 @@ include("interpolation/coordinates/triangle.jl")
 include("interpolation/coordinates/nearest.jl")
 include("interpolation/coordinates/laplace.jl")
 include("interpolation/coordinates/farin.jl")
+include("interpolation/coordinates/hiyoshi.jl")
 include("interpolation/utils.jl")
 
 include("differentiation/generate.jl")

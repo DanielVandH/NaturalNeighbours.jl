@@ -222,7 +222,7 @@ function point_set_3()
 end
 
 function test_interpolant(itp, x, y, f)
-    for method in (Farin(1),:sibson, :triangle, :nearest, :laplace, Sibson(1))
+    for method in (Farin(1), :sibson, :triangle, :nearest, :laplace, Sibson(1), Hiyoshi(2))
         for _ in 1:500
             vals = itp(x, y; parallel=false, method)
             vals2 = similar(vals)
