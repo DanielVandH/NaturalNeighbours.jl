@@ -193,3 +193,7 @@ function get_contrib(tri, i, j, k, ℓ, m, N₀, ∇, H, z, case)
         return fᵢⱼₖₗₘ, 1
     end
 end
+
+function compute_natural_coordinates(::Hiyoshi, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
+    return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+end

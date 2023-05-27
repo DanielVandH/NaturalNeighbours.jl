@@ -126,18 +126,6 @@ end
     return interpolate(points, z; gradient, hessian, kwargs...)
 end
 
-function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
-    sib0 = _eval_natural_coordinates(nc, z)
-    coordinates = get_coordinates(nc)
-    if length(coordinates) ≤ 2 # 2 means extrapolation, 1 means we're evaluating at a data site 
-        return sib0
-    end
-    ζ, α, β = _compute_sibson_1_coordinates(nc, tri, z, gradients)
-    num = α * sib0 + β * ζ
-    den = α + β
-    return num / den
-end
-
 function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
     tri = get_triangulation(itp)
     F = number_type(tri)

@@ -74,3 +74,19 @@ end
     end
     return _eval_natural_coordinates(method, nc, z, gradients, hessians, tri)
 end
+
+function _get_nc_and_z(method::AbstractInterpolator{D}, p, z, gradients, hessians, tri, cache=NaturalNeighboursCache(tri); rng=Random.default_rng(), project=true) where {D}
+    if interpolant_method == Triangle() || interpolant_method == Nearest() # coordinates need to be the natural neighbours
+        nc = compute_natural_coordinates(Sibson(), tri, p, cache; rng, project)
+    else
+        nc = compute_natural_coordinates(method, tri, p, cache; rng, project)
+    end
+    if D == 0
+        zᵢ = _eval_natural_coordinates(nc, z)
+    elseif D == 1
+        zᵢ = _eval_natural_coordinates(method, nc, z, gradients, tri)
+    else # D == 2 
+        zᵢ = _eval_natural_coordinates(method, nc, z, gradients, hessians, tri)
+    end
+    return nc, zᵢ
+end

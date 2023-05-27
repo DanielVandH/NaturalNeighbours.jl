@@ -368,7 +368,16 @@ function complete_test_function_analysis(id)
     x = vec([x for x in xg, _ in yg])
     y = vec([y for _ in xg, y in yg])
     ze, ∇e, He = f.(x, y), f′.(x, y), f′′.(x, y)
-    interpolant_methods = (Sibson(), (Sibson(1), Direct()), (Sibson(1), Iterative()), Laplace(), Nearest(), Triangle(), (Farin(1), Direct()), (Farin(1), Iterative()))
+    interpolant_methods = (Sibson(),
+        (Sibson(1), Direct()),
+        (Sibson(1), Iterative()),
+        Laplace(),
+        Nearest(),
+        Triangle(),
+        (Farin(1), Direct()),
+        (Farin(1), Iterative()),
+        (Hiyoshi(2), Direct()),
+        (Hiyoshi(2), Iterative()))
     derivative_methods = (Direct(), Iterative())
 
     itp1 = interpolate(x1, y1, z1; derivatives=true)
@@ -421,6 +430,7 @@ function complete_test_function_analysis(id)
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 1)
+                    @show interpolant_method
                     ∇ = _∂(x, y; method=method, interpolant_method=interpolant_method[1], rng=StableRNG(123))
                 end
                 all_errs = norm.(collect.(∇) .- ∇e)

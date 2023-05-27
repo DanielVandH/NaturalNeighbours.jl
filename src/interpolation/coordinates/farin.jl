@@ -61,3 +61,7 @@ function get_contrib(tri, i, j, k, N₀, ∇, z)
         return bezier_face_contribution(tri, i, j, k, N₀, ∇, z)
     end
 end
+
+function compute_natural_coordinates(::Farin, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
+    return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
+end
