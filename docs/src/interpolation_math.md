@@ -106,6 +106,8 @@ where $\ell(\mathcal F_{0i})$ is the length of the facet $\mathcal F_{0i}$. In p
 f^{\text{LAP}}(\boldsymbol x_0) = \sum_{i \in N_0} \lambda_i^{\text{LAP}}z_i.
 ```
 
+This interpolant has linear precision, meaning it reproduces linear functions.
+
 An example of what this interpolant looks like is given below.
 
 ```@raw html
@@ -150,6 +152,8 @@ f^{\text{SIB}}(\boldsymbol x_0) = \sum_{i \in N_0} \lambda_i^{\text{SIB}}z_i.
 
 We may also use $f^{\text{SIB}0}$ and $\lambda_i^{\text{SIB}0}$ rather than $f^{\text{SIB}}$ and $\lambda_i^{\text{SIB}}$, respectively. 
 
+This interpolant has linear precision, meaning it reproduces linear functions.
+
 An example of what this interpolant looks like is given below.
 
 ```@raw html
@@ -159,41 +163,6 @@ An example of what this interpolant looks like is given below.
 ```
 
 Our implementation of these coordinates follows [this article](https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html) with some simple modifications.
-
-## Sibson-1 Coordinates 
-
-Here we describe an extension of Sibson's coordinates, which we may also call Sibson-0 coordinates, which is $C^1$ at the data sites (but still $C^1$ in $\mathcal C(\boldsymbol X) \setminus \boldsymbol X$). A limitation of it is that it requires an estimate of the gradient $\boldsymbol \nabla_i$ at the data sites $\boldsymbol x_i$, which may be estimated using the derivative generation techniques describd in the sidebar. 
-
-To define the interpolant for these new coordinates, denoted $f^{\text{SIB}1}$, we first define:
-
-```math
-\begin{align*}
-r_i &= \|\boldsymbol x_0-\boldsymbol x_i\|, \\
-\gamma_i &= \frac{\lambda_i^{\text{SIB}0}}{r_i}, \\
-\zeta_i &= z_i + (\boldsymbol x_0 - \boldsymbol x_i)^T\boldsymbol\nabla_i, \\
-\zeta &= \frac{\sum_{i\in N_0} \gamma_i\zeta_i}{\sum_{i\in N_0} \gamma_i}, \\
-\alpha &= \frac{\sum_{i \in N_0} \lambda_i^{\text{SIB}0}r_i}{\sum_{i \in N_0} \gamma_i}, \\
-\beta &= \sum_{i \in N_0} \lambda_i^{\text{SIB}0}r_i^2.
-\end{align*}
-```
-
-Our interpolant is then defined by 
-
-```math
-f^{\text{SIB}1}(\boldsymbol x_0) = \frac{\alpha f^{\text{SIB}0} + \beta\zeta}{\alpha + \beta}.
-```
-
-This interpolant exactly reproduces spherical quadratics $\boldsymbol x \mapsto \mu(\boldsymbol x - \boldsymbol a)^T(\boldsymbol x - \boldsymbol a)$.
-
-An example of what this interpolant looks like is given below.
-
-```@raw html
-<figure>
-    <img src='../figures/fsib1_example.png', alt='Sibson-1 Interpolation'><br>
-</figure>
-```
-
-Notice that the peak of the function is much smoother than it was in the other interpolant examples.
 
 ## Triangle Coordinates
 
@@ -226,11 +195,134 @@ An example of what this interpolant looks like is given below.
 </figure>
 ```
 
+# Smooth Interpolation 
+
+All the derived interpolants above are not differentiable at the data sites. Here we describe some interpolants that are differentiable at the data sites. 
+
+## Sibson's $C^1$ Interpolant 
+
+Sibson's $C^1$ interpolant, which we call Sibson-1 interpolation, extends on Sibon's coordinates above, also called Sibson-0 coordinates, is $C^1$ at the data sites. A limitation of it is that it requires an estimate of the gradient $\boldsymbol \nabla_i$ at the data sites $\boldsymbol x_i$, which may be estimated using the derivative generation techniques describd in the sidebar. 
+
+Following [Bobach's thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf) or [Flötotto's thesis](https://theses.hal.science/tel-00832487/PDF/these-flototto.pdf), the Sibson-1 interpolant $f^{\text{SIB}1}$ is a linear combination of $f^{\text{SIB}0} \equiv f^{\text{SIB}}$ and another interpolant $\xi$. We define:
+
+```math
+\begin{align*}
+r_i &= \|\boldsymbol x_0-\boldsymbol x_i\|, \\
+\gamma_i &= \frac{\lambda_i^{\text{SIB}0}}{r_i}, \\
+\zeta_i &= z_i + (\boldsymbol x_0 - \boldsymbol x_i)^T\boldsymbol\nabla_i, \\
+\zeta &= \frac{\sum_{i\in N_0} \gamma_i\zeta_i}{\sum_{i\in N_0} \gamma_i}, \\
+\alpha &= \frac{\sum_{i \in N_0} \lambda_i^{\text{SIB}0}r_i}{\sum_{i \in N_0} \gamma_i}, \\
+\beta &= \sum_{i \in N_0} \lambda_i^{\text{SIB}0}r_i^2.
+\end{align*}
+```
+
+Our interpolant is then defined by 
+
+```math
+f^{\text{SIB}1}(\boldsymbol x_0) = \frac{\alpha f^{\text{SIB}0} + \beta\zeta}{\alpha + \beta}.
+```
+
+This interpolant exactly reproduces spherical quadratics $\boldsymbol x \mapsto \mu(\boldsymbol x - \boldsymbol a)^T(\boldsymbol x - \boldsymbol a)$.
+
+An example of what this interpolant looks like is given below.
+
+```@raw html
+<figure>
+    <img src='../figures/fsib1_example.png', alt='Sibson-1 Interpolation'><br>
+</figure>
+```
+
+Notice that the peak of the function is much smoother than it was in the other interpolant examples.
+
+## Farin's $C^1$ Interpolant 
+
+Farin's $C^1$ interpolant, introduced by [Farin (1990)](https://doi.org/10.1016/0167-8396(90)90036-Q), is another interpolant with $C^1$ continuity at the data sites provided we have estimates of the gradients $\boldsymbol \nabla_i$ at the data sites (see the sidebar for derivative generation methods), and also makes use of the Sibson-0 coordinates. Typically these coordinates are described in the language of Bernstein-Bézier simplices (as in [Bobach's thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf) or [Flötotto's thesis](https://theses.hal.science/tel-00832487/PDF/these-flototto.pdf) and Farin's original paper), this language makes things more complicated than they need to be. Instead, we describe the interpolant using symmetric homogeneous polynomials, as in Hiyoshi and Sugihara ([2004](https://doi.org/10.1007/978-3-540-24767-8_8), [2007](https://doi.org/10.1504/IJCSE.2007.014460)). See the references mentioned above for a derivation of the interpolant we describe below.
+
+Let $\boldsymbol x_0$ be some point in $\mathcal C(\boldsymbol X)$ and let $N_0$ be the natural neighbourhood around $\boldsymbol x_0$. We let the natural coordinates be given by Sibson's coordinates $\boldsymbol \lambda = (\lambda_1,\ldots,\lambda_n)$ with corresponding natural neighbours $\boldsymbol x_1,\ldots,\boldsymbol x_n$ (rearranging the indices accordingly to avoid using e.g. $i_1,\ldots, i_n$), where $n = |N_0|$. We define a homogeneous symmetric polynomial 
+
+```math 
+f(\boldsymbol x_0) = \sum_{i \in N_0}\sum_{j \in N_0}\sum_{k \in N_0} f_{ijk}\lambda_i\lambda_j\lambda_k,
+```
+
+where the coefficients $f_{ijk}$ are symmetric so that they can be uniquely determined. We define $z_{i, j} = \boldsymbol \nabla_i^T \overrightarrow{\boldsymbol x_i\boldsymbol x_j}$, where $\boldsymbol \nabla_i$ is the estimate of the gradient at $\boldsymbol x_i \in N(\boldsymbol x_0) \subset \boldsymbol X$ and $\overrightarrow{\boldsymbol x_i\boldsymbol x_j} = \boldsymbol x_j - \boldsymbol x_i$. Then, define the coefficients (using symmetry to permute the indices to the standard forms below):
+
+```math 
+\begin{align*}
+f_{iii} = z_i, \\
+f_{iij} &= z_i + \frac{1}{3}z_{i,j},  \\
+f_{ijk} &= \frac{z_i+z_j+z_k}{3} + \frac{z_{i,j}+z_{i,k}+z_{j,i}+z_{j,k}+z_{k,i}+z_{k,j}}{12},
+\end{align*}
+```math 
+
+where all the $i$, $j$, and $k$ are different. The resulting interpolant $f$ is Farin's $C^1$ interpolant, $f^{\text{FAR}} = f$, and has quadratic precision so that it reproduces quadratic polynomials.
+
+Let us describe how we actually evaluate $\sum_{i \in N_0}\sum_{j \in N_0}\sum_{k \in N_0} f_{ijk}\lambda_i\lambda_j\lambda_k$ efficiently. Write this as
+
+```math 
+f^{\text{FAR}}(\boldsymbol x_0) = \sum_{1 \leq i, j, k \leq n} f_{ijk}\lambda_i\lambda_j\lambda_k.
+```
+
+This looks close to the definition of a [complete homogeneous symetric polynomial](https://en.wikipedia.org/wiki/Complete_homogeneous_symmetric_polynomial). This page shows the identity
+
+```math 
+\sum_{1 \leq i \leq j \leq k \leq n} X_iX_kX_j = \sum_{1 \leq i, j, k \leq n} \frac{m_i!m_j!m_k!}{3!}X_iX_jX_k,
+```
+
+where $m_\ell$ is the multiplicity of $X_\ell$ in the summand, e.g. if the summand is $X_i^2X_k$ then $m_i=2$ and $m_k = 1$. Thus, transforming the variables accordingly, we can show that 
+
+```math 
+f^{\text{FAR}}(\boldsymbol x_0) = 6\underbrace{\sum_{i=1}^n\sum_{j=i}^n\sum_{k=j}^n}_{\sum_{1 \leq i \leq j \leq k \leq n}} \tilde f_{ijk}\lambda_i\lambda_j\lambda_k,
+```
+
+where $\tilde f_{iii} = f_{iii}/3! = f_{iii}/6$, $\tilde f_{iij} = f_{iij}/2$, and $\tilde f_{ijk} = f_{ijk}$. This is the implementation we use.
+
+## Hiyoshi's $C^2$ Interpolant 
+
+Hiyoshi's $C^2$ interpolant is similar to Farin's $C^1$ interpolant, except now we have $C^2$ continuity at the data sites and we now, in addition to requiring estimates of the gradients $\boldsymbol \nabla_i$ at the data sites, require estimates of the Hessians $\boldsymbol H_i$ at the data sites (see the sidebar for derivative generation methods). As with Farin's $C^1$ interpolant, we use the language of homogeneous symmetric polynomials rather than Bernstein-Bézier simplices in what follows. There are two definitions of Hiyoshi's $C^2$ interpolant, the first being given by [Hiyoshi and Sugihara (2004)](https://doi.org/10.1007/978-3-540-24767-8_8) and described by [Bobach](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf), and the second given three years later again by  [Hiyoshi and Sugihara (2007)](https://doi.org/10.1504/IJCSE.2007.014460). We use the 2007 definition - testing shows that they are basically the same, anyway.
+
+Like in the previous section, w let $\boldsymbol x_0$ be some point in $\mathcal C(\boldsymbol X)$ and let $N_0$ be the natural neighbourhood around $\boldsymbol x_0$. We let the natural coordinates be given by Sibson's coordinates $\boldsymbol \lambda = (\lambda_1,\ldots,\lambda_n)$ with corresponding natural neighbours $\boldsymbol x_1,\ldots,\boldsymbol x_n$ (rearranging the indices accordingly to avoid using e.g. $i_1,\ldots, i_n$), where $n = |N_0|$. We define 
+
+```
+z_{i, j} = \boldsymbol \nablda_i^T\overrightarrow{\boldsymbol x_i\boldsymbol x_j}, \qquad z_{i, jk} = \overrightarrow{\boldsymbol x_i\boldsymbol x_j}^T\boldsymbol H_i\overrightarrow{\boldsymbol x_i\boldsymbol x_k}.
+```
+
+Hiyoshi's $C^2$ interpolant, written $f^{\text{HIY}}$ (or later $f^{\text{HIY}2}$, if ever we can get Hiyoshi's $C^k$ interpolant on $\mathcal C(\boldsymbol X) \setminus \boldsymbol X$ implemented --- see Hiyoshi and Sugihara ([2000](https://doi.org/10.1145/336154.336210), [2002](https://doi.org/10.1016/S0925-7721(01)00052-9)), [Bobach, Bertram, Umlauf (2006)](https://doi.org/10.1007/11919629_20), and Chapter 3.2.5.5 and Chapter 5.5. of [Bobach's thesis]((https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf))), is defined by the homogeneous symmetric polynomial
+
+```math 
+f^{\text{HIY}}(\boldsymbol x_0) = \sum_{1 \leq i,j,k,\ell,m} f_{ijk\ell m}\lambda_i\lambda_j\lambda_k\lambda_\ell\lambda_m,
+```
+
+where we define the coefficients (using symmetry to permute the indices to the standard forms below):
+
+```math
+\begin{align*}
+f_{iiiii} &= z_i, \\
+f_{iiiij} &= z_i + \frac15z_{i,j}, \\
+f_{iiijj} &= z_i + \frac25z_{i,j} + \frac{1}{20}z_{i,jj}, \\
+f_{iiijk} &= z_i + \frac15\left(z_{i, j} + z_{i, k}\right) + \frac{1}{20}z_{i, jk}, \\
+f_{iijjk} &= \frac{13}{30}\left(z_i + z_j\right) + \frac{2}{15}z_k + \frac{1}{9}\left(z_{i, j} + z_{j, i}\right) + \frac{7}{90}\left(z_{i, k} + z_{j, k}\right) + \frac{2}{45}\left(z_{k, i} + z_{k, j}\right) + \frac{1}{45}\left(z_{i, jk} + z_{j, ik} + z_{k, ij}\right), \\
+f_{iijk\ell} &= \frac12z_i + \frac6\left(z_j + z_k + z_\ell\right) + \frac{7}{90}\left(z_{i, j} + z_{i, k} + z_{i, \ell}\right) + \frac{2}{45}\left(z_{j, i} + z_{k, i} + z_{\ell, i}\right) + \frac{1}{30}\left(z_{j, k} + z_{j, \ell} + z_{k, j} + z_{k, \ell} + z_{\ell, j} + z_{j, k}\right) \\
+&+ \frac{1}{90}\left(z_{i, jk} + z_{i, j\ell} + z_{i, k\ell}\right) + \frac{1}{90}\left(z_{j, ik} + z_{j, i\ell} + z_{k, ij} + z_{k, i\ell} + z_{\ell, ij} + z_{\ell, ik}\right) + \frac{1}{180}\left(z_{j, k\ell} + z_{k, j\ell} + z_{\ell, jk}\right), \\
+f_{ijk\ell m} &= \frac{1}{5}\left(z_i + z_j + z_k + z_\ell + z_m\right) \\
+&+ \frac{1}{30}\left(z_{i, j} + z_{i, k} + z_{i, \ell} + z_{i, m} + z_{j, i} + \cdots + z_{m, \ell}\right) \\
+&+ \frac{1}{180}\left(z_{i, jk} + z_{i, j\ell} + z_{i, jm} + z_{i, k\ell} + z_{i, km} + z_{i, \ell m} + z_{j, i\ell} + \cdots + z_{mk\ell}\right),
+```
+
+where all the $i$, $j$, $k$, $\ell$, and $m$ are different. To evaluate $f^{\text{HIY}}$, we use the same relationship between $f^{\text{HIY}}$ and complete homogeneous symmetric polynomials to write
+
+```math 
+f^{\text{HIY}}(\boldsymbol _0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m} \tilde f_{ijk \ell m} \tilde f_{ijk\ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
+```
+
+where $\tilde f_{iiiii} = f_{iiiii}/5! = f_{iiiii}/120$, $\tilde f_{iiiij} = f_{iiiij}/24$, $\tilde f_{iijjj} = f_{iijjj}/12$, $\tilde f_{iijjk} = f_{iijjk}/4$, $\tilde f_{iijk\ell} = f_{iijk\ell}/2$, and $\tilde f_{ijk\ell m} = f_{ijk\ell m}$.
+
+This interpolant has cubic precision, meaning it can recover cubic polynomials.
+
 # Regions of Influence 
 
 The _region of influence_ for the natural neighbour coordinates associated with a point $\boldsymbol x_i$ is the interior the union of all circumcircles coming from the triangles of the underlying triangulation that pass through $\boldsymbol x_i$. We can visualise this for the coordinates we define above below. (this region of influence definition not necessarily generalise to the triangle and nearest neighbour coordinates, but we still compare them).
 
-We take a set of data sites in $[-1, 1]^2$ such that all function values are zero except for $z_1 = 0$ with $\boldsymbol x_1 = \boldsymbol 0$. Using this setup, we obtain the following results (see also Figure 3.6 of Bobach's thesis linked previously):_
+We take a set of data sites in $[-1, 1]^2$ such that all function values are zero except for $z_1 = 0$ with $\boldsymbol x_1 = \boldsymbol 0$. Using this setup, we obtain the following results (see also Figure 3.6 of Bobach's thesis linked previously):
 
 ```@raw html
 <figure>
