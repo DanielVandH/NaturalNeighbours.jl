@@ -32,11 +32,15 @@ function _eval_natural_coordinates(::Sibson{1}, nc::NaturalCoordinates{F}, z, gr
     return num / den
 end
 
-@inline function _eval_natural_coordinates(::Farin{1}, nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
-    return _compute_farin_coordinates(nc,tri,z,gradients)
+@inline function _eval_natural_coordinates(::Farin, nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
+    λ = get_coordinates(nc)
+    if length(λ) ≤ 2 # 2 means extrapolation, 1 means we're evaluating at a data site 
+        return _eval_natural_coordinates(nc, z)
+    end
+    return _compute_farin_coordinates(nc, tri, z, gradients)
 end
 
-@inline function _eval_interp(method::Union{Farin{1},Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
+@inline function _eval_interp(method::Union{<:Farin,Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     gradients = get_gradient(itp)
     if isnothing(gradients)
         throw(ArgumentError("Gradients must be provided for Sibson-1 or Farin interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))

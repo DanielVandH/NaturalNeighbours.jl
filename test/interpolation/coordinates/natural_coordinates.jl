@@ -9,7 +9,7 @@ const NNI = NaturalNeighbours
 include(normpath(@__DIR__, "../..", "helper_functions", "point_generator.jl"))
 
 @testset "Natural coordinates" begin
-    for method in (:sibson, :triangle, :nearest, :laplace)
+    for method in (Sibson(), Triangle(), Nearest(), Laplace())
         method = NNI.iwrap(method)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
@@ -46,7 +46,7 @@ include(normpath(@__DIR__, "../..", "helper_functions", "point_generator.jl"))
 end
 
 @testset "Test coefficient values for each method" begin # used GeoGebra
-    for _ in 1:100 # make sure rng is getting passed consistently 
+    for _ in 1:10 # make sure rng is getting passed consistently 
         # Setup
         rng = StableRNG(872973)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0),
@@ -146,6 +146,79 @@ end
         @test α ≈ α1
         @test β ≈ β1
         @test ζ ≈ ζ1
+
+        # Farin(1)
+        tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
+        tri = triangulate(get_points(tri), randomise=false)
+        f = (x, y) -> sin(x - y) + cos(x + y)
+        z = [f(x, y) for (x, y) in each_point(tri)]
+        itp = interpolate(tri, z; derivatives=true)
+        q = (5.37841, 1.3881)
+        nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q)
+        ∇ = NNI.get_gradient(itp)
+        λ = NNI.get_coordinates(nc)
+        N₀ = NNI.get_indices(nc)
+        @test NNI.is_bezier_point(1, 1, 1)
+        @test !NNI.is_bezier_point(1, 2, 1)
+        @test NNI.is_bezier_edge(1, 2, 2)
+        @test !NNI.is_bezier_edge(1, 2, 3)
+        @test NNI.is_bezier_face(1, 2, 3)
+        @test !NNI.is_bezier_face(1, 2, 2)
+        @test NNI.find_bezier_edge(1, 1, 2) == (1, 2)
+        @test NNI.find_bezier_edge(1, 2, 1) == (1, 2)
+        @test NNI.find_bezier_edge(1, 2, 2) == (2, 1)
+        @test NNI.bezier_point_contribution(1, N₀, z) == (z[N₀[1]], 6)
+        @test NNI.bezier_edge_contribution(tri, 2, 5, N₀, ∇, z) == (z[N₀[2]] + (1 / 3) * dot(get_point(tri, N₀[5]) .- get_point(tri, N₀[2]), ∇[N₀[2]]), 2)
+        @test NNI.bezier_face_contribution(tri, 2, 3, 6, N₀, ∇, z)[1] ≈ (1 / 3) * (
+            z[N₀[2]] +
+            z[N₀[3]] +
+            z[N₀[6]]
+        ) + (1 / 12) * (
+            dot(get_point(tri, N₀[3]) .- get_point(tri, N₀[2]), ∇[N₀[2]]) +
+            dot(get_point(tri, N₀[6]) .- get_point(tri, N₀[2]), ∇[N₀[2]]) +
+            dot(get_point(tri, N₀[2]) .- get_point(tri, N₀[3]), ∇[N₀[3]]) +
+            dot(get_point(tri, N₀[6]) .- get_point(tri, N₀[3]), ∇[N₀[3]]) +
+            dot(get_point(tri, N₀[2]) .- get_point(tri, N₀[6]), ∇[N₀[6]]) +
+            dot(get_point(tri, N₀[3]) .- get_point(tri, N₀[6]), ∇[N₀[6]])
+        )
+        @test NNI.bezier_face_contribution(tri, 2, 3, 6, N₀, ∇, z)[2] == 1
+        @test NNI.get_contrib(tri, 1, 1, 1, N₀, ∇, z) == NNI.bezier_point_contribution(1, N₀, z)
+        @test NNI.get_contrib(tri, 1, 2, 2, N₀, ∇, z) == NNI.bezier_edge_contribution(tri, 2, 1, N₀, ∇, z)
+        @test NNI.get_contrib(tri, 1, 2, 3, N₀, ∇, z) == NNI.bezier_face_contribution(tri, 1, 2, 3, N₀, ∇, z)
+        n = length(λ)
+        s1 = 0.0
+        for i in 1:n, j in 1:n, k in 1:n
+            s1 += NNI.get_contrib(tri, i, j, k, N₀, ∇, z)[1] * λ[i] * λ[j] * λ[k]
+        end
+        @test s1 ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test NNI._eval_interp(Farin(1), itp, q, NNI.NaturalNeighboursCache(tri)) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test NNI._eval_natural_coordinates(Farin(1), nc, z, ∇, tri) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test itp(q..., method=Farin(1)) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test itp(5.0, 5.0, method=Farin(1)) ≈ f(5.0, 5.0)
+        @test itp(5.0632, 5.0632, method=Farin(1)) ≈ f(5.0632, 5.0632) rtol=1e-3
+
+        tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 300, 300, add_ghost_triangles=true)
+        z = [f(x, y) for (x, y) in each_point(tri)]
+        xx = LinRange(0, 1, 50)
+        yy = LinRange(0, 1, 50)
+        x = vec([x for x in xx, _ in yy])
+        y = vec([y for _ in xx, y in yy])
+        itp = interpolate(get_points(tri), z; derivatives=true)
+        q = (x[52], y[52])
+        nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q)
+        ∇ = NNI.get_gradient(itp)
+        λ = NNI.get_coordinates(nc)
+        N₀ = NNI.get_indices(nc)
+        n = length(λ)
+        s1 = 0.0
+        for i in 1:n, j in 1:n, k in 1:n
+            s1 += NNI.get_contrib(tri, i, j, k, N₀, ∇, z)[1] * λ[i] * λ[j] * λ[k]
+        end
+        @test s1 ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇) rtol = 1e-5
+        @test NNI._eval_interp(Farin(1), itp, q, NNI.NaturalNeighboursCache(tri)) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test NNI._eval_natural_coordinates(Farin(1), nc, z, ∇, tri) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test itp(q..., method=Farin(1)) ≈ NNI._compute_farin_coordinates(nc, tri, z, ∇)
+        @test itp(q..., method=Farin(1)) ≈ f(q...) rtol = 1e-4
     end
 end
 

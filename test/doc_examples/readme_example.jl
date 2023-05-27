@@ -39,7 +39,7 @@ end
 
 all_vals = (sibson_vals, triangle_vals, laplace_vals, sibson_1_vals, nearest_vals, farin_vals, exact)
 titles = ("(a): Sibson", "(b): Triangle", "(c): Laplace", "(d): Sibson-1", "(e): Nearest", "(f): Farin", "(g): Exact")
-fig = Figure(fontsize=36)
+fig = Figure(fontsize=55)
 for (i, (vals, title)) in enumerate(zip(all_vals, titles))
     plot_2d(fig, 1, i, title, vals, xg, yg, x, y, !(vals === exact))
     plot_3d(fig, 2, i, " ", vals, xg, yg)
