@@ -283,7 +283,7 @@ Hiyoshi's $C^2$ interpolant is similar to Farin's $C^1$ interpolant, except now 
 Like in the previous section, w let $\boldsymbol x_0$ be some point in $\mathcal C(\boldsymbol X)$ and let $N_0$ be the natural neighbourhood around $\boldsymbol x_0$. We let the natural coordinates be given by Sibson's coordinates $\boldsymbol \lambda = (\lambda_1,\ldots,\lambda_n)$ with corresponding natural neighbours $\boldsymbol x_1,\ldots,\boldsymbol x_n$ (rearranging the indices accordingly to avoid using e.g. $i_1,\ldots, i_n$), where $n = |N_0|$. We define 
 
 ```math
-z_{i, j} = \boldsymbol \nablda_i^T\overrightarrow{\boldsymbol x_i\boldsymbol x_j}, \qquad z_{i, jk} = \overrightarrow{\boldsymbol x_i\boldsymbol x_j}^T\boldsymbol H_i\overrightarrow{\boldsymbol x_i\boldsymbol x_k}.
+z_{i, j} = \boldsymbol \nabla_i^T\overrightarrow{\boldsymbol x_i\boldsymbol x_j}, \qquad z_{i, jk} = \overrightarrow{\boldsymbol x_i\boldsymbol x_j}^T\boldsymbol H_i\overrightarrow{\boldsymbol x_i\boldsymbol x_k}.
 ```
 
 Hiyoshi's $C^2$ interpolant, written $f^{\text{HIY}}$ (or later $f^{\text{HIY}2}$, if ever we can get Hiyoshi's $C^k$ interpolant on $\mathcal C(\boldsymbol X) \setminus \boldsymbol X$ implemented --- see Hiyoshi and Sugihara ([2000](https://doi.org/10.1145/336154.336210), [2002](https://doi.org/10.1016/S0925-7721(01)00052-9)), [Bobach, Bertram, Umlauf (2006)](https://doi.org/10.1007/11919629_20), and Chapter 3.2.5.5 and Chapter 5.5. of [Bobach's thesis]((https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf))), is defined by the homogeneous symmetric polynomial
@@ -300,9 +300,9 @@ f_{iiiii} &= z_i, \\
 f_{iiiij} &= z_i + \frac15z_{i,j}, \\
 f_{iiijj} &= z_i + \frac25z_{i,j} + \frac{1}{20}z_{i,jj}, \\
 f_{iiijk} &= z_i + \frac15\left(z_{i, j} + z_{i, k}\right) + \frac{1}{20}z_{i, jk}, \\
-f_{iijjk} &= \frac{13}{30}\left(z_i + z_j\right) + \frac{2}{15}z_k + \frac{1}{9}\left(z_{i, j} + z_{j, i}\right) + \frac{7}{90}\left(z_{i, k} + z_{j, k}\right) + \frac{2}{45}\left(z_{k, i} + z_{k, j}\right) + \frac{1}{45}\left(z_{i, jk} + z_{j, ik} + z_{k, ij}\right), \\
-f_{iijk\ell} &= \frac12z_i + \frac6\left(z_j + z_k + z_\ell\right) + \frac{7}{90}\left(z_{i, j} + z_{i, k} + z_{i, \ell}\right) + \frac{2}{45}\left(z_{j, i} + z_{k, i} + z_{\ell, i}\right) + \frac{1}{30}\left(z_{j, k} + z_{j, \ell} + z_{k, j} + z_{k, \ell} + z_{\ell, j} + z_{j, k}\right) \\
-&+ \frac{1}{90}\left(z_{i, jk} + z_{i, j\ell} + z_{i, k\ell}\right) + \frac{1}{90}\left(z_{j, ik} + z_{j, i\ell} + z_{k, ij} + z_{k, i\ell} + z_{\ell, ij} + z_{\ell, ik}\right) + \frac{1}{180}\left(z_{j, k\ell} + z_{k, j\ell} + z_{\ell, jk}\right), \\
+f_{iijjk} &= \frac{13}{30}\left(z_i + z_j\right) + \frac{2}{15}z_k + \frac{1}{9}\left(z_{i, j} + z_{j, i}\right) + \frac{7}{90}\left(z_{i, k} + z_{j, k}\right) \\&+ \frac{2}{45}\left(z_{k, i} + z_{k, j}\right) + \frac{1}{45}\left(z_{i, jk} + z_{j, ik} + z_{k, ij}\right), \\
+f_{iijk\ell} &= \frac12z_i + \frac16\left(z_j + z_k + z_\ell\right) + \frac{7}{90}\left(z_{i, j} + z_{i, k} + z_{i, \ell}\right) \\&+ \frac{2}{45}\left(z_{j, i} + z_{k, i} + z_{\ell, i}\right) + \frac{1}{30}\left(z_{j, k} + z_{j, \ell} + z_{k, j} + z_{k, \ell} + z_{\ell, j} + z_{j, k}\right) \\
+&+ \frac{1}{90}\left(z_{i, jk} + z_{i, j\ell} + z_{i, k\ell}\right) + \frac{1}{90}\left(z_{j, ik} + z_{j, i\ell} + z_{k, ij} + z_{k, i\ell} + z_{\ell, ij} + z_{\ell, ik}\right) \\&+ \frac{1}{180}\left(z_{j, k\ell} + z_{k, j\ell} + z_{\ell, jk}\right), \\
 f_{ijk\ell m} &= \frac{1}{5}\left(z_i + z_j + z_k + z_\ell + z_m\right) \\
 &+ \frac{1}{30}\left(z_{i, j} + z_{i, k} + z_{i, \ell} + z_{i, m} + z_{j, i} + \cdots + z_{m, \ell}\right) \\
 &+ \frac{1}{180}\left(z_{i, jk} + z_{i, j\ell} + z_{i, jm} + z_{i, k\ell} + z_{i, km} + z_{i, \ell m} + z_{j, i\ell} + \cdots + z_{mk\ell}\right),
@@ -312,7 +312,7 @@ f_{ijk\ell m} &= \frac{1}{5}\left(z_i + z_j + z_k + z_\ell + z_m\right) \\
 where all the $i$, $j$, $k$, $\ell$, and $m$ are different. To evaluate $f^{\text{HIY}}$, we use the same relationship between $f^{\text{HIY}}$ and complete homogeneous symmetric polynomials to write
 
 ```math 
-f^{\text{HIY}}(\boldsymbol _0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m} \tilde f_{ijk \ell m} \tilde f_{ijk\ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
+f^{\text{HIY}}(\boldsymbol x_0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m} \tilde f_{ijk \ell m} \tilde f_{ijk\ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
 ```
 
 where $\tilde f_{iiiii} = f_{iiiii}/5! = f_{iiiii}/120$, $\tilde f_{iiiij} = f_{iiiij}/24$, $\tilde f_{iijjj} = f_{iijjj}/12$, $\tilde f_{iijjk} = f_{iijjk}/4$, $\tilde f_{iijk\ell} = f_{iijk\ell}/2$, and $\tilde f_{ijk\ell m} = f_{ijk\ell m}$.
