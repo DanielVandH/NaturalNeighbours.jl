@@ -48,6 +48,8 @@ the smoothness at the data sites (currently only relevant for `Sibson`). The ava
 - `Triangle(d)`: Interpolate based on vertices of the triangle that the point resides in, with `C(0)` continuity at the data sites. `D` is ignored.
 - `Nearest(d)`: Interpolate by returning the function value at the nearest data site. `D` doesn't mean much here (it could be `D = ∞`), and so it is ignored and replaced with `0`.
 - `Laplace(d)`: Interpolate via the Laplace interpolant, with `C(0)` continuity at the data sites. `D` is ignored.
+- `Farin(d)`: Interpolate using the Farin interpolant, with `C(1)` continuity at the data sites. `d` is ignored.
+- `Hiyoshi(d)`: Interpolate using the Hiyoshi interpolant, with `C(d)` continuity at the data sites. Currently, only defined for `d == 2`.
 
 Our implementation of `Sibson(0)`'s coordinates follows [this article](https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html) with some simple modifications.
 """
@@ -62,6 +64,8 @@ end
 struct Triangle{D} <: AbstractInterpolator{D} end
 struct Nearest{D} <: AbstractInterpolator{D} end
 struct Laplace{D} <: AbstractInterpolator{D} end
+struct Farin{D} <: AbstractInterpolator{D} end
+struct Hiyoshi{D} <: AbstractInterpolator{D} end
 @doc """
     Triangle()
 
@@ -77,17 +81,36 @@ Interpolate by taking the function value at the nearest data site.
 
 Interpolate using Laplace's coordinates.
 """ Laplace(d=0) = Laplace{0}()
+@doc """
+    Farin()
+
+Interpolate using Farin's C(1) interpolant.
+""" Farin(d=0) = Farin{1}()
+@doc """
+    Hiyoshi(d=2)
+
+Interpolate using Hiyoshi's C(2) interpolant. Hiyoshi's interpolant C(0) is not yet implemented, 
+but we do not make any conversions to C(2) like in e.g. `Farin()`, e.g. `Farin()` gets 
+converted to `Farin(1)` but, to support possible later versions, `Hiyoshi()` does not get 
+converted to `Hiyoshi(2)`.
+""" Hiyoshi(d=0) = Hiyoshi{d}()
 
 @inline iwrap(s::AbstractInterpolator) = s
 @inline function iwrap(s::Symbol)
     if s == :sibson
         return Sibson()
+    elseif s == :sibson_1
+        return Sibson(1)
     elseif s == :triangle
         return Triangle()
     elseif s == :nearest
         return Nearest()
     elseif s == :laplace
         return Laplace()
+    elseif s == :farin
+        return Farin()
+    elseif s == :hiyoshi_2
+        return Hiyoshi(2)
     else
         throw(ArgumentError("Unknown interpolator."))
     end
@@ -103,52 +126,7 @@ end
     return interpolate(points, z; gradient, hessian, kwargs...)
 end
 
-@inline function _eval_natural_coordinates(coordinates, indices, z)
-    val = zero(eltype(z))
-    for (λ, k) in zip(coordinates, indices)
-        zₖ = z[k]
-        val += λ * zₖ
-    end
-    return val
-end
-
-@inline function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z) where {F}
-    coordinates = get_coordinates(nc)
-    indices = get_indices(nc)
-    return _eval_natural_coordinates(coordinates, indices, z)
-end
-
-function _eval_natural_coordinates(nc::NaturalCoordinates{F}, z, gradients, tri) where {F}
-    sib0 = _eval_natural_coordinates(nc, z)
-    coordinates = get_coordinates(nc)
-    if length(coordinates) ≤ 2 # 2 means extrapolation, 1 means we're evaluating at a data site 
-        return sib0
-    end
-    ζ, α, β = _compute_sibson_1_coordinates(nc, tri, z, gradients)
-    num = α * sib0 + β * ζ
-    den = α + β
-    return num / den
-end
-
-@inline function _eval_interp(method, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
-    tri = get_triangulation(itp)
-    nc = compute_natural_coordinates(method, tri, p, cache; kwargs...)
-    z = get_z(itp)
-    return _eval_natural_coordinates(nc, z)
-end
-
-@inline function _eval_interp(method::Sibson{1}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...) # # has to be a different form since Sib0 blends two functions 
-    gradients = get_gradient(itp)
-    if isnothing(gradients)
-        throw(ArgumentError("Gradients must be provided for Sibson-1 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
-    end
-    tri = get_triangulation(itp)
-    nc = compute_natural_coordinates(Sibson(), tri, p, cache; kwargs...)
-    z = get_z(itp)
-    return _eval_natural_coordinates(nc, z, gradients, tri)
-end
-
-@inline function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
+function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), kwargs...)
     tri = get_triangulation(itp)
     F = number_type(tri)
     p = (F(x), F(y))

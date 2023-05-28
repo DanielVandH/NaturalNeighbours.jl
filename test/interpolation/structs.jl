@@ -17,6 +17,12 @@ const NNI = NaturalNeighbours
     @test NNI.iwrap(NNI.Triangle(1)) == NNI.Triangle(0)
     @test_throws ArgumentError NNI.Sibson(5)
     @test NNI.iwrap(NNI.Laplace(1)) == NNI.Laplace(0)
+    @test NNI.iwrap(NNI.Hiyoshi(2)) == NNI.Hiyoshi(2)
+    @test NNI.iwrap(NNI.Hiyoshi()) == NNI.Hiyoshi(0)
+    @test NNI.iwrap(NNI.Farin()) == NNI.Farin(1)
+    @test NNI.iwrap(:sibson_1) == NNI.Sibson(1)
+    @test NNI.iwrap(:farin) == NNI.Farin(1)
+    @test NNI.iwrap(:hiyoshi_2) == NNI.Hiyoshi(2)
 end
 
 @testset "show" begin

@@ -82,7 +82,7 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
     return polygon_area(points),  u, prev_u, next_u
 end
 
-function compute_natural_coordinates(::Sibson{0}, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
+function compute_natural_coordinates(::Sibson, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
     return _compute_sibson_coordinates(tri, interpolation_point, cache; kwargs...)
 end
 

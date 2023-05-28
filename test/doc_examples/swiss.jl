@@ -95,6 +95,8 @@ sibson_1_vals = interpolant(x, y; method=Sibson(1), parallel=true)
 laplace_vals = interpolant(x, y; method=Laplace(), parallel=true)
 triangle_vals = interpolant(x, y; method=Triangle(), parallel=true)
 nearest_vals = interpolant(x, y; method=Nearest(), parallel=true)
+farin_vals = interpolant(x, y; method=Farin(), parallel=true)
+hiyoshi_vals = interpolant(x, y; method=Hiyoshi(2), parallel=true)
 
 ## Plot the results 
 query_tri = triangulate([x'; y'])
@@ -113,28 +115,30 @@ function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, 
     ylims!(ax, c, d)
     return m
 end
-function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
     fig = Figure(fontsize=24)
     m1 = plot_results!(fig, 1, 1, 1, 2, x, y, xg, yg, sibson_vals, "(a): Sibson", "(b): Sibson", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m2 = plot_results!(fig, 1, 3, 1, 4, x, y, xg, yg, sibson_1_vals, "(c): Sibson-1", "(d): Sibson-1", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m3 = plot_results!(fig, 2, 1, 2, 2, x, y, xg, yg, laplace_vals, "(e): Laplace", "(f): Laplace", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m4 = plot_results!(fig, 2, 3, 2, 4, x, y, xg, yg, triangle_vals, "(g): Triangle", "(h): Triangle", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m5 = plot_results!(fig, 3, 1, 3, 2, x, y, xg, yg, nearest_vals, "(i): Nearest", "(j): Nearest", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
-    ax = Axis3(fig[3, 3], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(k): Original height data", titlealign=:left)
+    m6 = plot_results!(fig, 3, 3, 3, 4, x, y, xg, yg, farin_vals, "(k): Farin", "(ℓ): Farin", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m7 = plot_results!(fig, 4, 1, 4, 2, x, y, xg, yg, hiyoshi_vals, "(m): Hiyoshi", "(n): Hiyoshi", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    ax = Axis3(fig[4, 3], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(k): Original height data", titlealign=:left)
     mesh!(ax, data, triangles, color=elevation_data, colorrange=(0, 4))
     xlims!(ax, a, b)
     ylims!(ax, c, d)
     zlims!(ax, e, f)
-    ax = Axis(fig[3, 4], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(ℓ): Original height data", titlealign=:left)
+    ax = Axis(fig[4, 4], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(o): Original height data", titlealign=:left)
     tricontourf!(ax, data[:, 1], data[:, 2], elevation_data, color=elevation_data, triangulation=triangles', levels=levels)
     xlims!(ax, a, b)
     ylims!(ax, c, d)
-    Colorbar(fig[1:3, 5], m1)
+    Colorbar(fig[1:4, 5], m1)
     resize_to_layout!(fig)
     return fig
 end
 e, f = 0.0, 4.5
-fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated.png"), fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "swiss_heights_interpolated.png") fig
 
@@ -144,8 +148,10 @@ sibson_1_vals_p = interpolant(x, y; method=Sibson(1), parallel=true, project=fal
 laplace_vals_p = interpolant(x, y; method=Laplace(), parallel=true, project=false)
 triangle_vals_p = interpolant(x, y; method=Triangle(), parallel=true, project=false)
 nearest_vals_p = interpolant(x, y; method=Nearest(), parallel=true, project=false)
+farin_vals_p = interpolant(x, y; method=Farin(), parallel=true, project=false)
+hiyoshi_vals_p = interpolant(x, y; method=Hiyoshi(2), parallel=true, project=false)
 
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated_projected.png"), fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "swiss_heights_interpolated_projected.png") fig
 
@@ -156,8 +162,10 @@ sibson_1_vals_p[exterior_idx] .= Inf
 laplace_vals_p[exterior_idx] .= Inf
 triangle_vals_p[exterior_idx] .= Inf
 nearest_vals_p[exterior_idx] .= Inf
+farin_vals_p[exterior_idx] .= Inf
+hiyoshi_vals_p[exterior_idx] .= Inf
 
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated_projected_boundary.png"), fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "swiss_heights_interpolated_projected_boundary.png") fig
 

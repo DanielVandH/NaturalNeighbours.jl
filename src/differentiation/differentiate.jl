@@ -91,17 +91,9 @@ function (∂::NaturalNeighboursDifferentiator)(x, y, id::Integer=1; parallel=fa
     p = (F(x), F(y))
     n_cache = get_neighbour_cache(itp, id)
     z = get_z(itp)
-    if interpolant_method == Sibson(1)
-        nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng, project)
-        gradients = get_gradient(itp)
-        zᵢ = _eval_natural_coordinates(nc, z, gradients, tri)
-    else
-        nc = compute_natural_coordinates(interpolant_method, tri, p, n_cache; rng, project)
-        zᵢ = _eval_natural_coordinates(nc, z)
-    end
-    if interpolant_method == Triangle() || interpolant_method == Nearest() # coordinates need to be the natural neighbours
-        nc = compute_natural_coordinates(Sibson(), tri, p, n_cache; rng, project)
-    end
+    gradients = get_gradient(itp)
+    hessians = get_hessian(itp)
+    nc, zᵢ = _get_nc_and_z(interpolant_method, p, z, gradients, hessians, tri, n_cache; rng, project)
     return ∂(F(x), F(y), zᵢ, nc, id; parallel, method, kwargs...)
 end
 function (∂::NaturalNeighboursDifferentiator)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=default_diff_method(∂), interpolant_method=Sibson(), kwargs...)

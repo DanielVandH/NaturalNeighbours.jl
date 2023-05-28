@@ -14,6 +14,9 @@ using SafeTestsets
     @safetestset "Basic Tests" begin
         include("interpolation/basic_tests.jl")
     end
+    @safetestset "Precision" begin
+        include("interpolation/precision.jl")
+    end
     @safetestset "Extrapolation" begin
         include("interpolation/extrapolation.jl")
     end
