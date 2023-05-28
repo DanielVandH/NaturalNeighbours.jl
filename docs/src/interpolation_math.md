@@ -312,7 +312,7 @@ f_{ijk\ell m} &= \frac{1}{5}\left(z_i + z_j + z_k + z_\ell + z_m\right) \\
 where all the $i$, $j$, $k$, $\ell$, and $m$ are different. To evaluate $f^{\text{HIY}}$, we use the same relationship between $f^{\text{HIY}}$ and complete homogeneous symmetric polynomials to write
 
 ```math 
-f^{\text{HIY}}(\boldsymbol x_0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m} \tilde f_{ijk \ell m} \tilde f_{ijk\ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
+f^{\text{HIY}}(\boldsymbol x_0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m} \tilde f_{ijk \ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
 ```
 
 where $\tilde f_{iiiii} = f_{iiiii}/5! = f_{iiiii}/120$, $\tilde f_{iiiij} = f_{iiiij}/24$, $\tilde f_{iijjj} = f_{iijjj}/12$, $\tilde f_{iijjk} = f_{iijjk}/4$, $\tilde f_{iijk\ell} = f_{iijk\ell}/2$, and $\tilde f_{ijk\ell m} = f_{ijk\ell m}$.
