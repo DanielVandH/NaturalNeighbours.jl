@@ -118,7 +118,9 @@ sibson_vals = interpolant(x, y; method=Sibson(), parallel=true)
 sibson_1_vals = interpolant(x, y; method=Sibson(1), parallel=true)
 laplace_vals = interpolant(x, y; method=Laplace(), parallel=true)
 triangle_vals = interpolant(x, y; method=Triangle(), parallel=true)
-nearest_vals = interpolant(x, y; method=Nearest(), parallel=true)</code></pre><p>Let&#39;s look at our results for each of these methods.</p><pre><code class="language-julia hljs">query_tri = triangulate([x&#39;; y&#39;])
+nearest_vals = interpolant(x, y; method=Nearest(), parallel=true)
+farin_vals = interpolant(x, y; method=Farin(), parallel=true)
+hiyoshi_vals = interpolant(x, y; method=Hiyoshi(2), parallel=true)</code></pre><p>Let&#39;s look at our results for each of these methods.</p><pre><code class="language-julia hljs">query_tri = triangulate([x&#39;; y&#39;])
 query_triangles = [T[j] for T in each_solid_triangle(query_tri), j in 1:3]
 function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, query_triangles, query_tri, a, b, c, d, e, f, nx, ny)
     ax = Axis3(fig[i1, j1], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, zlabel=&quot;Elevation (km)&quot;, width=600, height=400, azimuth=0.9, title=title1, titlealign=:left)
@@ -134,35 +136,39 @@ function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, 
     ylims!(ax, c, d)
     return m
 end
-function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
     fig = Figure(fontsize=24)
     m1 = plot_results!(fig, 1, 1, 1, 2, x, y, xg, yg, sibson_vals, &quot;(a): Sibson&quot;, &quot;(b): Sibson&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m2 = plot_results!(fig, 1, 3, 1, 4, x, y, xg, yg, sibson_1_vals, &quot;(c): Sibson-1&quot;, &quot;(d): Sibson-1&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m3 = plot_results!(fig, 2, 1, 2, 2, x, y, xg, yg, laplace_vals, &quot;(e): Laplace&quot;, &quot;(f): Laplace&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m4 = plot_results!(fig, 2, 3, 2, 4, x, y, xg, yg, triangle_vals, &quot;(g): Triangle&quot;, &quot;(h): Triangle&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m5 = plot_results!(fig, 3, 1, 3, 2, x, y, xg, yg, nearest_vals, &quot;(i): Nearest&quot;, &quot;(j): Nearest&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
-    ax = Axis3(fig[3, 3], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, zlabel=&quot;Elevation (km)&quot;, width=600, height=400, azimuth=0.9, title=&quot;(k): Original height data&quot;, titlealign=:left)
+    m6 = plot_results!(fig, 3, 3, 3, 4, x, y, xg, yg, farin_vals, &quot;(k): Farin&quot;, &quot;(ℓ): Farin&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m7 = plot_results!(fig, 4, 1, 4, 2, x, y, xg, yg, hiyoshi_vals, &quot;(m): Hiyoshi&quot;, &quot;(n): Hiyoshi&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    ax = Axis3(fig[4, 3], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, zlabel=&quot;Elevation (km)&quot;, width=600, height=400, azimuth=0.9, title=&quot;(k): Original height data&quot;, titlealign=:left)
     mesh!(ax, data, triangles, color=elevation_data, colorrange=(0, 4))
     xlims!(ax, a, b)
     ylims!(ax, c, d)
     zlims!(ax, e, f)
-    ax = Axis(fig[3, 4], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, width=600, height=400, title=&quot;(ℓ): Original height data&quot;, titlealign=:left)
+    ax = Axis(fig[4, 4], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, width=600, height=400, title=&quot;(o): Original height data&quot;, titlealign=:left)
     tricontourf!(ax, data[:, 1], data[:, 2], elevation_data, color=elevation_data, triangulation=triangles&#39;, levels=levels)
     xlims!(ax, a, b)
     ylims!(ax, c, d)
-    Colorbar(fig[1:3, 5], m1)
+    Colorbar(fig[1:4, 5], m1)
     resize_to_layout!(fig)
     return fig
 end
 e, f = 0.0, 4.5
-fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)</code></pre><figure>
+fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)</code></pre><figure>
     <img src='../figures/swiss_heights_interpolated.png', alt'Switzerland Data Interpolated'><br>
-</figure><p>We see that the results are pretty similar across the methods except for <code>Nearest()</code>, with <code>Sibson(1)</code> probably the closest. We could compute the errors between the interpolant and the points that we removed from the dataset to quantify this better, but we won&#39;t do that –- we&#39;re not intending to a comprehensive analysis here.</p><h1 id="Eliminating-Points-Outside-of-the-Convex-Hull"><a class="docs-heading-anchor" href="#Eliminating-Points-Outside-of-the-Convex-Hull">Eliminating Points Outside of the Convex Hull</a><a id="Eliminating-Points-Outside-of-the-Convex-Hull-1"></a><a class="docs-heading-anchor-permalink" href="#Eliminating-Points-Outside-of-the-Convex-Hull" title="Permalink"></a></h1><p>One issue with the interpolant is that the extrapolated results are distracting. Let&#39;s set <code>project=false</code> to remove values outside of the convex hull of our data sites.</p><pre><code class="language-julia hljs">sibson_vals_p = interpolant(x, y; method=Sibson(), parallel=true, project=false)
+</figure><p>We see that the results are pretty similar across the methods except for <code>Nearest()</code>. We could compute the errors between the interpolant and the points that we removed from the dataset to quantify this better, but we won&#39;t do that –- we&#39;re not intending to a comprehensive analysis here.</p><h1 id="Eliminating-Points-Outside-of-the-Convex-Hull"><a class="docs-heading-anchor" href="#Eliminating-Points-Outside-of-the-Convex-Hull">Eliminating Points Outside of the Convex Hull</a><a id="Eliminating-Points-Outside-of-the-Convex-Hull-1"></a><a class="docs-heading-anchor-permalink" href="#Eliminating-Points-Outside-of-the-Convex-Hull" title="Permalink"></a></h1><p>One issue with the interpolant is that the extrapolated results are distracting. Let&#39;s set <code>project=false</code> to remove values outside of the convex hull of our data sites.</p><pre><code class="language-julia hljs">sibson_vals_p = interpolant(x, y; method=Sibson(), parallel=true, project=false)
 sibson_1_vals_p = interpolant(x, y; method=Sibson(1), parallel=true, project=false)
 laplace_vals_p = interpolant(x, y; method=Laplace(), parallel=true, project=false)
 triangle_vals_p = interpolant(x, y; method=Triangle(), parallel=true, project=false)
 nearest_vals_p = interpolant(x, y; method=Nearest(), parallel=true, project=false)
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)</code></pre><figure>
+farin_vals_p = interpolant(x, y; method=Farin(), parallel=true, project=false)
+hiyoshi_vals_p = interpolant(x, y; method=Hiyoshi(2), parallel=true, project=false)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)</code></pre><figure>
     <img src='../figures/swiss_heights_interpolated_projected.png', alt'Switzerland Data Interpolated without Projection'><br>
 </figure><p>Of course, this is still not perfect because Switzerland is not convex! There&#39;s still points being extrapolated, and we have to handle this manually. </p><h1 id="Eliminating-Points-Outside-of-Switzerland"><a class="docs-heading-anchor" href="#Eliminating-Points-Outside-of-Switzerland">Eliminating Points Outside of Switzerland</a><a id="Eliminating-Points-Outside-of-Switzerland-1"></a><a class="docs-heading-anchor-permalink" href="#Eliminating-Points-Outside-of-Switzerland" title="Permalink"></a></h1><p>The function we need is <code>identify_exterior_points</code>, which we use together with a representation of the boundary of Switzerland (hence why we got the boundary nodes earlier). We replace all exterior values with <code>Inf</code> so that they don&#39;t get plotted (using <code>NaN</code> leads to issues with <code>surface!</code>&#39;s shading for some reason).</p><pre><code class="language-julia hljs">exterior_idx = identify_exterior_points(x, y, ds_data_sites, ds_boundary_nodes)
 sibson_vals_p[exterior_idx] .= Inf
@@ -170,6 +176,8 @@ sibson_1_vals_p[exterior_idx] .= Inf
 laplace_vals_p[exterior_idx] .= Inf
 triangle_vals_p[exterior_idx] .= Inf
 nearest_vals_p[exterior_idx] .= Inf
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)</code></pre><figure>
+farin_vals_p[exterior_idx] .= Inf
+hiyoshi_vals_p[exterior_idx] .= Inf
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)</code></pre><figure>
     <img src='../figures/swiss_heights_interpolated_projected_boundary.png', alt'Switzerland Data Interpolated Complete'><br>
-</figure><p>Perfect!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../differentiation/">« Differentiaton</a><a class="docs-footer-nextpage" href="../interpolation_math/">Interpolation Details »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Friday 26 May 2023 13:57">Friday 26 May 2023</span>. Using Julia version 1.9.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+</figure><p>Perfect!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../differentiation/">« Differentiaton</a><a class="docs-footer-nextpage" href="../interpolation_math/">Interpolation Details »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Sunday 28 May 2023 14:07">Sunday 28 May 2023</span>. Using Julia version 1.9.0.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
