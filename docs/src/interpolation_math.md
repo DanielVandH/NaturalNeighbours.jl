@@ -248,11 +248,11 @@ where the coefficients $f_{ijk}$ are symmetric so that they can be uniquely dete
 
 ```math 
 \begin{align*}
-f_{iii} = z_i, \\
+f_{iii} &= z_i, \\
 f_{iij} &= z_i + \frac{1}{3}z_{i,j},  \\
 f_{ijk} &= \frac{z_i+z_j+z_k}{3} + \frac{z_{i,j}+z_{i,k}+z_{j,i}+z_{j,k}+z_{k,i}+z_{k,j}}{12},
 \end{align*}
-```math 
+```
 
 where all the $i$, $j$, and $k$ are different. The resulting interpolant $f$ is Farin's $C^1$ interpolant, $f^{\text{FAR}} = f$, and has quadratic precision so that it reproduces quadratic polynomials.
 
@@ -282,7 +282,7 @@ Hiyoshi's $C^2$ interpolant is similar to Farin's $C^1$ interpolant, except now 
 
 Like in the previous section, w let $\boldsymbol x_0$ be some point in $\mathcal C(\boldsymbol X)$ and let $N_0$ be the natural neighbourhood around $\boldsymbol x_0$. We let the natural coordinates be given by Sibson's coordinates $\boldsymbol \lambda = (\lambda_1,\ldots,\lambda_n)$ with corresponding natural neighbours $\boldsymbol x_1,\ldots,\boldsymbol x_n$ (rearranging the indices accordingly to avoid using e.g. $i_1,\ldots, i_n$), where $n = |N_0|$. We define 
 
-```
+```math
 z_{i, j} = \boldsymbol \nablda_i^T\overrightarrow{\boldsymbol x_i\boldsymbol x_j}, \qquad z_{i, jk} = \overrightarrow{\boldsymbol x_i\boldsymbol x_j}^T\boldsymbol H_i\overrightarrow{\boldsymbol x_i\boldsymbol x_k}.
 ```
 
@@ -306,6 +306,7 @@ f_{iijk\ell} &= \frac12z_i + \frac6\left(z_j + z_k + z_\ell\right) + \frac{7}{90
 f_{ijk\ell m} &= \frac{1}{5}\left(z_i + z_j + z_k + z_\ell + z_m\right) \\
 &+ \frac{1}{30}\left(z_{i, j} + z_{i, k} + z_{i, \ell} + z_{i, m} + z_{j, i} + \cdots + z_{m, \ell}\right) \\
 &+ \frac{1}{180}\left(z_{i, jk} + z_{i, j\ell} + z_{i, jm} + z_{i, k\ell} + z_{i, km} + z_{i, \ell m} + z_{j, i\ell} + \cdots + z_{mk\ell}\right),
+\end{align*}
 ```
 
 where all the $i$, $j$, $k$, $\ell$, and $m$ are different. To evaluate $f^{\text{HIY}}$, we use the same relationship between $f^{\text{HIY}}$ and complete homogeneous symmetric polynomials to write
