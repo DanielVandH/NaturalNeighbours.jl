@@ -66,4 +66,4 @@ fig
 # ∂ = differentiate(itp, 2) -- see the docs.
 ```
 
-![Interpolation example](https://github.com/DanielVandH/NaturalNeighbours.jl/blob/09708d95ca8b778a84fdf229dc26b51de333b7cd/example.png)
+![Interpolation example](https://github.com/DanielVandH/NaturalNeighbours.jl/blob/3ccec40c50d518685a4a34d4161b10925b74965d/example.png)
