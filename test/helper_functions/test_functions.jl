@@ -430,7 +430,6 @@ function complete_test_function_analysis(id)
                 else
                     _itp = interpolate(xyt[i][1], xyt[i][2], zt[i]; derivatives=true, method=interpolant_method[2])
                     _∂ = differentiate(_itp, 1)
-                    @show interpolant_method
                     ∇ = _∂(x, y; method=method, interpolant_method=interpolant_method[1], rng=StableRNG(123))
                 end
                 all_errs = norm.(collect.(∇) .- ∇e)
@@ -527,7 +526,10 @@ function complete_test_function_analysis(id)
         (1, 5), (2, 5), (3, 5),
         (1, 6), (2, 6), (3, 6),
         (1, 7), (2, 7), (3, 7),
-        (1, 8), (2, 8), (3, 8)]
+        (1, 8), (2, 8), (3, 8),
+        (1, 9), (2, 9), (3, 9),
+        (1, 10), (2, 10), (3, 10),
+        (1, 11), (2, 11), (3, 11)]
     a, b, c, d, zmin, zmax = Inf, -Inf, Inf, -Inf, Inf, -Inf
     all_errs = Float64[]
     for ((method, (xp, yp)), (vals, errs, ε)) in interpolant_results
@@ -557,7 +559,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), (), (), ze, (), (), i, ((4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6)), a, b, c, d, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 7], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "interpolation_results_2d", "test_function_$(id)_interpolation_results.png") fig
 
@@ -572,7 +574,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_3d_vals(fig, (), (), (), ze, (), (), i, ((4, 1), (4, 2), (4, 3), (4, 4), (4, 5), (4, 6)), a, b, c, d, zmin, zmax, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3, L"z")
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 7], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "interpolation_results_3d", "test_function_$(id)_3d_interpolation_results.png") fig
 
@@ -584,7 +586,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), xp, yp, errs, errs, ε, i, ij, a, b, c, d, xg, yg, εlevels, x1, x2, string(method), true, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:3, 7], m[1])
+    Colorbar(fig[1:3, 0], m[1])
     resize_to_layout!(fig)
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "interpolation_errors", "test_function_$(id)_interpolation_error_results.png") fig
 
@@ -604,7 +606,11 @@ function complete_test_function_analysis(id)
         (1, 13), (2, 13), (3, 13),
         (1, 14), (2, 14), (3, 14),
         (1, 15), (2, 15), (3, 15),
-        (1, 16), (2, 16), (3, 16)]
+        (1, 16), (2, 16), (3, 16),
+        (1, 17), (2, 17), (3, 17),
+        (1, 18), (2, 18), (3, 18),
+        (1, 19), (2, 19), (3, 19),
+        (1, 20), (2, 20), (3, 20)]
     a, b, c, d, zmin, zmax = Inf, -Inf, Inf, -Inf, Inf, -Inf
     all_errs = Float64[]
     all_∇ = Float64[]
@@ -635,7 +641,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), (), (), norm.(∇e), (), (), i, [(4, i) for i in 1:12], a, b, c, d, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 13], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     fig
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "first_order_gradient_results_2d", "test_function_$(id)_first_order_gradient_results.png") fig
@@ -651,7 +657,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_3d_vals(fig, (), (), (), norm.(∇e), (), (), i, [(4, i) for i in 1:12], a, b, c, d, zmin, zmax, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3, L"|\nabla|")
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 13], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     fig
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "first_order_gradient_results_3d", "test_function_$(id)_3d_first_order_gradient_results.png") fig
@@ -664,7 +670,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), xp, yp, errs, errs, ε, i, ij, a, b, c, d, xg, yg, εlevels, x1, x2, string(derivative_method) * string(interpolant_method), true, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:3, 13], m[1])
+    Colorbar(fig[1:3, 0], m[1])
     resize_to_layout!(fig)
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "first_order_gradient_errors", "test_function_$(id)_first_order_gradient_error_results.png") fig
 
@@ -699,7 +705,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), (), (), norm.(∇e), (), (), i, [(4, i) for i in 1:12], a, b, c, d, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 13], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     fig
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "second_order_gradient_results_2d", "test_function_$(id)_second_order_gradient_results.png") fig
@@ -715,7 +721,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_3d_vals(fig, (), (), (), norm.(∇e), (), (), i, [(4, i) for i in 1:12], a, b, c, d, zmin, zmax, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3, L"|\nabla|")
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 13], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     fig
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "second_order_gradient_results_3d", "test_function_$(id)_3d_second_order_gradient_results.png") fig
@@ -728,7 +734,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), xp, yp, errs, errs, ε, i, ij, a, b, c, d, xg, yg, εlevels, x1, x2, string(derivative_method) * string(interpolant_method), true, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:3, 13], m[1])
+    Colorbar(fig[1:3, 0], m[1])
     resize_to_layout!(fig)
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "second_order_gradient_errors", "test_function_$(id)_second_order_gradient_error_results.png") fig
 
@@ -763,7 +769,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), (), (), norm.(He), (), (), i, [(4, i) for i in 1:12], a, b, c, d, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 13], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     fig
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "second_order_hessian_results_2d", "test_function_$(id)_second_order_hessian_results.png") fig
@@ -779,7 +785,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_3d_vals(fig, (), (), (), norm.(He), (), (), i, [(4, i) for i in 1:12], a, b, c, d, zmin, zmax, xg, yg, levels, x1, x2, "Exact", false, x, y, z1, z2, z3, L"|H|")
         push!(m, _m)
     end
-    Colorbar(fig[1:4, 13], m[1])
+    Colorbar(fig[1:4, 0], m[1])
     resize_to_layout!(fig)
     fig
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "second_order_hessian_results_3d", "test_function_$(id)_3d_second_order_hessian_results.png") fig
@@ -792,7 +798,7 @@ function complete_test_function_analysis(id)
         i, _m = plot_2d_vals(fig, (), xp, yp, errs, errs, ε, i, ij, a, b, c, d, xg, yg, εlevels, x1, x2, string(derivative_method) * string(interpolant_method), true, x, y, z1, z2, z3)
         push!(m, _m)
     end
-    Colorbar(fig[1:3, 13], m[1])
+    Colorbar(fig[1:3, 0], m[1])
     resize_to_layout!(fig)
     @test_reference normpath(@__DIR__, "..", "test_functions", "figures", "second_order_hessian_errors", "test_function_$(id)_second_order_hessian_error_results.png") fig
 

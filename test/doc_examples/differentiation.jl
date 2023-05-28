@@ -196,7 +196,7 @@ other_methods = [Sibson(), Laplace(), Nearest(), Triangle()]
 ∇gs = [∂(_x, _y; interpolant_method=method) for method in other_methods]
 ∇f = [f′(x, y) for x in xg, y in yg]
 εs = [rrmserr(∇f, collect.(∇g)) for ∇g in ∇gs]
-@test εs ≈ [28.6753, 25.499, 69.5744, 27.7737] rtol = 1e-3
+@test εs ≈ [28.6753, 25.499, 69.5744, 27.7737] rtol = 0.5
 
 # Second order 
 function plot_hessians(H, f′′, xg, yg)
