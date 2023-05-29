@@ -289,7 +289,7 @@ z_{i, j} = \boldsymbol \nabla_i^T\overrightarrow{\boldsymbol x_i\boldsymbol x_j}
 Hiyoshi's $C^2$ interpolant, written $f^{\text{HIY}}$ (or later $f^{\text{HIY}2}$, if ever we can get Hiyoshi's $C^k$ interpolant on $\mathcal C(\boldsymbol X) \setminus \boldsymbol X$ implemented --- see Hiyoshi and Sugihara ([2000](https://doi.org/10.1145/336154.336210), [2002](https://doi.org/10.1016/S0925-7721(01)00052-9)), [Bobach, Bertram, Umlauf (2006)](https://doi.org/10.1007/11919629_20), and Chapter 3.2.5.5 and Chapter 5.5. of [Bobach's thesis]((https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf))), is defined by the homogeneous symmetric polynomial
 
 ```math 
-f^{\text{HIY}}(\boldsymbol x_0) = \sum_{1 \leq i,j,k,\ell,m} f_{ijk\ell m}\lambda_i\lambda_j\lambda_k\lambda_\ell\lambda_m,
+f^{\text{HIY}}(\boldsymbol x_0) = \sum_{1 \leq i,j,k,\ell,m \leq n} f_{ijk\ell m}\lambda_i\lambda_j\lambda_k\lambda_\ell\lambda_m,
 ```
 
 where we define the coefficients (using symmetry to permute the indices to the standard forms below):
@@ -312,7 +312,7 @@ f_{ijk\ell m} &= \frac{1}{5}\left(z_i + z_j + z_k + z_\ell + z_m\right) \\
 where all the $i$, $j$, $k$, $\ell$, and $m$ are different. To evaluate $f^{\text{HIY}}$, we use the same relationship between $f^{\text{HIY}}$ and complete homogeneous symmetric polynomials to write
 
 ```math 
-f^{\text{HIY}}(\boldsymbol x_0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m} \tilde f_{ijk \ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
+f^{\text{HIY}}(\boldsymbol x_0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq m \leq n} \tilde f_{ijk \ell m} \lambda_i\lambda_j\lambda_k\lambda_\ell \lambda_m,
 ```
 
 where $\tilde f_{iiiii} = f_{iiiii}/5! = f_{iiiii}/120$, $\tilde f_{iiiij} = f_{iiiij}/24$, $\tilde f_{iijjj} = f_{iijjj}/12$, $\tilde f_{iijjk} = f_{iijjk}/4$, $\tilde f_{iijk\ell} = f_{iijk\ell}/2$, and $\tilde f_{ijk\ell m} = f_{ijk\ell m}$.
