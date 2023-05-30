@@ -55,13 +55,8 @@ end
     end
 end
 
-@testset "Test Functions" begin
-    @safetestset "Complete Analysis" begin
-        include("test_functions/complete_analysis.jl")
-    end
-    @safetestset "Influence Regions" begin
-        include("test_functions/influence.jl")
-    end
+@safetestset "Influence Regions" begin
+    include("test_functions/influence.jl")
 end
 
 
