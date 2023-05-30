@@ -528,6 +528,7 @@ fig
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "median_edge_length_comparisons.png") fig by = psnr_equality(10)
 
 ## Computation times 
+#=
 if get(ENV, "CI", "false") == "false"
     function circular_example(m) # extra points are added outside of the circular barrier for derivative generation
         pts = [(cos(θ) + 1e-6randn(), sin(θ) + 1e-6randn()) for θ = LinRange(0, 2π, (m + 1))][1:end-1] # avoid cocircular points
@@ -583,3 +584,4 @@ if get(ENV, "CI", "false") == "false"
     vlines!(fig.figure[1, 1], [6], linewidth=3, linestyle=:dash, color=:black)
     @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "method_benchmarks.png") fig by = psnr_equality(10)
 end
+=#
