@@ -57,7 +57,7 @@ function _generate_second_order_derivatives_iterative(
         qr_X = qr!(X')
     end
     ∇ℋ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
-    5 > m && resize!(∇ℋ, 5)
+    5 > 3m && resize!(∇ℋ, 5)
     ldiv!(qr_X, ∇ℋ)
     return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
 end
