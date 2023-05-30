@@ -74,7 +74,7 @@ function _generate_second_order_derivatives_direct(
         b[j] = βₛ * (zₛ - zᵢ)
     end
     @static if VERSION < v"1.7.0"
-        ∇ℋ = X' \ b
+        ∇ℋ = Matrix(X') \ b
         return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
     else
         qr_X = qr!(X')
