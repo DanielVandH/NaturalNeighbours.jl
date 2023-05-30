@@ -406,129 +406,130 @@ fig = plot_errors(considered_fidx, considered_itp, gdf, interior_idx, :n_error, 
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "2d_visual_interpolant_comparison_normal_error.png") fig
 
 ## Random analysis 
-function rrmse(y, ŷ) # interior_indices already applied
-    num = 0.0
-    den = 0.0
-    for (yᵢ, ŷᵢ) in zip(y, ŷ)
-        if all(isfinite, (yᵢ..., ŷᵢ...))
-            num += norm(yᵢ .- ŷᵢ)^2
-            den += norm(ŷᵢ)^2
+if get(ENV, "CI", "false") == "false"
+    function rrmse(y, ŷ) # interior_indices already applied
+        num = 0.0
+        den = 0.0
+        for (yᵢ, ŷᵢ) in zip(y, ŷ)
+            if all(isfinite, (yᵢ..., ŷᵢ...))
+                num += norm(yᵢ .- ŷᵢ)^2
+                den += norm(ŷᵢ)^2
+            end
         end
+        return 100sqrt(num / den)
     end
-    return 100sqrt(num / den)
-end
-function median_edge_length(tri)
-    lengths = zeros(DelaunayTriangulation.num_solid_edges(tri))
-    for (k, (i, j)) in (enumerate ∘ each_solid_edge)(tri)
-        p, q = get_point(tri, i, j)
-        px, py = getxy(p)
-        qx, qy = getxy(q)
-        ℓ = sqrt((qx - px)^2 + (qy - py)^2)
-        lengths[k] = ℓ
+    function median_edge_length(tri)
+        lengths = zeros(DelaunayTriangulation.num_solid_edges(tri))
+        for (k, (i, j)) in (enumerate ∘ each_solid_edge)(tri)
+            p, q = get_point(tri, i, j)
+            px, py = getxy(p)
+            qx, qy = getxy(q)
+            ℓ = sqrt((qx - px)^2 + (qy - py)^2)
+            lengths[k] = ℓ
+        end
+        return median(lengths)
     end
-    return median(lengths)
-end
 
-function random_analysis_function(nsamples, triq, xq, yq, tol, rng)
-    npoints = rand(rng, 50:2500)
-    xs = [rand(rng, 50) for _ in 1:nsamples]
-    ys = [rand(rng, 50) for _ in 1:nsamples]
-    tris = [triangulate(tuple.(x, y); rng) for (x, y) in zip(xs, ys)]
-    [refine!(tri; max_points=npoints) for tri in tris]
-    xs = [first.(get_points(tri)) for tri in tris]
-    ys = [last.(get_points(tri)) for tri in tris]
-    exterior_idxs = [identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_indices(tri); tol=tol) for tri in tris]
-    interior_idxs = [filter(∉(exterior_idx), eachindex(xq, yq)) for exterior_idx in exterior_idxs]
-    median_lengths = [median_edge_length(tri) for tri in tris]
-    sortidx = sortperm(median_lengths)
-    [permute!(obj, sortidx) for obj in (xs, ys, tris, exterior_idxs, interior_idxs, median_lengths)]
-    dfs = Channel{DataFrame}(nsamples)
-    Base.Threads.@threads for i in 1:nsamples
-        tri = tris[i]
-        x = xs[i]
-        y = ys[i]
-        interior_idx = interior_idxs[i]
-        put!(dfs, analysis_function(tri, triq, x, y, xq, yq, interior_idx))
-        println("Processed simulation $i.")
+    function random_analysis_function(nsamples, triq, xq, yq, tol, rng)
+        npoints = rand(rng, 50:2500)
+        xs = [rand(rng, 50) for _ in 1:nsamples]
+        ys = [rand(rng, 50) for _ in 1:nsamples]
+        tris = [triangulate(tuple.(x, y); rng) for (x, y) in zip(xs, ys)]
+        [refine!(tri; max_points=npoints) for tri in tris]
+        xs = [first.(get_points(tri)) for tri in tris]
+        ys = [last.(get_points(tri)) for tri in tris]
+        exterior_idxs = [identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_indices(tri); tol=tol) for tri in tris]
+        interior_idxs = [filter(∉(exterior_idx), eachindex(xq, yq)) for exterior_idx in exterior_idxs]
+        median_lengths = [median_edge_length(tri) for tri in tris]
+        sortidx = sortperm(median_lengths)
+        [permute!(obj, sortidx) for obj in (xs, ys, tris, exterior_idxs, interior_idxs, median_lengths)]
+        dfs = Channel{DataFrame}(nsamples)
+        Base.Threads.@threads for i in 1:nsamples
+            tri = tris[i]
+            x = xs[i]
+            y = ys[i]
+            interior_idx = interior_idxs[i]
+            put!(dfs, analysis_function(tri, triq, x, y, xq, yq, interior_idx))
+            println("Processed simulation $i.")
+        end
+        close(dfs)
+        dfs = collect(dfs)
+        df = DataFrame(
+            f_idx=Int64[],
+            itp_method=Symbol[],
+            diff_method=Symbol[],
+            z_rrmse=Float64[],
+            ∇_rrmse=Float64[],
+            H_rrmse=Float64[],
+            n_error_median=Float64[],
+            median_edge_length=Float64[]
+        )
+        for (i, _df) in enumerate(dfs)
+            _gdf = groupby(_df, [:f_idx, :itp_method, :diff_method])
+            _cgdf = combine(_gdf,
+                [:z_exact, :z_approx] => ((z_exact, z_approx) -> rrmse(z_exact, z_approx)) => :z_rrmse,
+                [:∇_exact, :∇_approx] => ((∇_exact, ∇_approx) -> rrmse(∇_exact, ∇_approx)) => :∇_rrmse,
+                [:H_exact, :H_approx] => ((H_exact, H_approx) -> rrmse(H_exact, H_approx)) => :H_rrmse,
+                :n_error => median => :n_error_median)
+            _cgdf[!, :median_edge_length] .= median_lengths[i]
+            append!(df, _cgdf)
+        end
+        _gdf = groupby(df, [:f_idx, :itp_method, :diff_method])
+        return _gdf
     end
-    close(dfs)
-    dfs = collect(dfs)
-    df = DataFrame(
-        f_idx=Int64[],
-        itp_method=Symbol[],
-        diff_method=Symbol[],
-        z_rrmse=Float64[],
-        ∇_rrmse=Float64[],
-        H_rrmse=Float64[],
-        n_error_median=Float64[],
-        median_edge_length=Float64[]
-    )
-    for (i, _df) in enumerate(dfs)
-        _gdf = groupby(_df, [:f_idx, :itp_method, :diff_method])
-        _cgdf = combine(_gdf,
-            [:z_exact, :z_approx] => ((z_exact, z_approx) -> rrmse(z_exact, z_approx)) => :z_rrmse,
-            [:∇_exact, :∇_approx] => ((∇_exact, ∇_approx) -> rrmse(∇_exact, ∇_approx)) => :∇_rrmse,
-            [:H_exact, :H_approx] => ((H_exact, H_approx) -> rrmse(H_exact, H_approx)) => :H_rrmse,
-            :n_error => median => :n_error_median)
-        _cgdf[!, :median_edge_length] .= median_lengths[i]
-        append!(df, _cgdf)
+
+    nsamples = 50
+    rng = StableRNG(998881)
+    tol = 1e-1
+    random_results = random_analysis_function(nsamples, triq, xq, yq, tol, rng)
+
+    fig = Figure(fontsize=64)
+    z_ax = [Axis(fig[i, 1], xlabel=L"$ $Median edge length", ylabel=L"$z$ error",
+        title=L"(%$(alph[i])1): $f_{%$i}", titlealign=:left,
+        width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
+    ∇_ax = [Axis(fig[i, 2], xlabel=L"$ $Median edge length", ylabel=L"$\nabla$ error",
+        title=L"(%$(alph[i])2): $f_{%$i}", titlealign=:left,
+        width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
+    H_ax = [Axis(fig[i, 3], xlabel=L"$ $Median edge length", ylabel=L"$H$ error",
+        title=L"(%$(alph[i])3): $f_{%$i}", titlealign=:left,
+        width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
+    n_ax = [Axis(fig[i, 4], xlabel=L"$ $Median edge length", ylabel=L"$n$ error",
+        title=L"(%$(alph[i])4): $f_{%$i}", titlealign=:left,
+        width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
+    for (f_idx, itp_alias, diff_alias) in keys(random_results)
+        _df = random_results[(f_idx, itp_alias, diff_alias)]
+        _df = filter(:itp_method => !=(:Nearest), _df)
+        clr = colors[itp_alias]
+        ls = linestyles[diff_alias]
+        _z_ax = z_ax[f_idx]
+        _∇_ax = ∇_ax[f_idx]
+        _H_ax = H_ax[f_idx]
+        _n_ax = n_ax[f_idx]
+        x = _df.median_edge_length
+        z_error = _df.z_rrmse
+        ∇_error = _df.∇_rrmse
+        H_error = _df.H_rrmse
+        n_error = _df.n_error_median
+        lines!(_z_ax, x, z_error, color=clr, linestyle=ls, linewidth=7)
+        lines!(_∇_ax, x, ∇_error, color=clr, linestyle=ls, linewidth=7)
+        lines!(_H_ax, x, H_error, color=clr, linestyle=ls, linewidth=7)
+        lines!(_n_ax, x, n_error, color=clr, linestyle=ls, linewidth=7)
     end
-    _gdf = groupby(df, [:f_idx, :itp_method, :diff_method])
-    return _gdf
+    [Legend(
+        fig[i:(i+1), 6],
+        [line_elements, style_elements],
+        [string.(keys(colors)), string.(keys(linestyles))],
+        ["Interpolant", "Differentiator"],
+        titlesize=78,
+        labelsize=78,
+        patchsize=(100, 30)
+    ) for i in (1, 3, 5)]
+    resize_to_layout!(fig)
+    fig
+    @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "median_edge_length_comparisons.png") fig by = psnr_equality(10)
 end
-
-nsamples = 50
-rng = StableRNG(998881)
-tol = 1e-1
-random_results = random_analysis_function(nsamples, triq, xq, yq, tol, rng)
-
-fig = Figure(fontsize=64)
-z_ax = [Axis(fig[i, 1], xlabel=L"$ $Median edge length", ylabel=L"$z$ error",
-    title=L"(%$(alph[i])1): $f_{%$i}", titlealign=:left,
-    width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
-∇_ax = [Axis(fig[i, 2], xlabel=L"$ $Median edge length", ylabel=L"$\nabla$ error",
-    title=L"(%$(alph[i])2): $f_{%$i}", titlealign=:left,
-    width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
-H_ax = [Axis(fig[i, 3], xlabel=L"$ $Median edge length", ylabel=L"$H$ error",
-    title=L"(%$(alph[i])3): $f_{%$i}", titlealign=:left,
-    width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
-n_ax = [Axis(fig[i, 4], xlabel=L"$ $Median edge length", ylabel=L"$n$ error",
-    title=L"(%$(alph[i])4): $f_{%$i}", titlealign=:left,
-    width=600, height=400, yscale=log10) for i in eachindex(f, ∇f, Hf)]
-for (f_idx, itp_alias, diff_alias) in keys(random_results)
-    _df = random_results[(f_idx, itp_alias, diff_alias)]
-    _df = filter(:itp_method => !=(:Nearest), _df)
-    clr = colors[itp_alias]
-    ls = linestyles[diff_alias]
-    _z_ax = z_ax[f_idx]
-    _∇_ax = ∇_ax[f_idx]
-    _H_ax = H_ax[f_idx]
-    _n_ax = n_ax[f_idx]
-    x = _df.median_edge_length
-    z_error = _df.z_rrmse
-    ∇_error = _df.∇_rrmse
-    H_error = _df.H_rrmse
-    n_error = _df.n_error_median
-    lines!(_z_ax, x, z_error, color=clr, linestyle=ls, linewidth=7)
-    lines!(_∇_ax, x, ∇_error, color=clr, linestyle=ls, linewidth=7)
-    lines!(_H_ax, x, H_error, color=clr, linestyle=ls, linewidth=7)
-    lines!(_n_ax, x, n_error, color=clr, linestyle=ls, linewidth=7)
-end
-[Legend(
-    fig[i:(i+1), 6],
-    [line_elements, style_elements],
-    [string.(keys(colors)), string.(keys(linestyles))],
-    ["Interpolant", "Differentiator"],
-    titlesize=78,
-    labelsize=78,
-    patchsize=(100, 30)
-) for i in (1, 3, 5)]
-resize_to_layout!(fig)
-fig
-@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "median_edge_length_comparisons.png") fig by = psnr_equality(10)
 
 ## Computation times 
-#=
 if get(ENV, "CI", "false") == "false"
     function circular_example(m) # extra points are added outside of the circular barrier for derivative generation
         pts = [(cos(θ) + 1e-6randn(), sin(θ) + 1e-6randn()) for θ = LinRange(0, 2π, (m + 1))][1:end-1] # avoid cocircular points
@@ -584,4 +585,3 @@ if get(ENV, "CI", "false") == "false"
     vlines!(fig.figure[1, 1], [6], linewidth=3, linestyle=:dash, color=:black)
     @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "method_benchmarks.png") fig by = psnr_equality(10)
 end
-=#
