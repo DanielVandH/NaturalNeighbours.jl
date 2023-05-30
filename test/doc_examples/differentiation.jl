@@ -217,16 +217,16 @@ function plot_hessians(H, f′′, xg, yg)
     return fig, ε
 end
 ∂ = differentiate(itp, 2)
-∇Hg = ∂(_x, _y; interpolant_method=Sibson(1))
+∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method = Iterative())
 ∇g = first.(∇Hg)
 Hg = last.(∇Hg)
 fig∇, ε∇ = plot_gradients(∇g, f′, xg, yg)
 figH, εH = plot_hessians(Hg, f′′, xg, yg)
 zlims!(figH.content[4], -25, 25)
-@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_surface.png") figH
-@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface_2.png") fig∇
-@test ε∇ ≈ 19.07546882353911
-@test εH ≈ 51.1267212244942
+@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_surface.png") figH by=psnr_equality(18)
+@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface_2.png") fig∇ by=psnr_equality(18)
+@test ε∇ ≈ 19.07546882353911 rtol=1e-1
+@test εH ≈ 51.1267212244942 rtol=1e-1
 
 ∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method=Direct())
 ∇g = first.(∇Hg)

@@ -23,6 +23,9 @@ using SafeTestsets
     @safetestset "Structs" begin
         include("interpolation/structs.jl")
     end
+    @safetestset "Influence" begin
+        include("interpolation/influence.jl")
+    end
 end
 
 @testset "Differentiation" begin
@@ -53,21 +56,10 @@ end
     @safetestset "Switzerland" begin
         include("doc_examples/swiss.jl")
     end
-end
-
-@testset "Test Functions" begin
-    @safetestset "Complete Analysis" begin
-        include("test_functions/complete_analysis.jl")
-    end
-    @safetestset "Influence Regions" begin
-        include("test_functions/influence.jl")
+    @safetestset "Comparison" begin
+        include("doc_examples/interpolant_comparisons.jl")
     end
 end
-
-
-
-
-
 
 
 

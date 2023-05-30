@@ -18,6 +18,8 @@ generate_derivatives
 AbstractInterpolator
 AbstractDifferentiator
 Sibson
+Hiyoshi
+Farin
 Laplace
 Triangle
 Nearest

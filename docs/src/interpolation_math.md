@@ -317,7 +317,13 @@ f^{\text{HIY}}(\boldsymbol x_0) = 120\sum_{1 \leq i \leq j \leq k \leq \ell \leq
 
 where $\tilde f_{iiiii} = f_{iiiii}/5! = f_{iiiii}/120$, $\tilde f_{iiiij} = f_{iiiij}/24$, $\tilde f_{iijjj} = f_{iijjj}/12$, $\tilde f_{iijjk} = f_{iijjk}/4$, $\tilde f_{iijk\ell} = f_{iijk\ell}/2$, and $\tilde f_{ijk\ell m} = f_{ijk\ell m}$.
 
-This interpolant has cubic precision, meaning it can recover cubic polynomials.
+This interpolant has cubic precision, meaning it can recover cubic polynomials. Note that this sum has
+
+```math 
+\sum_{i=1}^n\sum_{j=i}^n\sum_{k=j}^n\sum_{\ell=k}^n\sum_{m=k}^n 1 = \frac{n^5}{120} + \frac{n^4}{12} + \cdots = \mathcal O(n^5)
+```
+
+terms, which could cause issues with many natural neighbours. For example, with $n = 20$ we have $n^5 = 3,200,000$. In fact, as discussed in Section 6.5 of [Bobach's thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf), more than 150 million operations could be required with $n = 20$. We discuss benchmark results in the comparison section of the sidebar.
 
 # Regions of Influence 
 

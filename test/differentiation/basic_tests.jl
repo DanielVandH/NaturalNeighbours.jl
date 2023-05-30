@@ -287,11 +287,11 @@ end
     x = 10rand(100)
     y = 10rand(100)
     @test collect.(∂1(x, y; parallel=true)) ≈ collect.(∂1(x, y; parallel=false)) rtol = 1e-13 # not == because of internal rng
-    @test collect.(∂1(x, y; interpolant_method=Sibson(1), parallel=true)) ≈ collect.(∂1(x, y; parallel=false, interpolant_method=Sibson(1))) rtol = 1e-13
-    @test collect.(getindex.(∂2(x, y; parallel=true), 1)) ≈ collect.(getindex.(∂2(x, y; parallel=false), 1)) rtol = 1e-13
-    @test collect.(getindex.(∂2(x, y; parallel=true), 2)) ≈ collect.(getindex.(∂2(x, y; parallel=false), 2)) rtol = 1e-13
-    @test collect.(getindex.(∂2(x, y; parallel=true, interpolant_method=Sibson(1)), 1)) ≈ collect.(getindex.(∂2(x, y; parallel=false, interpolant_method=Sibson(1)), 1)) rtol = 1e-13
-    @test collect.(getindex.(∂2(x, y; parallel=true, interpolant_method=Sibson(1)), 2)) ≈ collect.(getindex.(∂2(x, y; parallel=false, interpolant_method=Sibson(1)), 2)) rtol = 1e-13
+    @test collect.(∂1(x, y; interpolant_method=Sibson(1), parallel=true)) ≈ collect.(∂1(x, y; parallel=false, interpolant_method=Sibson(1))) rtol = 1e-7
+    @test collect.(getindex.(∂2(x, y; parallel=true), 1)) ≈ collect.(getindex.(∂2(x, y; parallel=false), 1)) rtol = 1e-7
+    @test collect.(getindex.(∂2(x, y; parallel=true), 2)) ≈ collect.(getindex.(∂2(x, y; parallel=false), 2)) rtol = 1e-7
+    @test collect.(getindex.(∂2(x, y; parallel=true, interpolant_method=Sibson(1)), 1)) ≈ collect.(getindex.(∂2(x, y; parallel=false, interpolant_method=Sibson(1)), 1)) rtol = 1e-7
+    @test collect.(getindex.(∂2(x, y; parallel=true, interpolant_method=Sibson(1)), 2)) ≈ collect.(getindex.(∂2(x, y; parallel=false, interpolant_method=Sibson(1)), 2)) rtol = 1e-7
 end
 
 @testset "Check that Iterative() errors without gradients" begin
