@@ -77,7 +77,7 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
         return F(NaN), u, prev_u, next_u
     end
     g2 = triangle_circumcenter(q, p, interpolation_point)
-    !all(isfinite, g2) && return F(NaN), (false, true), u, prev_u, next_u
+    !all(isfinite, g2) && return F(NaN), u, prev_u, next_u
     points = (mpq, mpr, g1, g2, mpq)
     return polygon_area(points),  u, prev_u, next_u
 end

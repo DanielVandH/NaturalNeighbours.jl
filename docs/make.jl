@@ -21,7 +21,7 @@ makedocs(;
             "Differentiaton" => "differentiation.md",
             "Switzerland Elevation Data" => "swiss.md"
         ],
-        "Comparisons" => "compare.md",
+        "Comparison of Interpolation Methods" => "compare.md",
         "Mathematical Details" => [
             "Interpolation Details" => "interpolation_math.md",
             "Differentiation Details" => "differentiation_math.md"

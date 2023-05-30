@@ -18,7 +18,7 @@ For calling the resulting struct, we define the following methods:
 
 The available keyword arguments are:
 - `parallel=true`: Whether to use multithreading. Ignored for the first two methods. 
-- `method=default_diff_method(∂)`: Default method for evaluating the interpolant. `default_diff_method(∂)` returns `Direct()` if the underlying interpolant has no gradients, and `Iterative()` otherwise. The method must be a [`AbstractDifferentiator`](@ref).
+- `method=default_diff_method(∂)`: Default method for evaluating the interpolant. `default_diff_method(∂)` returns `Direct()`. The method must be a [`AbstractDifferentiator`](@ref).
 - `interpolant_method=Sibson()`: The method used for evaluating the interpolant to estimate `zᵢ` for the latter three methods. See [`AbstractInterpolator`](@ref) for the avaiable methods.
 - `rng=Random.default_rng()`: The random number generator used for estimating `zᵢ` for the latter three methods, or for constructing the natural coordinates.
 - `project=false`: Whether to project any extrapolated points onto the boundary of the convex hull of the data sites and perform two-point interpolation, or to simply replace any extrapolated values with `Inf`, when evaluating the interpolant in the latter three methods.
@@ -74,7 +74,7 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
     end
 end
 
-@inline default_diff_method(∂) = isnothing(get_gradient(get_interpolant(∂))) ? Direct() : Iterative()
+@inline default_diff_method(∂) = Direct() # isnothing(get_gradient(get_interpolant(∂))) ? Direct() : Iterative()
 
 @inline function (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; parallel=false, method=default_diff_method(∂), kwargs...)
     method = dwrap(method)
