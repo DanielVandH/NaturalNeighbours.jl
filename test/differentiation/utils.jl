@@ -1,6 +1,6 @@
 using ..NaturalNeighbours
 using DelaunayTriangulation
-using StableRNGs 
+using StableRNGs
 const NNI = NaturalNeighbours
 using Random
 const DT = DelaunayTriangulation
@@ -106,4 +106,3 @@ end
     @test NNI.get_λ([2.3, 5.0], 1, false) == 1.0
     @test NNI.get_λ(1.0, 3, true) == 1.0
 end
-
