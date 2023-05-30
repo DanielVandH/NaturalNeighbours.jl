@@ -11,6 +11,7 @@ using LinearAlgebra
 
 include(normpath(@__DIR__, "../.", "helper_functions", "slow_derivative_tests.jl"))
 include(normpath(@__DIR__, "../.", "helper_functions", "point_generator.jl"))
+include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
 
 @testset "Estimating derivatives with weighted least squares" begin
     tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
@@ -430,4 +431,14 @@ end
     deleteat!(∇err, bad_idx)
 
     @test norm(∇err) ≈ 0 atol = 1e-1
+end
+
+@testset "Check that nothing breaks with a small neighbourhood" begin
+    m = 3
+    pts = [(cos(θ) + 1e-6randn(), sin(θ) + 1e-6randn()) for θ = LinRange(0, 2π, (m + 1))][1:end-1]
+    tri = triangulate(pts)
+    f = (x, y) -> sin(x) * cos(y)
+    z = [f(x, y) for (x, y) in each_point(tri)]
+    itp = interpolate(tri, z; derivatives=true)
+    test_interpolant(itp, first.(pts), last.(pts), f)
 end
