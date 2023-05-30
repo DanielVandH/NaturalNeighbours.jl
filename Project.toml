@@ -1,7 +1,7 @@
 name = "NaturalNeighbours"
 uuid = "f16ad982-4edb-46b1-8125-78e5a8b5a9e6"
 authors = ["Daniel VandenHeuvel <danj.vandenheuvel@gmail.com>"]
-version = "1.1.0"
+version = "1.1.0-DEV"
 
 [deps]
 ChunkSplitters = "ae650224-84b6-46f8-82ea-d812ca08434e"
