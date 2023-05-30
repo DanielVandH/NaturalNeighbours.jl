@@ -168,8 +168,8 @@ end
         @test NNI.find_bezier_edge(1, 1, 2) == (1, 2)
         @test NNI.find_bezier_edge(1, 2, 1) == (1, 2)
         @test NNI.find_bezier_edge(1, 2, 2) == (2, 1)
-        @test NNI.bezier_point_contribution(1, N₀, z) == (z[N₀[1]], 6)
-        @test NNI.bezier_edge_contribution(tri, 2, 5, N₀, ∇, z) == (z[N₀[2]] + (1 / 3) * dot(get_point(tri, N₀[5]) .- get_point(tri, N₀[2]), ∇[N₀[2]]), 2)
+        @test collect(NNI.bezier_point_contribution(1, N₀, z)) ≈ [z[N₀[1]], 6]
+        @test collect(NNI.bezier_edge_contribution(tri, 2, 5, N₀, ∇, z)) ≈ [z[N₀[2]] + (1 / 3) * dot(get_point(tri, N₀[5]) .- get_point(tri, N₀[2]), ∇[N₀[2]]), 2]
         @test NNI.bezier_face_contribution(tri, 2, 3, 6, N₀, ∇, z)[1] ≈ (1 / 3) * (
             z[N₀[2]] +
             z[N₀[3]] +
@@ -183,9 +183,9 @@ end
             dot(get_point(tri, N₀[3]) .- get_point(tri, N₀[6]), ∇[N₀[6]])
         )
         @test NNI.bezier_face_contribution(tri, 2, 3, 6, N₀, ∇, z)[2] == 1
-        @test NNI.get_contrib(tri, 1, 1, 1, N₀, ∇, z) == NNI.bezier_point_contribution(1, N₀, z)
-        @test NNI.get_contrib(tri, 1, 2, 2, N₀, ∇, z) == NNI.bezier_edge_contribution(tri, 2, 1, N₀, ∇, z)
-        @test NNI.get_contrib(tri, 1, 2, 3, N₀, ∇, z) == NNI.bezier_face_contribution(tri, 1, 2, 3, N₀, ∇, z)
+        @test collect(NNI.get_contrib(tri, 1, 1, 1, N₀, ∇, z)) ≈ collect(NNI.bezier_point_contribution(1, N₀, z))
+        @test collect(NNI.get_contrib(tri, 1, 2, 2, N₀, ∇, z)) ≈ collect(NNI.bezier_edge_contribution(tri, 2, 1, N₀, ∇, z))
+        @test collect(NNI.get_contrib(tri, 1, 2, 3, N₀, ∇, z)) ≈ collect(NNI.bezier_face_contribution(tri, 1, 2, 3, N₀, ∇, z))
         n = length(λ)
         s1 = 0.0
         for i in 1:n, j in 1:n, k in 1:n
