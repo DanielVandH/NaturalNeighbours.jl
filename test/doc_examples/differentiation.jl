@@ -217,7 +217,7 @@ function plot_hessians(H, f′′, xg, yg)
     return fig, ε
 end
 ∂ = differentiate(itp, 2)
-∇Hg = ∂(_x, _y; interpolant_method=Sibson(1))
+∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method = Iterative())
 ∇g = first.(∇Hg)
 Hg = last.(∇Hg)
 fig∇, ε∇ = plot_gradients(∇g, f′, xg, yg)
