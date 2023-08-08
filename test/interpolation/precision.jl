@@ -83,7 +83,7 @@ end
     end
 end
 
-@testset "Does Farin reproduce quadratics p ↦ a + bᵀx + xᵀQx, Q= [c d; 0 f]?" begin
+@testset "Does Farin reproduce quadratics p ↦ a + bᵀx + xᵀQx, Q = [c d; 0 f]?" begin
     a = 0.29912
     b = [1.7, -2.11]
     Q = [2.0 1.01; 1.01 -2.30]
