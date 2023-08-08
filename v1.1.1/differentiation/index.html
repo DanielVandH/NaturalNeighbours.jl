@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Differentiaton · NaturalNeighbours.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://DanielVandH.github.io/NaturalNeighbours.jl/differentiation/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">NaturalNeighbours.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../interpolation/">Interpolation</a></li><li class="is-active"><a class="tocitem" href>Differentiaton</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Generation-at-the-Data-Sites"><span>Generation at the Data Sites</span></a></li><li><a class="tocitem" href="#Gradients"><span>Gradients</span></a></li><li><a class="tocitem" href="#Hessians"><span>Hessians</span></a></li><li class="toplevel"><a class="tocitem" href="#Generation-Away-from-the-Data-Sites"><span>Generation Away from the Data Sites</span></a></li></ul></li><li><a class="tocitem" href="../swiss/">Switzerland Elevation Data</a></li></ul></li><li><a class="tocitem" href="../compare/">Comparison of Interpolation Methods</a></li><li><span class="tocitem">Mathematical Details</span><ul><li><a class="tocitem" href="../interpolation_math/">Interpolation Details</a></li><li><a class="tocitem" href="../differentiation_math/">Differentiation Details</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Differentiaton</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Differentiaton</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/DanielVandH/NaturalNeighbours.jl/blob/main/docs/src/differentiation.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Differentiation-Example"><a class="docs-heading-anchor" href="#Differentiation-Example">Differentiation Example</a><a id="Differentiation-Example-1"></a><a class="docs-heading-anchor-permalink" href="#Differentiation-Example" title="Permalink"></a></h1><p>The purpose of this example is to explore derivative generation. For this, it is important to note that we are thinking of <em>generating</em> derivatives rather than <em>estimating</em> them: Following <a href="https://doi.org/10.1016/B978-0-12-460515-2.50005-6">Alfeld (1989)</a>, derivative generation only seeks to find derivatives that best fit our assumptions of the data, i.e. that give a most satisfactory interpolant, rather than trying to find exact derivative values. The complete quote for this by <a href="https://doi.org/10.1016/B978-0-12-460515-2.50005-6">Alfeld (1989)</a> is below:</p><blockquote><p>It seems inevitable that in order to obtain an interpolant that is both local and smooth one has to supply derivative data. Typically, such data are not part of the interpolation problem and have to be made up from existing func tional data. This process is usually referred as derivative estimation, but this is probably a misnomer. The objective is not to estimate existing but unknown values of derivatives. Instead, it is to generate values that will yield a satisfactory interpolant. Even if an underlying primitive function did exist it might be preferable to use derivative values that differ from the exact ones. (For example, a maximum error might be decreased by using the &quot;wrong&quot; derivative values.) Therefore, I prefer the term derivative generation rather than derivative estimation.</p></blockquote><p>For the purpose of this exploration, we use Franke&#39;s test function. This function, introduced by <a href="https://doi.org/10.1002/nme.1620151110">Franke and Nielson (1980)</a>, is given by </p><p class="math-container">\[\begin{align*}
+f(x, y) &amp;= \frac34\exp\left\{-\frac{(9x-2)^2 + (9y-2)^2}{4}\right\} + \frac34\exp\left\{-\frac{(9x+1)^2}{49} - \frac{9y+1}{10}\right\} \\
+&amp;+ \frac12\exp\left\{-\frac{(9x-7)^2 + (9y-3)^2}{4}\right\} - \frac15\exp\left\{-(9x-4)^2 - (9y-7)^2\right\}.
+\end{align*}\]</p><p>This function, and its derivatives, are defined below.</p><pre><code class="language-julia hljs">f = (x, y) -&gt; 0.75 * exp(-((9 * x - 2)^2 + (9 * y - 2)^2) / 4) + 0.75 * exp(-(9 * x + 1)^2 / 49 - (9 * y + 1) / 10) + 0.5 * exp(-((9 * x - 7)^2 + (9 * y - 3)^2) / 4) - 0.2 * exp(-(9 * x - 4)^2 - (9 * y - 7)^2)
+f′ = (x, y) -&gt; [(exp(-(9 * x - 4)^2 - (9 * y - 7)^2) * (162 * x - 72)) / 5 - (3 * exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4) * ((81 * x) / 2 - 9)) / 4 - (exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4) * ((81 * x) / 2 - 63 / 2)) / 2 - (3 * exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10) * ((162 * x) / 49 + 18 / 49)) / 4
+    (exp(-(9 * x - 4)^2 - (9 * y - 7)^2) * (162 * y - 126)) / 5 - (3 * exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4) * ((81 * y) / 2 - 9)) / 4 - (exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4) * ((81 * y) / 2 - 27 / 2)) / 2 - (27 * exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10)) / 40]
+f′′ = (x, y) -&gt; [(162*exp(-(9 * x - 4)^2 - (9 * y - 7)^2))/5-(243*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10))/98-(243*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4))/8-(81*exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4))/4+(3*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10)*((162*x)/49+18/49)^2)/4+(3*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4)*((81*x)/2-9)^2)/4+(exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4)*((81*x)/2-63/2)^2)/2-(exp(-(9 * x - 4)^2 - (9 * y - 7)^2)*(162*x-72)^2)/5 (27*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10)*((162*x)/49+18/49))/40+(3*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4)*((81*x)/2-9)*((81*y)/2-9))/4+(exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4)*((81*x)/2-63/2)*((81*y)/2-27/2))/2-(exp(-(9 * x - 4)^2 - (9 * y - 7)^2)*(162*x-72)*(162*y-126))/5
+    (27*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10)*((162*x)/49+18/49))/40+(3*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4)*((81*x)/2-9)*((81*y)/2-9))/4+(exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4)*((81*x)/2-63/2)*((81*y)/2-27/2))/2-(exp(-(9 * x - 4)^2 - (9 * y - 7)^2)*(162*x-72)*(162*y-126))/5 (243*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10))/400+(162*exp(-(9 * x - 4)^2 - (9 * y - 7)^2))/5-(243*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4))/8-(81*exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4))/4+(3*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4)*((81*y)/2-9)^2)/4+(exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4)*((81*y)/2-27/2)^2)/2-(exp(-(9 * x - 4)^2 - (9 * y - 7)^2)*(162*y-126)^2)/5]</code></pre><p>Here is the surface of <span>$f$</span> along with its derivatives.</p><pre><code class="language-julia hljs">using CairoMakie
+function plot_f(fig, x, y, vals, title, i, show_3d=true, zlabel=&quot;z&quot;)
+    ax = Axis(fig[1, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=title, titlealign=:left)
+    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis,  extendhigh=:auto)
+    if show_3d
+        ax = Axis3(fig[2, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=zlabel, width=600, height=600, title=&quot; &quot;, titlealign=:left, azimuth=0.49)
+        surface!(ax, x, y, vals, color=vals, colormap=:viridis)
+    end
+    return c
+end
+
+x = LinRange(0, 1, 100)
+y = LinRange(0, 1, 100)
+z = [f(x, y) for x in x, y in y]
+∇ = [f′(x, y) for x in x, y in y]
+∇₁ = first.(∇)
+∇₂ = last.(∇)
+H = [f′′(x, y) for x in x, y in y]
+H₁₁ = getindex.(H, 1)
+H₁₂ = getindex.(H, 2)
+H₂₂ = getindex.(H, 4)
+
+fig = Figure(fontsize = 36)
+plot_f(fig, x, y, z, &quot;(a): f&quot;, 1, true, &quot;z&quot;)
+plot_f(fig, x, y, ∇₁, &quot;(b): ∂f/∂x&quot;, 2, true, &quot;∂f/∂x&quot;)
+plot_f(fig, x, y, ∇₂, &quot;(c): ∂f/∂y&quot;, 3, true,  &quot;∂f/∂y&quot;)
+plot_f(fig, x, y, H₁₁, &quot;(d): ∂²f/∂x²&quot;, 4, true, &quot;∂²f/∂x²&quot;)
+plot_f(fig, x, y, H₂₂, &quot;(f): ∂²f/∂y²&quot;, 5, true, &quot;∂²f/∂y²&quot;)
+plot_f(fig, x, y, H₁₂, &quot;(e): ∂²f/∂x∂y&quot;, 6, true,  &quot;∂²f/∂x∂y&quot;)
+resize_to_layout!(fig)
+fig</code></pre><figure>
+    <img src='../figures/differentiation_exact_surfaces.png', alt'Plots of the interpolants'><br>
+</figure><p>For our analysis, we use the following data set:</p><pre><code class="language-julia hljs">using StableRNGs 
+using DelaunayTriangulation 
+using CairoMakie
+rng = StableRNG(9199)
+x = rand(rng, 500)
+y = rand(rng, 500)
+z = f.(x, y)
+tri = triangulate([x&#39;; y&#39;])
+vorn = voronoi(tri)
+
+fig = Figure(fontsize=36, resolution=(1800, 600))
+ax = Axis(fig[1, 1], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=&quot;(a): Data and triangulation&quot;, titlealign=:left)
+scatter!(ax, x, y, color=:black, markersize=9)
+triplot!(ax, tri, color=:black, linewidth=2, show_convex_hull=false)
+voronoiplot!(ax, vorn, strokecolor=:blue)
+xlims!(ax, 0, 1)
+ylims!(ax, 0, 1)
+
+ax = Axis3(fig[1, 2], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=&quot;z&quot;, width=600, height=600, azimuth=0.25, title=&quot;(b): Function values&quot;, titlealign=:left)
+triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
+surface!(ax, x, y, z)
+scatter!(ax, x, y, z, color=:black, markersize=9)
+
+colgap!(fig.layout, 1, 75)
+resize_to_layout!(fig)
+fig</code></pre><figure>
+    <img src='../figures/example_data.png', alt'Plots of the data'><br>
+</figure><h1 id="Generation-at-the-Data-Sites"><a class="docs-heading-anchor" href="#Generation-at-the-Data-Sites">Generation at the Data Sites</a><a id="Generation-at-the-Data-Sites-1"></a><a class="docs-heading-anchor-permalink" href="#Generation-at-the-Data-Sites" title="Permalink"></a></h1><p>To start with the example, we consider generating the dervatives at the data sites.</p><h2 id="Gradients"><a class="docs-heading-anchor" href="#Gradients">Gradients</a><a id="Gradients-1"></a><a class="docs-heading-anchor-permalink" href="#Gradients" title="Permalink"></a></h2><p>Let us first estimate some gradients using the direct method.</p><pre><code class="language-julia hljs">using NaturalNeighbours
+using DelaunayTriangulation 
+using CairoMakie 
+using LinearAlgebra
+
+function plot_f2(fig, x, y, vals, title, i, tri, levels, show_3d=true, zlabel=&quot;z&quot;)
+    triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
+    ax = Axis(fig[1, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=title, titlealign=:left)
+    c = tricontourf!(ax, x, y, vals, color=vals, triangulation=triangles&#39;, colormap=:viridis, extendhigh=:auto, levels=levels)
+    if show_3d
+        ax = Axis3(fig[2, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=zlabel, width=600, height=600, title=&quot; &quot;, titlealign=:left, azimuth=0.49)
+        mesh!(ax, hcat(x, y, vals), triangles, color=vals, colormap=:viridis, colorrange=extrema(levels))
+    end
+    return c
+end
+function plot_gradients(∇g, tri, f′, x, y)
+    ∇g1 = first.(∇g)
+    ∇g2 = last.(∇g)
+    fig = Figure(fontsize=36, resolution=(2400, 600))
+    plot_f2(fig, x, y, ∇g1, &quot;(a): ∂f̂/∂x&quot;, 1, tri, -3.5:0.5:3.0, true, &quot;∂f̂/∂x&quot;)
+    plot_f2(fig, x, y, ∇g2, &quot;(b): ∂f̂/∂y&quot;, 3, tri, -3.5:0.5:3.0, true, &quot;∂f̂/∂y&quot;)
+    plot_f2(fig, x, y, getindex.(f′.(x, y), 1), &quot;(c): ∂f/∂x&quot;, 2, tri, -3.5:0.5:3.0, true, &quot;∂f/∂x&quot;)
+    plot_f2(fig, x, y, getindex.(f′.(x, y), 2), &quot;(d): ∂f/∂y&quot;, 4, tri, -3.5:0.5:3.0, true, &quot;∂f/∂y&quot;)
+    plot_f2(fig, x, y, norm.(collect.(∇g) .- f′.(x, y)), &quot;(e): Gradient error&quot;, 5, tri, 0:0.1:0.5, true, &quot;|∇ε|&quot;)
+    resize_to_layout!(fig)
+    ε = 100sqrt(sum((norm.(collect.(∇g) .- f′.(x, y))) .^ 2) / sum(norm.(∇g) .^ 2))
+    return fig, ε
+end
+
+points = [x&#39;; y&#39;]
+z = f.(x, y)
+tri = triangulate(points)
+∇g = generate_gradients(tri, z)
+fig, ε = plot_gradients(∇g, tri, f′, x, y)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε
+10.251180094083372</code></pre><figure>
+    <img src='../figures/gradient_data.png', alt'Gradients'><br>
+</figure><p>A 10% error is not terrible, and the derivatives we obtain are reasonable.</p><p>Let&#39;s also look at the results when we jointly estimate the gradients and Hessians (this is the default option).</p><pre><code class="language-julia hljs">∇gr, _ = generate_derivatives(tri, z; method=Direct())
+fig, ε = plot_gradients(∇gr, tri, f′, x, y)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε
+7.717791597731752</code></pre><figure>
+    <img src='../figures/joint_gradient_data.png', alt'Joint Gradients'><br>
+</figure><p>The figures are smoother, and the error has now decreased to 7.7% – an improvement. We could also try and see what happens if we use the <code>Iterative()</code> approach, using the first gradients we got as the initial gradients, or we could see what happens with <code>use_cubic_terms=false</code> for the <code>Direct()</code> method, but we won&#39;t show that here.</p><h2 id="Hessians"><a class="docs-heading-anchor" href="#Hessians">Hessians</a><a id="Hessians-1"></a><a class="docs-heading-anchor-permalink" href="#Hessians" title="Permalink"></a></h2><p>Let&#39;s now look at estimating Hessians. We first consider the direct approach, including cubic terms.</p><pre><code class="language-julia hljs">to_mat(H::NTuple{3,Float64}) = [H[1] H[3]; H[3] H[2]]
+function plot_hessians(H, tri, f′′, x, y)
+    H₁₁ = getindex.(H, 1)
+    H₁₂ = getindex.(H, 3)
+    H₂₂ = getindex.(H, 2)
+
+    fig = Figure(fontsize=36, resolution=(2400, 600))
+    plot_f2(fig, x, y, H₁₁, &quot;(a): ∂²f̂/∂x²&quot;, 1, tri, -35:5:30, true, &quot;∂²f̂/∂x²&quot;)
+    plot_f2(fig, x, y, H₂₂, &quot;(c): ∂²f̂/∂y²&quot;, 3, tri, -35:5:30, true, &quot;∂²f̂/∂y²&quot;)
+    plot_f2(fig, x, y, H₁₂, &quot;(e): ∂²f̂/∂x∂y&quot;, 5, tri, -35:5:30, true, &quot;∂²f̂/∂x∂y&quot;)
+    plot_f2(fig, x, y, getindex.(f′′.(x, y), 1), &quot;(b): ∂²f/∂x²&quot;, 2, tri, -35:5:30, true, &quot;∂²f/∂x²&quot;)
+    plot_f2(fig, x, y, getindex.(f′′.(x, y), 4), &quot;(d): ∂²f/∂y²&quot;, 4, tri, -35:5:30, true, &quot;∂²f/∂y²&quot;)
+    plot_f2(fig, x, y, getindex.(f′′.(x, y), 2), &quot;(f): ∂²f/∂x∂y&quot;, 6, tri, -35:5:30, true, &quot;∂²f/∂x∂y&quot;)
+    resize_to_layout!(fig)
+    ε = 100sqrt(sum((norm.(to_mat.(H) .- f′′.(x, y))) .^ 2) / sum(norm.(to_mat.(H)) .^ 2))
+    return fig, ε
+end
+_, Hg = generate_derivatives(tri, z)
+fig, ε = plot_hessians(Hg, tri, f′′, x, y)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε
+42.085578794275605</code></pre><figure>
+    <img src='../figures/hessian_data.png', alt'Cubic Hessians'><br>
+</figure><p>The error is certainly quite large, but remember that we are doing derivative <em>generation</em> here rather than <em>estimation</em>. Judging from the figures themselves, the derivatives we have obtained are actually pretty good. </p><p>Let&#39;s now see what happens if we only go up to quadratic terms.</p><pre><code class="language-julia hljs">_, Hg = generate_derivatives(tri, z, use_cubic_terms=false)
+fig, ε = plot_hessians(Hg, tri, f′′, x, y)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε
+35.20873081559232</code></pre><figure>
+    <img src='../figures/hessian_data_no_cubic.png', alt'Quadratic Hessians'><br>
+</figure><p>The error has actually decreased, and the figures do indeed look better. So, in this case, including cubic terms does not improve the results significantly (sometimes it does).</p><p>What if we used the iterative approach? </p><pre><code class="language-julia hljs">_, Hg = generate_derivatives(tri, z, method=Iterative()) # the gradients will be generated first automatically
+fig, ε = plot_hessians(Hg, tri, f′′, x, y)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε
+39.58481626576425</code></pre><figure>
+    <img src='../figures/hessian_data_iterative.png', alt'Iterative Hessians'><br>
+</figure><p>The results are slightly worse, and varying <code>alpha</code> doesn&#39;t seem to do much.</p><h1 id="Generation-Away-from-the-Data-Sites"><a class="docs-heading-anchor" href="#Generation-Away-from-the-Data-Sites">Generation Away from the Data Sites</a><a id="Generation-Away-from-the-Data-Sites-1"></a><a class="docs-heading-anchor-permalink" href="#Generation-Away-from-the-Data-Sites" title="Permalink"></a></h1><p>Now let&#39;s consider derivative generation away from the data sites. The function <code>differentiate</code> is used for this. We first construct our interpolant, ensuring we set <code>derivatives=true</code> so that we get the gradients at the data sites first, and then we <code>differentiate</code>.</p><pre><code class="language-julia hljs">itp = interpolate(tri, z; derivatives=true, method = Direct(), use_cubic_terms=false)
+∂ = differentiate(itp, 1)</code></pre><p>The second argument specifies the order of the resulting derivatives. Since we specify order 1, we will get gradients <span>$(\partial_xf,\partial_yf)$</span>.</p><p>Let&#39;s now define the grid for differentiating.</p><pre><code class="language-julia hljs">xg = LinRange(0, 1, 500)
+yg = LinRange(0, 1, 500)
+_x = vec([x for x in xg, _ in yg])
+_y = vec([y for _ in xg, y in yg])</code></pre><p>We can now evaluate <code>∂</code>. To approximate the function values at each point, we will use the <code>Sibson(1)</code> method, since this will incorporate the gradient information. I would really like to eventually get Hiyoshi&#39;s <span>$C^2$</span> interpolant, as discussed in <a href="https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf">Section 3.2.7.3 here</a>, as this will also give us <span>$C^2$</span> continuity at the derivative sites and thus give smoother surfaces (noting some complexity issues discussed in Section 6.5 of the linked thesis), but I&#39;ve just not found the time to comprehend how to best implement it yet / digest the spline notation (see issue <a href="https://github.com/DanielVandH/NaturalNeighbours.jl/issues/1">#1</a> if you are interested on contributing to this). Note also that, just as with the interpolation methods, it is best to give vectors to <code>∂</code>. Lastly, since we are evaluating away from the data sites, remember that the Sibson coordinates are now incorporated into the weights of the associated weighted least squares problem (that you could disable if you for some reason wanted to with <code>use_sibson_weight=false</code>).</p><pre><code class="language-julia hljs">∇g = ∂(_x, _y; interpolant_method = Sibson(1))</code></pre><p>Let&#39;s now plot our gradients. Note that there are some <code>Inf</code> values in the computed gradients, and these correspond to points evaluated outside of the convex hull of our data sites.</p><pre><code class="language-julia hljs">function rrmserr(z, ẑ)
+    num = 0.0
+    den = 0.0
+    for (zᵢ, ẑᵢ) in zip(z, ẑ)
+        if all(isfinite, (zᵢ..., ẑᵢ...))
+            num += norm(zᵢ .- ẑᵢ)^2
+            den += norm(ẑᵢ)^2
+        end
+    end
+    # num /= length(ẑ)
+    return 100sqrt(num / den)
+end
+function plot_f2(fig, x, y, vals, title, i, levels, show_3d=true, zlabel=&quot;z&quot;)
+    ax = Axis(fig[1, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=title, titlealign=:left)
+    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis, extendhigh=:auto, levels=levels)
+    if show_3d
+        ax = Axis3(fig[2, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=zlabel, width=600, height=600, title=&quot; &quot;, titlealign=:left, azimuth=0.49)
+        surface!(ax, x, y, vals, color=vals, colormap=:viridis, colorrange=extrema(levels))
+    end
+    return c
+end
+function plot_gradients(∇g, f′, xg, yg)
+    ∇g = reshape(∇g, (length(xg), length(yg)))
+    ∇g1 = first.(∇g)
+    ∇g2 = last.(∇g)
+    ∇f = [f′(x, y) for x in xg, y in yg]
+    fig = Figure(fontsize=36, resolution=(2400, 600))
+    plot_f2(fig, xg, yg, ∇g1, &quot;(a): ∂f̂/∂x&quot;, 1, -3.5:0.5:3.0, true, &quot;∂f̂/∂x&quot;)
+    plot_f2(fig, xg, yg, ∇g2, &quot;(b): ∂f̂/∂y&quot;, 3, -3.5:0.5:3.0, true, &quot;∂f̂/∂y&quot;)
+    plot_f2(fig, xg, yg, first.(∇f), &quot;(c): ∂f/∂x&quot;, 2, -3.5:0.5:3.0, true, &quot;∂f/∂x&quot;)
+    plot_f2(fig, xg, yg, last.(∇f), &quot;(d): ∂f/∂y&quot;, 4, -3.5:0.5:3.0, true, &quot;∂f/∂y&quot;)
+    plot_f2(fig, xg, yg, norm.(collect.(∇g) .- ∇f), &quot;(e): Gradient error&quot;, 5, 0:0.1:0.5, true, &quot;|∇ε|&quot;)
+    resize_to_layout!(fig)
+    ε = rrmserr(∇f, collect.(∇g))
+    return fig, ε
+end
+fig, ε = plot_gradients(∇g, f′, xg, yg)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε
+13.185747607565729</code></pre><figure>
+    <img src='../figures/gradient_surface.png', alt'Evaluated Gradient'><br>
+</figure><p>There are of course some strange artifacts near the convex hull, but the results are not terrible. Let&#39;s see what happens to the error if we instead use the other interpolant methods.</p><pre><code class="language-julia hljs">other_methods = [Sibson(), Laplace(), Nearest(), Triangle()]
+∇gs = [∂(_x, _y; interpolant_method=method) for method in other_methods]
+∇f = [f′(x, y) for x in xg, y in yg]
+εs = [rrmserr(∇f, collect.(∇g)) for ∇g in ∇gs]</code></pre><pre><code class="language-julia-repl hljs">julia&gt; hcat(other_methods, εs)
+4×2 Matrix{Any}:
+ Sibson{0}()    28.6753
+ Laplace{0}()   25.499
+ Nearest{0}()   69.5744
+ Triangle{0}()  27.7737</code></pre><p>Of course, the other methods are much worse.</p><p>Now let&#39;s go up to second order.</p><pre><code class="language-julia hljs">function plot_hessians(H, f′′, xg, yg)
+    H = reshape(H, (length(xg), length(yg)))
+    H₁₁ = getindex.(H, 1)
+    H₁₂ = getindex.(H, 3)
+    H₂₂ = getindex.(H, 2)
+    Hf = [f′′(x, y) for x in xg, y in yg]
+    fig = Figure(fontsize=36, resolution=(2400, 600))
+    plot_f2(fig, xg, yg, H₁₁, &quot;(a): ∂²f̂/∂x²&quot;, 1, -35:5:30, true, &quot;∂²f̂/∂x²&quot;)
+    plot_f2(fig, xg, yg, H₂₂, &quot;(c): ∂²f̂/∂y²&quot;, 3, -35:5:30, true, &quot;∂²f̂/∂y²&quot;)
+    plot_f2(fig, xg, yg, H₁₂, &quot;(e): ∂²f̂/∂x∂y&quot;, 5, -35:5:30, true, &quot;∂²f̂/∂x∂y&quot;)
+    plot_f2(fig, xg, yg, getindex.(Hf, 1), &quot;(b): ∂²f/∂x²&quot;, 2, -35:5:30, true, &quot;∂²f/∂x²&quot;)
+    plot_f2(fig, xg, yg, getindex.(Hf, 4), &quot;(d): ∂²f/∂y²&quot;, 4, -35:5:30, true, &quot;∂²f/∂y²&quot;)
+    plot_f2(fig, xg, yg, getindex.(Hf, 2), &quot;(f): ∂²f/∂x∂y&quot;, 6, -35:5:30, true, &quot;∂²f/∂x∂y&quot;)
+    resize_to_layout!(fig)
+    ε = rrmserr(Hf, to_mat.(H))
+    return fig, ε
+end
+∂ = differentiate(itp, 2)
+∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method = Iterative())
+∇g = first.(∇Hg)
+Hg = last.(∇Hg)
+zlims!(figH.content[4], -25, 25)
+fig∇, ε∇ = plot_gradients(∇g, f′, xg, yg)
+figH, εH = plot_hessians(Hg, f′′, xg, yg)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε∇
+19.07546882353911
+
+julia&gt; εH
+51.1267212244942</code></pre><figure>
+    <img src='../figures/gradient_surface_2.png', alt'Evaluated Gradient'><br>
+</figure><figure>
+    <img src='../figures/hessian_surface.png', alt'Evaluated Hessian'><br>
+</figure><p>The gradients actually look better here, despite the greater error, especially around the convex hull. The Hessians are a bit problematic around the convex hull especially, but we are really asking a lot of the interpolant to get Hessians unfortunately. </p><p>Let&#39;s see if the direct approach can give us any improvements (the default is <code>Iterative()</code> since we have derivative information in the interpolant).</p><pre><code class="language-julia hljs">∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method=Direct())
+∇g = first.(∇Hg)
+Hg = last.(∇Hg)
+fig∇, ε∇ = plot_gradients(∇g, f′, xg, yg)
+figH, εH = plot_hessians(Hg, f′′, xg, yg)
+zlims!(figH.content[4], -25, 25)</code></pre><pre><code class="language-julia-repl hljs">julia&gt; ε∇
+9.853286514069882
+
+julia&gt; εH
+46.7610990050276</code></pre><figure>
+    <img src='../figures/gradient_surface_2_direct.png', alt'Evaluated Gradient'><br>
+</figure><figure>
+    <img src='../figures/hessian_surface_direct.png', alt'Evaluated Hessian'><br>
+</figure><p>Indeed, both the gradients and the Hessians appear to have improved, with some difficulties at the convex hull. Perhaps a better way to measure the error is to only include points that are away fro the convex hull. The following function can do this for us:</p><pre><code class="language-julia hljs">function rrmserr(z, ẑ, tri, x, y)
+    num = 0.0
+    den = 0.0 
+    points = get_point(tri)
+    ch = get_convex_hull_indices(tri)
+    for (zᵢ, ẑᵢ, xᵢ, yᵢ) in zip(z, ẑ, x, y)
+        q = (xᵢ, yᵢ)
+        δ = DelaunayTriangulation.distance_to_polygon(q, points, ch)
+        if δ &gt; 1e-4 &amp;&amp; all(isfinite, (zᵢ..., ẑᵢ...))
+            num += norm(zᵢ .- ẑᵢ)^2
+            den += norm(ẑᵢ)^2
+        end
+    end
+    # num /= length(ẑ)
+    return 100sqrt(num / den)
+end</code></pre><p>If we instead use this metric, then:</p><pre><code class="language-julia-repl hljs">julia&gt; ε∇_nohull = rrmserr(f′.(_x, _y), ∇g, ∂, _x, _y)
+7.479964687679311
+
+julia&gt; εH_nohull = rrmserr(f′′.(_x, _y), to_mat.(Hg), ∂, _x, _y)
+38.884740966379056</code></pre><p>The errors are smaller, though not by much.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../swiss/">Switzerland Elevation Data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Tuesday 8 August 2023 12:04">Tuesday 8 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
