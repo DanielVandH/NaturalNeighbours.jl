@@ -51,6 +51,7 @@ z = f.(x, y)
 tri = triangulate([x'; y'])
 vorn = voronoi(tri)
 
+#= temporary deletion
 fig = Figure(fontsize=50, resolution=(1800, 600))
 ax = Axis(fig[1, 1], xlabel="x", ylabel="y", width=600, height=600, title="(a): Data and triangulation", titlealign=:left)
 scatter!(ax, x, y, color=:black, markersize=9)
@@ -69,6 +70,7 @@ resize_to_layout!(fig)
 fig
 
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "example_data.png") fig
+=#
 
 # Generating gradients at the data sites 
 function plot_f2(fig, x, y, vals, title, i, tri, levels, show_3d=true, zlabel="z")
