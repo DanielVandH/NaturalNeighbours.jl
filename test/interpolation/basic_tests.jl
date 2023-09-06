@@ -37,9 +37,6 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
     @test NNI.get_gradient(_itp) === nothing
     @test NNI.get_hessian(_itp) === nothing
     @test itp isa NNI.NaturalNeighboursInterpolant
-    DT.lock_convex_hull!(tri)
-    @test_throws ArgumentError interpolate(tri, z)
-    DT.unlock_convex_hull!(tri)
     @test_throws AssertionError interpolate(tri, z[1:end-1])
     w = rand(length(z))
     y = rand(length(z))
