@@ -6,6 +6,9 @@ function compute_bowyer_envelope!(envelope, tri::Triangulation, history::Inserti
     I = integer_type(tri)
     V = add_point!(tri, point; store_event_history=Val(true), event_history=history, peek=Val(true), kwargs...)
     all_triangles = each_added_triangle(history)
+    if isempty(all_triangles) # This is possible for constrained triangulations
+        return envelope, temp_adjacent, history, V
+    end
     for T in all_triangles
         add_triangle!(temp_adjacent, T)
     end

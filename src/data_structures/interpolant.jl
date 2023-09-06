@@ -16,7 +16,7 @@ struct NaturalNeighboursInterpolant{T<:Triangulation,F,G,H,N,D}
         @assert num_solid_vertices(tri) == length(z) "The number of points in the triangulation must equal the length of the data vector."
         !has_ghost_triangles(tri) && add_ghost_triangles!(tri)
         if has_boundary_nodes(tri)
-            throw(ArgumentError("Natural neighbour interpolation is only defined over unconstrained triangulations."))
+            @warn "Natural neighbour interpolation is only defined over unconstrained triangulations. You may find unexpected results when interpolating near the boundaries or constrained edges, and especially near non-convex boundaries or outside of the triangulation. In your later evaluations of this interpolant, consider using project=false."
         end
         nt = Base.Threads.nthreads()
         derivative_caches = [DerivativeCache(tri) for _ in 1:nt]

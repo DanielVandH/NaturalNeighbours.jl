@@ -26,6 +26,9 @@ using SafeTestsets
     #@safetestset "Influence" begin
     #    include("interpolation/influence.jl")
     #end
+    @safetestset "Constrained Triangulations" begin
+        include("interpolation/constrained.jl")
+    end
 end
 
 @testset "Differentiation" begin
