@@ -47,7 +47,7 @@ end
 @inline function _eval_interp(method::Union{<:Farin,Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     gradients = get_gradient(itp)
     if isnothing(gradients)
-        throw(ArgumentError("Gradients must be provided for Sibson-1 or Farin interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
+        throw(ArgumentError("Gradients must be provided for Sibson-1, Farin, or Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true)."))
     end
     tri = get_triangulation(itp)
     nc = compute_natural_coordinates(Sibson(), tri, p, cache; kwargs...)
