@@ -73,7 +73,7 @@ end
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
     z = [f(x, y) for (x, y) in each_point(tri)]
     itp = interpolate(tri, z; derivatives=false)
-    @test_throws ArgumentError("Gradients must be provided for Sibson-1 or Farin interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Sibson(1))
+    @test_throws ArgumentError("Gradients must be provided for Sibson-1, Farin, or Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Sibson(1))
 end
 
 @testset "Hiyoshi(2) errors without gradients and Hessians" begin
