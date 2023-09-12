@@ -27,7 +27,7 @@ using SafeTestsets
         include("interpolation/influence.jl")
     end 
     @safetestset "Constrained Triangulations" begin
-        include("interpolation/consttrained.jl")
+        include("interpolation/constrained.jl")
     end
 end
 
@@ -53,9 +53,9 @@ end
     @safetestset "Differentiation Example" begin
         include("doc_examples/differentiation.jl")
     end
-    #@safetestset "Interpolation Math" begin
-    #    include("doc_examples/interpolation_math.jl")
-    #end
+    @safetestset "Interpolation Math" begin
+        include("doc_examples/interpolation_math.jl")
+    end
     @safetestset "Switzerland" begin
         include("doc_examples/swiss.jl")
     end
