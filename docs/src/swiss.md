@@ -82,7 +82,7 @@ boundary_points = [(boundary[i, 1], boundary[i, 2]) for i in axes(boundary, 1)]
 
 # Downsampling and Setting up the Data for Plotting 
 
-We now setup the data for plotting. We want to use `tricontourf!`, so we need to get a triangulation of the data. If we just let Makie compute the triangulation, it will be unconstrained and won't show us the actual data properly. So, some extra work is required. Furthermore, the `boundary_points` do not actually store a subset of the points from `data_sites`, so we can't just do e.g. `indexin(boundary_points, data_sites)` to get the associated boundary indices, so we instead find the closest data site to each boundary point.
+We now setup the data for plotting. We want to use `tricontourf!`, so we need to get a triangulation of the data. Since the `boundary_points` do not actually store a subset of the points from `data_sites`, we can't just do e.g. `indexin(boundary_points, data_sites)` to get the associated boundary indices, so we instead find the closest data site to each boundary point.
 
 ```julia
 function nearest_tuple(q, data)
@@ -137,12 +137,12 @@ fig = Figure(fontsize=24)
 ax1 = Axis3(fig[1, 1], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(a): Original height data (n = $(length(elevation_data)))", titlealign=:left)
 mesh!(ax1, data, triangles, color=elevation_data, colorrange=colorrange)
 ax2 = Axis(fig[1, 2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(b): Original height data (n = $(length(elevation_data)))", titlealign=:left)
-tf = tricontourf!(ax2, data[:, 1], data[:, 2], elevation_data, color=elevation_data, triangulation=triangles', levels=levels)
+tf = tricontourf!(ax2, tri, elevation_data, color=elevation_data, levels=levels)
 
 ax3 = Axis3(fig[2, 1], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(c): Downsampled height data (n = $(length(ds_elevation_data)))", titlealign=:left)
 mesh!(ax3, ds_data, ds_triangles, color=ds_elevation_data, colorrange=colorrange)
 ax4 = Axis(fig[2, 2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(d): Downsampled height data (n = $(length(ds_elevation_data)))", titlealign=:left)
-tricontourf!(ax4, ds_data[:, 1], ds_data[:, 2], ds_elevation_data, color=ds_elevation_data, triangulation=ds_triangles', levels=levels)
+tricontourf!(ax4, ds_tri, ds_elevation_data, color=ds_elevation_data, levels=levels)
 Colorbar(fig[1:2, 3], tf)
 resize_to_layout!(fig)
 ```
@@ -200,7 +200,7 @@ function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, 
     ylims!(ax, c, d)
     return m
 end
-function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
     fig = Figure(fontsize=24)
     m1 = plot_results!(fig, 1, 1, 1, 2, x, y, xg, yg, sibson_vals, "(a): Sibson", "(b): Sibson", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
     m2 = plot_results!(fig, 1, 3, 1, 4, x, y, xg, yg, sibson_1_vals, "(c): Sibson-1", "(d): Sibson-1", query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
@@ -215,7 +215,7 @@ function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, n
     ylims!(ax, c, d)
     zlims!(ax, e, f)
     ax = Axis(fig[4, 4], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(o): Original height data", titlealign=:left)
-    tricontourf!(ax, data[:, 1], data[:, 2], elevation_data, color=elevation_data, triangulation=triangles', levels=levels)
+    tricontourf!(ax, tri, elevation_data, color=elevation_data, levels=levels)
     xlims!(ax, a, b)
     ylims!(ax, c, d)
     Colorbar(fig[1:4, 5], m1)
@@ -223,7 +223,7 @@ function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, n
     return fig
 end
 e, f = 0.0, 4.5
-fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
 ```
 
 ```@raw html
@@ -246,7 +246,7 @@ triangle_vals_p = interpolant(x, y; method=Triangle(), parallel=true, project=fa
 nearest_vals_p = interpolant(x, y; method=Nearest(), parallel=true, project=false)
 farin_vals_p = interpolant(x, y; method=Farin(), parallel=true, project=false)
 hiyoshi_vals_p = interpolant(x, y; method=Hiyoshi(2), parallel=true, project=false)
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
 ```
 
 ```@raw html
@@ -270,7 +270,7 @@ triangle_vals_p[exterior_idx] .= Inf
 nearest_vals_p[exterior_idx] .= Inf
 farin_vals_p[exterior_idx] .= Inf
 hiyoshi_vals_p[exterior_idx] .= Inf
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
 ```
 
 ```@raw html
