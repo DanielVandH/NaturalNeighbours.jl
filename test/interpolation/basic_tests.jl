@@ -37,9 +37,6 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
     @test NNI.get_gradient(_itp) === nothing
     @test NNI.get_hessian(_itp) === nothing
     @test itp isa NNI.NaturalNeighboursInterpolant
-    DT.lock_convex_hull!(tri)
-    @test_throws ArgumentError interpolate(tri, z)
-    DT.unlock_convex_hull!(tri)
     @test_throws AssertionError interpolate(tri, z[1:end-1])
     w = rand(length(z))
     y = rand(length(z))
@@ -76,7 +73,7 @@ end
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
     z = [f(x, y) for (x, y) in each_point(tri)]
     itp = interpolate(tri, z; derivatives=false)
-    @test_throws ArgumentError("Gradients must be provided for Sibson-1 or Farin interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Sibson(1))
+    @test_throws ArgumentError("Gradients must be provided for Sibson-1, Farin, or Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Sibson(1))
 end
 
 @testset "Hiyoshi(2) errors without gradients and Hessians" begin

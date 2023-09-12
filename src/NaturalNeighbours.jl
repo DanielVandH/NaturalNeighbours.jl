@@ -23,6 +23,7 @@ import DelaunayTriangulation: DelaunayTriangulation,
     previndex_circular,
     nextindex_circular,
     get_point,
+    get_points,
     triangle_circumcenter,
     num_points,
     number_type,
@@ -54,7 +55,8 @@ import DelaunayTriangulation: DelaunayTriangulation,
     jump_to_voronoi_polygon,
     iterated_neighbourhood,
     iterated_neighbourhood!,
-    triangle_area
+    triangle_area,
+    get_boundary_nodes
 import ChunkSplitters: chunks
 using ElasticArrays
 using LinearAlgebra

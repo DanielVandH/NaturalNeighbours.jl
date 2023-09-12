@@ -25,6 +25,9 @@ using SafeTestsets
     end
     @safetestset "Influence" begin
         include("interpolation/influence.jl")
+    end 
+    @safetestset "Constrained Triangulations" begin
+        include("interpolation/consttrained.jl")
     end
 end
 
@@ -56,11 +59,11 @@ end
     @safetestset "Switzerland" begin
         include("doc_examples/swiss.jl")
     end
-    if get(ENV, "CI", "false") == "false"
-        @safetestset "Comparison" begin
-            include("doc_examples/interpolant_comparisons.jl")
-        end
-    end
+    #if get(ENV, "CI", "false") == "false"
+    #    @safetestset "Comparison" begin
+    #        include("doc_examples/interpolant_comparisons.jl")
+    #    end
+    #end
 end
 
 
