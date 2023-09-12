@@ -18,8 +18,6 @@ points = [
 tri = triangulate(points)
 vorn = voronoi(tri)
 fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), generator_color=:red)
-xlims!(ax, -2, 2)
-ylims!(ax, -2, 2)
 resize_to_layout!(fig)
 fig
 
@@ -64,12 +62,12 @@ vorn2 = voronoi(tri2, false)
 V = get_polygon(vorn2, num_points(tri2))
 AX2 = get_area(vorn2, num_points(tri2))
 
-fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), generator_color=:red, markersize=7)
+fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), generator_color=:red, markersize=7, color=:white)
 xlims!(ax, 3, 9)
 ylims!(ax, 1.5, 7)
 Vcoords = [get_polygon_point(vorn2, i) for i in V]
 poly!(ax, Vcoords, color=(:blue, 0.2), strokewidth=2, strokecolor=:blue)
-scatter!(ax, [q], color = :magenta, markersize=14)
+scatter!(ax, [q], color=:magenta, markersize=14)
 resize_to_layout!(fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "new_tile.png") fig
 
