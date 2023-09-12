@@ -32,4 +32,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/DanielVandH/NaturalNeighbours.jl",
     devbranch="main",
+    push_preview=true
 )
