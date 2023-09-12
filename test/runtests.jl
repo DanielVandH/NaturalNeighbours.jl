@@ -23,9 +23,9 @@ using SafeTestsets
     @safetestset "Structs" begin
         include("interpolation/structs.jl")
     end
-    #@safetestset "Influence" begin
-    #    include("interpolation/influence.jl")
-    #end
+    @safetestset "Influence" begin
+        include("interpolation/influence.jl")
+    end
 end
 
 @testset "Differentiation" begin

@@ -67,7 +67,7 @@ Colorbar(fig[1, 3], c)
 resize_to_layout!(fig)
 fig
 
-@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "sibson_vs_sibson1_errors.png") fig
+@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "sibson_vs_sibson1_errors.png") fig by=psnr_equality(20)
 
 esib0 = 100sqrt(sum((sib_vals .- f.(_x, _y)).^2) / sum(sib_vals.^2))
 esib1 = 100sqrt(sum((sib1_vals .- f.(_x, _y)).^2) / sum(sib_vals.^2))

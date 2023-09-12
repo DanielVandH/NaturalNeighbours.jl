@@ -32,7 +32,7 @@ hiyoshi_vals = itp(x, y; method=Hiyoshi(2)) |> x -> reshape(x, (length(xg), leng
 function plot_influence(i, j, title, vals, xg, yg, vorn, points)
     ax = Axis(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
     contourf!(ax, xg, yg, vals, color=vals, colormap=:viridis, levels=0:0.05:1, extendlow=:auto, extendhigh=:auto)
-    voronoiplot!(ax, vorn, strokecolor=:red)
+    voronoiplot!(ax, vorn, strokecolor=:red, color=(:white,0.0))
     scatter!(ax, points, color=:red)
     xlims!(ax, -1, 1)
     ylims!(ax, -1, 1)

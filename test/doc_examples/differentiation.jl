@@ -51,12 +51,11 @@ z = f.(x, y)
 tri = triangulate([x'; y'])
 vorn = voronoi(tri)
 
-#= temporary deletion
 fig = Figure(fontsize=50, resolution=(1800, 600))
 ax = Axis(fig[1, 1], xlabel="x", ylabel="y", width=600, height=600, title="(a): Data and triangulation", titlealign=:left)
 scatter!(ax, x, y, color=:black, markersize=9)
-triplot!(ax, tri, color=:black, linewidth=2, show_convex_hull=false)
-voronoiplot!(ax, vorn, strokecolor=:blue)
+triplot!(ax, tri, color=:black, linewidth=2)
+voronoiplot!(ax, vorn, strokecolor=:blue, color=(:white, 0.0))
 xlims!(ax, 0, 1)
 ylims!(ax, 0, 1)
 
@@ -70,7 +69,6 @@ resize_to_layout!(fig)
 fig
 
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "example_data.png") fig
-=#
 
 # Generating gradients at the data sites 
 function plot_f2(fig, x, y, vals, title, i, tri, levels, show_3d=true, zlabel="z")
@@ -219,16 +217,16 @@ function plot_hessians(H, f′′, xg, yg)
     return fig, ε
 end
 ∂ = differentiate(itp, 2)
-∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method = Iterative())
+∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method=Iterative())
 ∇g = first.(∇Hg)
 Hg = last.(∇Hg)
 fig∇, ε∇ = plot_gradients(∇g, f′, xg, yg)
 figH, εH = plot_hessians(Hg, f′′, xg, yg)
 zlims!(figH.content[4], -25, 25)
-@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_surface.png") figH by=psnr_equality(18)
-@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface_2.png") fig∇ by=psnr_equality(18)
-@test ε∇ ≈ 19.07546882353911 rtol=1e-1
-@test εH ≈ 51.1267212244942 rtol=1e-1
+@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_surface.png") figH by = psnr_equality(18)
+@test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface_2.png") fig∇ by = psnr_equality(18)
+@test ε∇ ≈ 19.07546882353911 rtol = 1e-1
+@test εH ≈ 51.1267212244942 rtol = 1e-1
 
 ∇Hg = ∂(_x, _y; interpolant_method=Sibson(1), method=Direct())
 ∇g = first.(∇Hg)
@@ -244,7 +242,7 @@ zlims!(figH.content[4], -25, 25)
 function rrmserr(z, ẑ, ∂, x, y)
     tri = ∂.interpolant.triangulation
     num = 0.0
-    den = 0.0 
+    den = 0.0
     points = get_points(tri)
     ch = get_convex_hull_indices(tri)
     for (zᵢ, ẑᵢ, xᵢ, yᵢ) in zip(z, ẑ, x, y)

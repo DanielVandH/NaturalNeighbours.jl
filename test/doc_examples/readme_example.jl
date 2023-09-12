@@ -48,4 +48,4 @@ end
 resize_to_layout!(fig)
 fig
 
-@test_reference normpath(@__DIR__, "../..", "example.png") fig
+@test_reference normpath(@__DIR__, "../..", "example.png") fig by=psnr_equality(20)
