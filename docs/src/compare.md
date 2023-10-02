@@ -539,7 +539,7 @@ fig = plot_errors(considered_fidx, considered_itp, gdf, interior_idx, :n_error, 
 
 Judging from these results, again the `Hiyoshi(2)` and `Farin(1)` methods have the best performance across all metrics.
 
-# Quantiative Global Analysis
+# Quantitative Global Analysis
 
 Now we will use global metrics to assess the interpolation quality. A limitation of the above discussion is that we are considering a fixed data set. Here, we instead consider random data sets (with the same test functions) and weighted averages of the local errors. We will measure the errors as a function of the median edge length of the data set's underlying triangulation. Note that, in these random data sets, we will not maintain a convex hull of $[0, 1]^2$. Lastly, we will use a stricter tolerance on whether to classify a point as being inside of the convex hull in this case, now using a `tol = 0.1` rather than `tol = 0.01`. The global metric we use is $100\sqrt{\frac{\sum_i \|y_i - \hat y_i\|^2}{\sum_j \|\hat y_i\|^2}}$:
 
@@ -695,7 +695,7 @@ Once again, the `Hiyoshi(2)` and `Farin(1)` methods seem preferable, and `Direct
 
 It is important to note that using the smooth interpolants comes at a cost of greater running time. If $n$ is the number of natural neighbours around a point $\boldsymbol x_0$, then computing $f^{\text{HIY}}(\boldsymbol x_0)$ is about $\mathcal O(n^5)$, and $f^{\text{FAR}}(\boldsymbol x_0)$ is $\mathcal O(n^3)$. Derivative generation also has this complexity when using these interpolants (since it involves solving a least squares problem). Of course, this complexity doesn't typically matter so much since (1) many points are being evaluated at using multithreading and (2) points have, on average, six natural neighbours only in most triangulations.
 
-Let us explore here how long it takes to compute the interpolant as a function of the number of natural neighbours. There are many ways to measure this properly, e.g. collecting large samples of computation times from random data sets, but here we take a simple approach where we contruct a triangulation with a point $\boldsymbol x_1 = \boldsymbol 0$ surrounded by $m$ points on a circle. This point $\boldsymbol x_1$ will have approximately $m$ natural neighbours. (Note that we do not care about the number of data points in the dataset since these interpolants are local.) The function we use for this is:
+Let us explore here how long it takes to compute the interpolant as a function of the number of natural neighbours. There are many ways to measure this properly, e.g. collecting large samples of computation times from random data sets, but here we take a simple approach where we construct a triangulation with a point $\boldsymbol x_1 = \boldsymbol 0$ surrounded by $m$ points on a circle. This point $\boldsymbol x_1$ will have approximately $m$ natural neighbours. (Note that we do not care about the number of data points in the dataset since these interpolants are local.) The function we use for this is:
 
 ```julia
 function circular_example(m) # extra points are added outside of the circular barrier for derivative generation
