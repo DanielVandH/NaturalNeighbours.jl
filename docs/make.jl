@@ -18,7 +18,7 @@ makedocs(;
         "Home" => "index.md",
         "Examples" => [
             "Interpolation" => "interpolation.md",
-            "Differentiaton" => "differentiation.md",
+            "Differentiation" => "differentiation.md",
             "Switzerland Elevation Data" => "swiss.md"
         ],
         "Comparison of Interpolation Methods" => "compare.md",

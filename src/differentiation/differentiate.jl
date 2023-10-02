@@ -19,7 +19,7 @@ For calling the resulting struct, we define the following methods:
 The available keyword arguments are:
 - `parallel=true`: Whether to use multithreading. Ignored for the first two methods. 
 - `method=default_diff_method(∂)`: Default method for evaluating the interpolant. `default_diff_method(∂)` returns `Direct()`. The method must be a [`AbstractDifferentiator`](@ref).
-- `interpolant_method=Sibson()`: The method used for evaluating the interpolant to estimate `zᵢ` for the latter three methods. See [`AbstractInterpolator`](@ref) for the avaiable methods.
+- `interpolant_method=Sibson()`: The method used for evaluating the interpolant to estimate `zᵢ` for the latter three methods. See [`AbstractInterpolator`](@ref) for the available methods.
 - `rng=Random.default_rng()`: The random number generator used for estimating `zᵢ` for the latter three methods, or for constructing the natural coordinates.
 - `project=false`: Whether to project any extrapolated points onto the boundary of the convex hull of the data sites and perform two-point interpolation, or to simply replace any extrapolated values with `Inf`, when evaluating the interpolant in the latter three methods.
 - `use_cubic_terms=true`: If estimating second order derivatives, whether to use cubic terms. Only relevant for `method == Direct()`.

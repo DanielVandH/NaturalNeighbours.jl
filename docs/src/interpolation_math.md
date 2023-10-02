@@ -68,7 +68,7 @@ To represent a point $\boldsymbol x_0$, we can use what are known as _nearest ne
 \lambda_i^{\text{NEAR}} = \begin{cases} 1 & \boldsymbol x_0 \in \mathcal V_i, \\ 0 & \text{otherwise}. \end{cases}
 ```
 
-The resulting scatterd data interpolant $f^{\text{NEAR}}$ is then just 
+The resulting scattered data interpolant $f^{\text{NEAR}}$ is then just 
 
 ```math
 f^{\text{NEAR}}(\boldsymbol x) = z_i, 
@@ -201,7 +201,7 @@ All the derived interpolants above are not differentiable at the data sites. Her
 
 ## Sibson's $C^1$ Interpolant 
 
-Sibson's $C^1$ interpolant, which we call Sibson-1 interpolation, extends on Sibon's coordinates above, also called Sibson-0 coordinates, is $C^1$ at the data sites. A limitation of it is that it requires an estimate of the gradient $\boldsymbol \nabla_i$ at the data sites $\boldsymbol x_i$, which may be estimated using the derivative generation techniques describd in the sidebar. 
+Sibson's $C^1$ interpolant, which we call Sibson-1 interpolation, extends on Sibson coordinates above, also called Sibson-0 coordinates, is $C^1$ at the data sites. A limitation of it is that it requires an estimate of the gradient $\boldsymbol \nabla_i$ at the data sites $\boldsymbol x_i$, which may be estimated using the derivative generation techniques described in the sidebar. 
 
 Following [Bobach's thesis](https://kluedo.ub.rptu.de/frontdoor/deliver/index/docId/2104/file/diss.bobach.natural.neighbor.20090615.pdf) or [Flötotto's thesis](https://theses.hal.science/tel-00832487/PDF/these-flototto.pdf), the Sibson-1 interpolant $f^{\text{SIB}1}$ is a linear combination of $f^{\text{SIB}0} \equiv f^{\text{SIB}}$ and another interpolant $\xi$. We define:
 
@@ -262,7 +262,7 @@ Let us describe how we actually evaluate $\sum_{i \in N_0}\sum_{j \in N_0}\sum_{
 f^{\text{FAR}}(\boldsymbol x_0) = \sum_{1 \leq i, j, k \leq n} f_{ijk}\lambda_i\lambda_j\lambda_k.
 ```
 
-This looks close to the definition of a [complete homogeneous symetric polynomial](https://en.wikipedia.org/wiki/Complete_homogeneous_symmetric_polynomial). This page shows the identity
+This looks close to the definition of a [complete homogeneous symmetric polynomial](https://en.wikipedia.org/wiki/Complete_homogeneous_symmetric_polynomial). This page shows the identity
 
 ```math 
 \sum_{1 \leq i \leq j \leq k \leq n} X_iX_kX_j = \sum_{1 \leq i, j, k \leq n} \frac{m_i!m_j!m_k!}{3!}X_iX_jX_k,
