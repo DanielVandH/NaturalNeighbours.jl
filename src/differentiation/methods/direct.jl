@@ -16,6 +16,7 @@ function _generate_first_order_derivatives_direct(
     resize!(b, m)
     for (j, s) in enumerate(E)
         λₛ = get_λ(λ, j, use_sibson_weight)
+        λₛ = max(λₛ, zero(λₛ))
         zₛ = z[s]
         pₛ = get_point(tri, s)
         xₛ, yₛ = getxy(pₛ)
