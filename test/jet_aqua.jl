@@ -1,17 +1,14 @@
 using ..NaturalNeighbours
 using DelaunayTriangulation
 using CairoMakie
-using ReferenceTests
-using StableRNGs
 using JET
 using Aqua
 
 Aqua.test_all(NaturalNeighbours; ambiguities=false, project_extras=false) # don't care about julia < 1.2
 Aqua.test_ambiguities(NaturalNeighbours) # don't pick up Base and Core...
 
-rng = StableRNG(123)
-pts = [(rand(rng), rand(rng)) for _ in 1:50]
-tri = triangulate(pts, rng=rng, delete_ghosts=false)
+pts = [(rand(), rand()) for _ in 1:50]
+tri = triangulate(pts, delete_ghosts=false)
 f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
 z = [f(x, y) for (x, y) in pts]
 interpolate(tri, z; derivatives=false, parallel=false)

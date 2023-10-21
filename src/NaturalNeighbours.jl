@@ -114,12 +114,10 @@ using PrecompileTools
         ∂1 = differentiate(itp, 1)
         ∂2 = differentiate(itp, 2)
         for method in (Iterative(), Direct())
-            for project in (false, true)
                 for ∂ in (∂1, ∂2)
-                    ∂(rand(), rand(), method=method, project=project)
-                    ∂([rand()], [rand()], method=method, project=project)
+                    ∂(rand(), rand(), method=method)
+                    ∂([rand()], [rand()], method=method)
                 end
-            end
         end
     end
 end
