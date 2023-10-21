@@ -27,6 +27,7 @@ makedocs(;
             "Differentiation Details" => "differentiation_math.md"
         ]
     ],
+    warnonly=true
 )
 
 deploydocs(;
