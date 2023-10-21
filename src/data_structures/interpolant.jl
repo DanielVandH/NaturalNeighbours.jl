@@ -26,7 +26,7 @@ struct NaturalNeighboursInterpolant{T<:Triangulation,F,G,H,N,D}
         if derivatives
             ∇, ℋ = generate_derivatives(tri, z, derivative_caches, neighbour_caches; kwargs...)
         else
-            ∇ = nothing
+            ∇ = nothing # TODO: In 2.0, change these to be NTuple{2, F}[] and NTuple{3, F}[]
             ℋ = nothing
         end
         if isnothing(gradient)

@@ -2,6 +2,8 @@ using NaturalNeighbours
 using Test
 using SafeTestsets
 
+include("jet_aqua.jl")
+
 @testset "Interpolation" begin
     @testset "Coordinates" begin
         @safetestset "Natural Coordinates" begin
