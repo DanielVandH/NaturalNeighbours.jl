@@ -48,7 +48,7 @@ z = f.(x, y)
 tri = triangulate([x&#39;; y&#39;])
 vorn = voronoi(tri)
 
-fig = Figure(fontsize=36, resolution=(1800, 600))
+fig = Figure(fontsize=36, size=(1800, 600))
 ax = Axis(fig[1, 1], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=&quot;(a): Data and triangulation&quot;, titlealign=:left)
 scatter!(ax, x, y, color=:black, markersize=9)
 triplot!(ax, tri, color=:black, linewidth=2, show_convex_hull=false)
@@ -83,7 +83,7 @@ end
 function plot_gradients(∇g, tri, f′, x, y)
     ∇g1 = first.(∇g)
     ∇g2 = last.(∇g)
-    fig = Figure(fontsize=36, resolution=(2400, 600))
+    fig = Figure(fontsize=36, size=(2400, 600))
     plot_f2(fig, x, y, ∇g1, &quot;(a): ∂f̂/∂x&quot;, 1, tri, -3.5:0.5:3.0, true, &quot;∂f̂/∂x&quot;)
     plot_f2(fig, x, y, ∇g2, &quot;(b): ∂f̂/∂y&quot;, 3, tri, -3.5:0.5:3.0, true, &quot;∂f̂/∂y&quot;)
     plot_f2(fig, x, y, getindex.(f′.(x, y), 1), &quot;(c): ∂f/∂x&quot;, 2, tri, -3.5:0.5:3.0, true, &quot;∂f/∂x&quot;)
@@ -111,7 +111,7 @@ function plot_hessians(H, tri, f′′, x, y)
     H₁₂ = getindex.(H, 3)
     H₂₂ = getindex.(H, 2)
 
-    fig = Figure(fontsize=36, resolution=(2400, 600))
+    fig = Figure(fontsize=36, size=(2400, 600))
     plot_f2(fig, x, y, H₁₁, &quot;(a): ∂²f̂/∂x²&quot;, 1, tri, -35:5:30, true, &quot;∂²f̂/∂x²&quot;)
     plot_f2(fig, x, y, H₂₂, &quot;(c): ∂²f̂/∂y²&quot;, 3, tri, -35:5:30, true, &quot;∂²f̂/∂y²&quot;)
     plot_f2(fig, x, y, H₁₂, &quot;(e): ∂²f̂/∂x∂y&quot;, 5, tri, -35:5:30, true, &quot;∂²f̂/∂x∂y&quot;)
@@ -164,7 +164,7 @@ function plot_gradients(∇g, f′, xg, yg)
     ∇g1 = first.(∇g)
     ∇g2 = last.(∇g)
     ∇f = [f′(x, y) for x in xg, y in yg]
-    fig = Figure(fontsize=36, resolution=(2400, 600))
+    fig = Figure(fontsize=36, size=(2400, 600))
     plot_f2(fig, xg, yg, ∇g1, &quot;(a): ∂f̂/∂x&quot;, 1, -3.5:0.5:3.0, true, &quot;∂f̂/∂x&quot;)
     plot_f2(fig, xg, yg, ∇g2, &quot;(b): ∂f̂/∂y&quot;, 3, -3.5:0.5:3.0, true, &quot;∂f̂/∂y&quot;)
     plot_f2(fig, xg, yg, first.(∇f), &quot;(c): ∂f/∂x&quot;, 2, -3.5:0.5:3.0, true, &quot;∂f/∂x&quot;)
@@ -191,7 +191,7 @@ fig, ε = plot_gradients(∇g, f′, xg, yg)</code></pre><pre><code class="langu
     H₁₂ = getindex.(H, 3)
     H₂₂ = getindex.(H, 2)
     Hf = [f′′(x, y) for x in xg, y in yg]
-    fig = Figure(fontsize=36, resolution=(2400, 600))
+    fig = Figure(fontsize=36, size=(2400, 600))
     plot_f2(fig, xg, yg, H₁₁, &quot;(a): ∂²f̂/∂x²&quot;, 1, -35:5:30, true, &quot;∂²f̂/∂x²&quot;)
     plot_f2(fig, xg, yg, H₂₂, &quot;(c): ∂²f̂/∂y²&quot;, 3, -35:5:30, true, &quot;∂²f̂/∂y²&quot;)
     plot_f2(fig, xg, yg, H₁₂, &quot;(e): ∂²f̂/∂x∂y&quot;, 5, -35:5:30, true, &quot;∂²f̂/∂x∂y&quot;)
@@ -248,4 +248,4 @@ end</code></pre><p>If we instead use this metric, then:</p><pre><code class="lan
 7.479964687679311
 
 julia&gt; εH_nohull = rrmserr(f′′.(_x, _y), to_mat.(Hg), ∂, _x, _y)
-38.884740966379056</code></pre><p>The errors are smaller, though not by much.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../swiss/">Switzerland Elevation Data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.1.1 on <span class="colophon-date" title="Wednesday 29 November 2023 01:53">Wednesday 29 November 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+38.884740966379056</code></pre><p>The errors are smaller, though not by much.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../swiss/">Switzerland Elevation Data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Wednesday 6 December 2023 02:45">Wednesday 6 December 2023</span>. Using Julia version 1.9.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
