@@ -335,7 +335,7 @@ fig
 ## Visual comparisons
 considered_itp = eachindex(itp_methods)
 considered_fidx = eachindex(f)
-fig = Figure(fontsize=72, resolution=(4800, 4900))
+fig = Figure(fontsize=72, size=(4800, 4900))
 ax = [
     Axis3(fig[i, j],
         xlabel=L"x",
