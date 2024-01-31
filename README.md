@@ -1,5 +1,7 @@
 # NaturalNeighbours
 
+> Due to unforeseen circumstances, I will no longer be able to actively maintain this package. If you are willing and able to help maintain it, please contact me at ![email](https://github.com/DanielVandH/FiniteVolumeMethod.jl/assets/95613936/0cceed96-a640-4356-a78a-c5cb95944b6c). I will still be around to view Issues and review / accept (hopefully small) PRs in the interim.
+
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://DanielVandH.github.io/NaturalNeighbours.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://DanielVandH.github.io/NaturalNeighbours.jl/dev/)
 [![Build Status](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/DanielVandH/NaturalNeighbours.jl/actions/workflows/CI.yml?query=branch%3Amain)
