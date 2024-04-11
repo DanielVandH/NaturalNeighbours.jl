@@ -26,7 +26,7 @@ In particular, any point in $V_{\boldsymbol x_i}$ is closer to $\boldsymbol x_i$
 
 # Natural Neighbours 
 
-See that the tiles of the tessellation in the figure above intersect along a line, called the _Voronoi facet_, that we denote by $\mathcal F_{ij} = \mathcal V_i \cap \mathcal V_j$. Whenever $\mathcal F_{ij} \neq \emptyset$, we say that $\boldsymbol x_i$ and $\boldsymbol x_j$ are _natural neighbours_ in $\boldsymbol X$. We denote the set of natural neighbours to a point $\boldsymbol x \in \boldsymbol X$ by $N(\boldsymbol x) \subseteq \boldsymbol X$, and we denote the corresponding indices by $N_i = \{j : \boldsymbol x_j \in N(\boldsymbol x_j)\}$.
+See that the tiles of the tessellation in the figure above intersect along a line, called the _Voronoi facet_, that we denote by $\mathcal F_{ij} = \mathcal V_i \cap \mathcal V_j$. Whenever $\mathcal F_{ij} \neq \emptyset$, we say that $\boldsymbol x_i$ and $\boldsymbol x_j$ are _natural neighbours_ in $\boldsymbol X$. We denote the set of natural neighbours to a point $\boldsymbol x \in \boldsymbol X$ by $N(\boldsymbol x) \subseteq \boldsymbol X$, and we denote the corresponding indices by $N_i = \{j : \boldsymbol x_j \in N(\boldsymbol x_i)\}$.
 
 # Natural Neighbour Coordinates 
 
