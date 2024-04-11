@@ -92,7 +92,7 @@ Here we introduce _Laplace coordinates_, also known as _non-Sibsonian coordinate
 </figure>
 ```
 
-In the figure above, the tiles with the black boundaries and no fill are the tiles of the original tessellation, and we show the tile that would be created by some query point $\boldsymbol x_0$ (the magenta point) with a blue tile. We see that the insertion of $\boldsymbol x_0$ into the tessellation has intersected some of the other tiles, in particular it has modified only the tiles corresponding to its natural neighbours in $N(\boldsymbol x_0).
+In the figure above, the tiles with the black boundaries and no fill are the tiles of the original tessellation, and we show the tile that would be created by some query point $\boldsymbol x_0$ (the magenta point) with a blue tile. We see that the insertion of $\boldsymbol x_0$ into the tessellation has intersected some of the other tiles, in particular it has modified only the tiles corresponding to its natural neighbours in $N(\boldsymbol x_0)$.
 
 For a given generator $\boldsymbol x_i \in N(\boldsymbol x_0)$, we see that there is a corresponding blue line passing through its tile. Denote this blue line by $\mathcal F_{0i}$, and let $r_i = \|\boldsymbol x_0 - \boldsymbol x_i\|$. With this definition, we define 
 
