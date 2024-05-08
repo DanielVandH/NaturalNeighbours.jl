@@ -51,7 +51,7 @@ yq = vec([y for _ in xg2, y in yg2])
 tol = 1e-2
 tri = triangulate([x&#39;; y&#39;]; rng=rng)
 triq = triangulate([xq&#39;; yq&#39;]; rng=rng)
-exterior_idx = identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_indices(tri); tol=tol)
+exterior_idx = identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_vertices(tri); tol=tol)
 interior_idx = filter(∉(exterior_idx), eachindex(xq, yq))</code></pre><p>Lastly, we define the following test functions (the first six come from <a href="https://hdl.handle.net/10945/35052">this report</a>).</p><pre><code class="language-julia hljs">const f = [
     (x, y) -&gt; 0.75 * exp(-((9 * x - 2)^2 + (9 * y - 2)^2) / 4) + 0.75 * exp(-(9 * x + 1)^2 / 49 - (9 * y + 1) / 10) + 0.5 * exp(-((9 * x - 7)^2 + (9 * y - 3)^2) / 4) - 0.2 * exp(-(9 * x - 4)^2 - (9 * y - 7)^2)
     (x, y) -&gt; (1 / 9) * (tanh(9 * y - 9 * x) + 1)
@@ -406,7 +406,7 @@ end</code></pre><p>The function we use for performing our random analysis is:</p
     [refine!(tri; max_points=npoints) for tri in tris]
     xs = [first.(get_points(tri)) for tri in tris]
     ys = [last.(get_points(tri)) for tri in tris]
-    exterior_idxs = [identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_indices(tri); tol=tol) for tri in tris]
+    exterior_idxs = [identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_vertices(tri); tol=tol) for tri in tris]
     interior_idxs = [filter(∉(exterior_idx), eachindex(xq, yq)) for exterior_idx in exterior_idxs]
     median_lengths = [median_edge_length(tri) for tri in tris]
     sortidx = sortperm(median_lengths)
@@ -507,7 +507,7 @@ end</code></pre><p>To perform the benchmarks, we use:</p><pre><code class="langu
     running_times = zeros(length(m_range))
     for (i, m) in enumerate(m_range)
         tri = circular_example(m)
-        z = [g(x, y) for (x, y) in each_point(tri)]
+        z = [g(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
         itp = interpolate(tri, z; derivatives=true)
         b = @benchmark $itp($0.0, $0.0; method=$itp_method)
         running_times[i] = minimum(b.times) / 1e6 # ms
@@ -544,7 +544,7 @@ vlines!(fig.figure[1, 1], [6], linewidth=3, linestyle=:dash, color=:black)</code
 y = LinRange(0, 1, 25)
 pts = vec([(x, y) for x in x, y in y])
 tri = triangulate(pts)
-z = [g(x, y) for (x, y) in each_point(tri)]
+z = [g(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
 itp = interpolate(tri, z; derivatives = true)
 n = 10_000_000
 xq = rand(n)
@@ -567,4 +567,4 @@ julia&gt; @time itp(xq, yq; method = Farin(1));
   2.187066 seconds (8.27 k allocations: 76.855 MiB, 0.36% compilation time)
 
 julia&gt; @time itp(xq, yq; method = Hiyoshi(2));
- 13.762652 seconds (9.26 k allocations: 76.920 MiB, 0.06% compilation time)</code></pre><h1 id="Conclusion"><a class="docs-heading-anchor" href="#Conclusion">Conclusion</a><a id="Conclusion-1"></a><a class="docs-heading-anchor-permalink" href="#Conclusion" title="Permalink"></a></h1><p>Overall, the smooth interpolants have the best performance, with <code>Farin(1)</code> and <code>Hiyoshi(2)</code> typically beating most interpolants. <code>Hiyoshi(2)</code> is much slower than the other interpolants, though, and <code>Farin(1)</code> may be a preferable interpolant if <span>$C^1$</span> continuity at the data sites is sufficient. For generating derivatives, the <code>Direct()</code> seems to beat the results with the <code>Iterative()</code> method in most situations.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../swiss/">« Switzerland Elevation Data</a><a class="docs-footer-nextpage" href="../interpolation_math/">Interpolation Details »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="auto">Automatic (OS)</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.2.1 on <span class="colophon-date" title="Thursday 11 April 2024 10:53">Thursday 11 April 2024</span>. Using Julia version 1.10.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+ 13.762652 seconds (9.26 k allocations: 76.920 MiB, 0.06% compilation time)</code></pre><h1 id="Conclusion"><a class="docs-heading-anchor" href="#Conclusion">Conclusion</a><a id="Conclusion-1"></a><a class="docs-heading-anchor-permalink" href="#Conclusion" title="Permalink"></a></h1><p>Overall, the smooth interpolants have the best performance, with <code>Farin(1)</code> and <code>Hiyoshi(2)</code> typically beating most interpolants. <code>Hiyoshi(2)</code> is much slower than the other interpolants, though, and <code>Farin(1)</code> may be a preferable interpolant if <span>$C^1$</span> continuity at the data sites is sufficient. For generating derivatives, the <code>Direct()</code> seems to beat the results with the <code>Iterative()</code> method in most situations.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../swiss/">« Switzerland Elevation Data</a><a class="docs-footer-nextpage" href="../interpolation_math/">Interpolation Details »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Wednesday 8 May 2024 23:54">Wednesday 8 May 2024</span>. Using Julia version 1.10.3.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
