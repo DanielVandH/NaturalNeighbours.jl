@@ -54,7 +54,7 @@ yq = vec([y for _ in xg2, y in yg2])
 tol = 1e-2
 tri = triangulate([x'; y']; rng=rng)
 triq = triangulate([xq'; yq']; rng=rng)
-exterior_idx = identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_indices(tri); tol=tol)
+exterior_idx = identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_vertices(tri); tol=tol)
 interior_idx = filter(∉(exterior_idx), eachindex(xq, yq))
 
 ## The test functions 
@@ -438,7 +438,7 @@ if get(ENV, "CI", "false") == "false"
         [refine!(tri; max_points=npoints) for tri in tris]
         xs = [first.(get_points(tri)) for tri in tris]
         ys = [last.(get_points(tri)) for tri in tris]
-        exterior_idxs = [identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_indices(tri); tol=tol) for tri in tris]
+        exterior_idxs = [identify_exterior_points(xq, yq, get_points(tri), get_convex_hull_vertices(tri); tol=tol) for tri in tris]
         interior_idxs = [filter(∉(exterior_idx), eachindex(xq, yq)) for exterior_idx in exterior_idxs]
         median_lengths = [median_edge_length(tri) for tri in tris]
         sortidx = sortperm(median_lengths)
@@ -549,7 +549,7 @@ if get(ENV, "CI", "false") == "false"
         running_times = zeros(length(m_range))
         for (i, m) in enumerate(m_range)
             tri = circular_example(m)
-            z = [g(x, y) for (x, y) in each_point(tri)]
+            z = [g(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
             itp = interpolate(tri, z; derivatives=true)
             b = @benchmark $itp($0.0, $0.0; method=$itp_method)
             running_times[i] = minimum(b.times) / 1e6 # ms

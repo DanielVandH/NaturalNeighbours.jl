@@ -32,16 +32,16 @@ end
 
 function check_for_extrapolation(tri, V, interpolation_point, last_triangle)
     if is_ghost_triangle(V)
-        V = rotate_ghost_triangle_to_standard_form(V)
-        i, j, _ = indices(V)
+        V = sort_triangle(V)
+        i, j, _ = sort_triangle(V)
         last_triangle[] = (i, j, get_adjacent(tri, j, i))
     else
-        last_triangle[] = indices(V)
+        last_triangle[] = triangle_vertices(V)
     end
     F = number_type(tri)
     if is_boundary_triangle(tri, V)
         _V = replace_boundary_triangle_with_ghost_triangle(tri, V)
-        _u, _w, _ = indices(_V)
+        _u, _w, _ = triangle_vertices(_V)
         cert = point_position_relative_to_line(tri, _u, _w, interpolation_point)
         if is_collinear(cert)
             cert = point_position_on_line_segment(tri, _u, _w, interpolation_point)
@@ -61,10 +61,10 @@ function check_for_extrapolation(tri, V, interpolation_point, last_triangle)
         end
     end
     if is_ghost_triangle(V)
-        V = rotate_ghost_triangle_to_standard_form(V)
-        i, j, _ = indices(V)
+        V = sort_triangle(V)
+        i, j, _ = triangle_vertices(V)
         return i, j, true
     end
-    i, j, _ = indices(V)
+    i, j, _ = triangle_vertices(V)
     return i, j, false
 end

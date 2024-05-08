@@ -1,10 +1,10 @@
 function _compute_laplace_coordinates(
-    tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
+    tri::Triangulation,
     interpolation_point,
-    cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
+    cache::NaturalNeighboursCache=NaturalNeighboursCache(tri);
     project=true,
     kwargs...
-) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
+) 
     coordinates = get_coordinates(cache)
     envelope = get_envelope(cache)
     insertion_event_history = get_insertion_event_history(cache)

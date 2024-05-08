@@ -2,7 +2,7 @@
     identify_exterior_points(x, y, points, boundary_nodes; tol = 0.0)
 
 Given a polygon described by `(points, boundary_nodes)`, matching the 
-specification of polygons in DelaunayTriangulation.jl (see [here](https://danielvandh.github.io/DelaunayTriangulation.jl/dev/boundary_handling/)),
+specification of polygons in DelaunayTriangulation.jl,
 returns a vector of indices of the points defined by `(x, y)` that are outside of the polygon.
 
 Use `tol` to specify a tolerance for the distance to the polygon.
@@ -35,7 +35,7 @@ function identify_exterior_points(x, y, itp::NaturalNeighboursInterpolant; tol=0
     tri = get_triangulation(itp)
     points = get_points(tri)
     if !has_boundary_nodes(tri)
-        bn = get_convex_hull_indices(tri)
+        bn = get_convex_hull_vertices(tri)
     else 
         bn = get_boundary_nodes(tri)
     end

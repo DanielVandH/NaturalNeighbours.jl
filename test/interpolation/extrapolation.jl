@@ -10,8 +10,8 @@ using LinearAlgebra
         coordinates = zeros(5)
         envelope = zeros(Int, 5)
         for _ in 1:100
-            e = (rand ∘ get_edges)(tri)
-            i, j = DT.edge_indices(e)
+            e = (rand ∘ each_edge)(tri)
+            i, j = DT.edge_vertices(e)
             t = rand()
             p = (1 - t) .* get_point(tri, i) .+ t .* get_point(tri, j)
             nc = NNI.two_point_interpolate!(coordinates, envelope, tri, i, j, p)
@@ -28,16 +28,16 @@ using LinearAlgebra
 end
 
 @testset "Basic extrapolation" begin
-    tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 10, add_ghost_triangles=true)
+    tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 5, 10)
     f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
     pts = get_points(tri)
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(pts, z, derivatives=true)
 
     p = (1.5, 0.7)
     V = jump_and_march(tri, p)
-    _V = DT.rotate_ghost_triangle_to_standard_form(V)
-    i, j = indices(_V)
+    _V = DT.sort_triangle(V)
+    i, j = triangle_vertices(_V)
     a, b = get_point(tri, i, j)
     dab = norm(b .- a)
     dbp = norm((1.0, 0.7) .- b)

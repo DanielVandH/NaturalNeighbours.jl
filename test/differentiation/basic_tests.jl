@@ -20,12 +20,12 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
     f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
     f′′ = (x, y) -> [-sin(x - y)-cos(x + y) sin(x - y)-cos(x + y)
         sin(x - y)-cos(x + y) -sin(x - y)-cos(x + y)]
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     @testset "Direct" begin
         @testset "At data sites" begin
             flag = 0
             for _ in 1:100
-                i = rand(1:num_points(tri))
+                i = rand(1:DelaunayTriangulation.num_points(tri))
                 p = get_point(tri, i)
 
                 # Gradient
@@ -145,7 +145,7 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
         f′ = (x, y) -> [cos(x - y) - sin(x + y), -cos(x - y) - sin(x + y)]
         f′′ = (x, y) -> [-sin(x - y)-cos(x + y) sin(x - y)-cos(x + y)
             sin(x - y)-cos(x + y) -sin(x - y)-cos(x + y)]
-        z = [f(x, y) for (x, y) in each_point(tri)]
+        z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
 
         nt = Base.Threads.nthreads()
         derivative_caches = [NNI.DerivativeCache(tri) for _ in 1:nt]
@@ -212,7 +212,7 @@ end
     f = (x, y) -> x^2 + y^2 + x^3 * y
     f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z)
     ∂ = differentiate(itp, 2)
     @test_throws ArgumentError ∂(0.0, 0.0; method=Iterative())
@@ -280,7 +280,7 @@ end
     f = (x, y) -> x^2 + y^2 + x^3 * y
     f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z; derivatives=true)
     ∂1 = differentiate(itp, 1)
     ∂2 = differentiate(itp, 2)
@@ -301,7 +301,7 @@ end
     f = (x, y) -> x^2 + y^2 + x^3 * y
     f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z; derivatives=false)
     ∂2 = differentiate(itp, 2)
     @test_throws ArgumentError("initial_gradients must be provided for iterative derivative estimation. Consider using e.g. interpolate(tri, z; derivatives = true).") ∂2(0.5, 0.5; method=Iterative())
@@ -409,7 +409,7 @@ end
     Herr = [norm(h1 .- h2) for (h1, h2) in zip(last.(vals1), last.(vals2))]
 
     points = get_points(tri1)
-    ch = get_convex_hull_indices(tri1)
+    ch = get_convex_hull_vertices(tri1)
     bad_idx = identify_exterior_points(_itp_xs, _itp_ys, points, ch; tol=1e-2) # boundary effects _really_ matter...
     deleteat!(∇err, bad_idx)
     deleteat!(Herr, bad_idx)
@@ -426,7 +426,7 @@ end
     ∇err = [norm(g1 .- g2) for (g1, g2) in zip(first.(vals1), first.(vals2))]
 
     points = get_points(tri1)
-    ch = get_convex_hull_indices(tri1)
+    ch = get_convex_hull_vertices(tri1)
     bad_idx = identify_exterior_points(_itp_xs, _itp_ys, points, ch; tol=1e-2) # boundary effects _really_ matter...
     deleteat!(∇err, bad_idx)
 
@@ -438,7 +438,7 @@ end
     pts = [(cos(θ) + 1e-6randn(), sin(θ) + 1e-6randn()) for θ = LinRange(0, 2π, (m + 1))][1:end-1]
     tri = triangulate(pts)
     f = (x, y) -> sin(x) * cos(y)
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z; derivatives=true)
     test_interpolant(itp, first.(pts), last.(pts), f)
 end

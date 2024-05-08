@@ -109,7 +109,7 @@ function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, 
     zlims!(ax, e, f)
     ax = Axis(fig[i2, j2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title=title2, titlealign=:left)
     contourf!(ax, xg, yg, reshape(vals, (nx, ny)), color=vals, levels=levels)
-    lines!(ax, [get_point(query_tri, i) for i in get_convex_hull_indices(query_tri)], color=:red, linewidth=4, linestyle=:dash)
+    lines!(ax, [get_point(query_tri, i) for i in get_convex_hull_vertices(query_tri)], color=:red, linewidth=4, linestyle=:dash)
     lines!(ax, ds_boundary_points, color=:white, linewidth=4)
     xlims!(ax, a, b)
     ylims!(ax, c, d)

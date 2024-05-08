@@ -16,7 +16,7 @@ to_mat(H) = [H[1] H[3]; H[3] H[2]]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
         n = 2500
         pts = random_points_in_convex_hull(tri, n)
-        for p in Iterators.flatten((pts, each_point(tri)))
+        for p in Iterators.flatten((pts, DelaunayTriangulation.each_point(tri)))
             natural_coordinates = NNI.compute_natural_coordinates(method, tri, p)
             @test sum(NNI.get_coordinates(natural_coordinates)) ≈ 1
             δ = NNI.get_barycentric_deviation(natural_coordinates)
@@ -32,7 +32,7 @@ to_mat(H) = [H[1] H[3]; H[3] H[2]]
             tri = triangulate(pts, delete_ghosts=false)
             n = 5000
             random_points = random_points_in_convex_hull(tri, n)
-            for p in Iterators.flatten((random_points, each_point(tri)))
+            for p in Iterators.flatten((random_points, DT.each_point(tri)))
                 natural_coordinates = NNI.compute_natural_coordinates(method, tri, p)
                 @test sum(NNI.get_coordinates(natural_coordinates)) ≈ 1
                 δ = NNI.get_barycentric_deviation(natural_coordinates)
@@ -44,6 +44,22 @@ to_mat(H) = [H[1] H[3]; H[3] H[2]]
             end
         end
     end
+end
+
+function _circular_equality(A, B, by=isequal; kwargs...) # slightly tweaked version of circular_equality from DelaunayTriangulation.jl
+    if DT.is_circular(A)
+        _A = @views A[begin:(end-1)]
+    else
+        _A = A
+    end
+    if DT.is_circular(B)
+        _B = @views B[begin:(end-1)]
+    else
+        _B = B
+    end
+    same_idx = findmin(abs.(_A[begin] .- _B))[2]
+    _mapped_B = circshift(_B, -same_idx + 1)
+    return by(_A, _mapped_B; kwargs...)
 end
 
 @testset "Test coefficient values for each method" begin # used GeoGebra
@@ -59,13 +75,13 @@ end
             (0.5, 2.0), (2.5, 2.0), (2.5, 2.5),
             (9.0, 2.0), (8.5, 6.0), (4.0, 2.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false, rng=rng)
-        vorn = voronoi(tri, false)
+        vorn = voronoi(tri, clip=false)
         q = (5.0, 4.0)
         tri2 = deepcopy(tri)
         add_point!(tri2, q, rng=rng)
-        vorn2 = voronoi(tri2, false)
-        V = get_polygon(vorn2, num_points(tri2))
-        AX2 = get_area(vorn2, num_points(tri2))
+        vorn2 = voronoi(tri2, clip=false)
+        V = get_polygon(vorn2, DelaunayTriangulation.num_points(tri2))
+        AX2 = get_area(vorn2, DelaunayTriangulation.num_points(tri2))
 
         # Sibson
         nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q; rng=rng)
@@ -77,14 +93,14 @@ end
         K1I1J1 = 0.003313286868 # W = 23
         AX = AF1G1D1B1A1 + A1B1C1 + B1D1E1C1 + H1I1E1D1G1 + F1G1J1K1 + K1I1J1
         @test AX ≈ AX2 rtol = 1e-3
-        @test nc.indices == [23, 12, 5, 24, 7, 11]
-        @test nc.coordinates ≈ [K1I1J1, F1G1J1K1, AF1G1D1B1A1, A1B1C1, B1D1E1C1, H1I1E1D1G1] ./ AX rtol = 1e-2
+        @test _circular_equality(nc.indices, [23, 12, 5, 24, 7, 11])
+        @test _circular_equality(nc.coordinates, [K1I1J1, F1G1J1K1, AF1G1D1B1A1, A1B1C1, B1D1E1C1, H1I1E1D1G1] ./ AX, ≈, rtol = 1e-2)
 
         # Triangle 
         nc = NNI.compute_natural_coordinates(NNI.Triangle(), tri, q; rng=rng)
         V = jump_and_march(tri, q; rng)
-        @test nc.indices == [5, 11, 12]
-        @test nc.coordinates ≈ [0.52, 0.3, 0.18] rtol = 1e-2
+        @test _circular_equality(nc.indices, [5, 11, 12])
+        @test _circular_equality(nc.coordinates, [0.52, 0.3, 0.18], ≈, rtol = 1e-2)
 
         # Laplace 
         nc = NNI.compute_natural_coordinates(NNI.Laplace(), tri, q; rng=rng)
@@ -113,8 +129,8 @@ end
         e /= tot
         z /= tot
         g /= tot
-        @test nc.indices == [23, 12, 5, 24, 7, 11]
-        @test nc.coordinates ≈ [w, ℓ, e, z, g, k] rtol = 1e-2
+        @test _circular_equality(nc.indices, [23, 12, 5, 24, 7, 11])
+        @test _circular_equality(nc.coordinates, [w, ℓ, e, z, g, k], ≈, rtol = 1e-2)
 
         # Nearest 
         nc = NNI.compute_natural_coordinates(NNI.Nearest(), tri, q; rng=rng)
@@ -125,7 +141,7 @@ end
         tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
         tri = triangulate(get_points(tri), randomise=false)
         f = (x, y) -> sin(x - y) + cos(x + y)
-        z = [f(x, y) for (x, y) in each_point(tri)]
+        z = [f(x, y) for (x, y) in DT.each_point(tri)]
         itp = interpolate(tri, z; derivatives=true)
         q = (5.0, 5.0) # a data site
         nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q; rng=rng)
@@ -152,7 +168,7 @@ end
         tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
         tri = triangulate(get_points(tri), randomise=false)
         f = (x, y) -> sin(x - y) + cos(x + y)
-        z = [f(x, y) for (x, y) in each_point(tri)]
+        z = [f(x, y) for (x, y) in DT.each_point(tri)]
         itp = interpolate(tri, z; derivatives=true)
         q = (5.37841, 1.3881)
         nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q)
@@ -198,8 +214,8 @@ end
         @test itp(5.0, 5.0, method=Farin(1)) ≈ f(5.0, 5.0)
         @test itp(5.0632, 5.0632, method=Farin(1)) ≈ f(5.0632, 5.0632) rtol = 1e-3
 
-        tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 300, 300, add_ghost_triangles=true)
-        z = [f(x, y) for (x, y) in each_point(tri)]
+        tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 300, 300)
+        z = [f(x, y) for (x, y) in DT.each_point(tri)]
         xx = LinRange(0, 1, 50)
         yy = LinRange(0, 1, 50)
         x = vec([x for x in xx, _ in yy])
@@ -225,7 +241,7 @@ end
         tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
         tri = triangulate(get_points(tri), randomise=false)
         f = (x, y) -> sin(x - y) + cos(x + y)
-        z = [f(x, y) for (x, y) in each_point(tri)]
+        z = [f(x, y) for (x, y) in DT.each_point(tri)]
         itp = interpolate(tri, z; derivatives=true)
         q = (5.37841, 1.3881)
         nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q)

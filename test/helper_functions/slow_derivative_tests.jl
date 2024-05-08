@@ -90,11 +90,11 @@ function estimate_gradient_hessian_cubic_direct(tri, r, z; rng=Random.default_rn
         _S = [get_neighbours(tri, i) for i in nc.indices]
         _S1 = copy(nc.indices)
         push!(_S1, reduce(union, _S)...)
-        filter!(!DT.is_boundary_index, _S1)
+        filter!(!DT.is_ghost_vertex, _S1)
         unique!(_S1)
         _S2 = [get_neighbours(tri, i) for i in _S1]
         push!(_S1, reduce(union, _S2)...)
-        filter!(!DT.is_boundary_index, _S1)
+        filter!(!DT.is_ghost_vertex, _S1)
         unique!(_S1)
         S = _S1
     end
@@ -154,7 +154,7 @@ function estimate_gradient_hessian_quadratic_direct(tri, r, z; rng=Random.defaul
         _S = [get_neighbours(tri, i) for i in nc.indices]
         _S1 = copy(nc.indices)
         push!(_S1, reduce(union, _S)...)
-        filter!(!DT.is_boundary_index, _S1)
+        filter!(!DT.is_ghost_vertex, _S1)
         unique!(_S1)
         S = _S1
     end

@@ -54,13 +54,13 @@ pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0),
     (0.5, 2.0), (2.5, 2.0), (2.5, 2.5),
     (9.0, 2.0), (8.5, 6.0), (4.0, 2.0)]
 tri = triangulate(pts, randomise=false, delete_ghosts=false, rng=rng)
-vorn = voronoi(tri, false)
+vorn = voronoi(tri)
 q = (5.0, 4.0)
 tri2 = deepcopy(tri)
 add_point!(tri2, q, rng=rng)
-vorn2 = voronoi(tri2, false)
-V = get_polygon(vorn2, num_points(tri2))
-AX2 = get_area(vorn2, num_points(tri2))
+vorn2 = voronoi(tri2)
+V = get_polygon(vorn2, DelaunayTriangulation.num_points(tri2))
+AX2 = get_area(vorn2, DelaunayTriangulation.num_points(tri2))
 
 fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), generator_color=:red, markersize=7, color=:white)
 xlims!(ax, 3, 9)
