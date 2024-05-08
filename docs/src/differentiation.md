@@ -451,7 +451,7 @@ function rrmserr(z, ẑ, tri, x, y)
     num = 0.0
     den = 0.0 
     points = get_point(tri)
-    ch = get_convex_hull_indices(tri)
+    ch = get_convex_hull_vertices(tri)
     for (zᵢ, ẑᵢ, xᵢ, yᵢ) in zip(z, ẑ, x, y)
         q = (xᵢ, yᵢ)
         δ = DelaunayTriangulation.distance_to_polygon(q, points, ch)

@@ -1,17 +1,17 @@
 function _compute_triangle_coordinates(
-    tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL},
+    tri::Triangulation,
     interpolation_point,
-    cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
+    cache::NaturalNeighboursCache=NaturalNeighboursCache(tri);
     project=true,
     kwargs...
-) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL,F}
+) 
     coordinates = get_coordinates(cache)
     envelope = get_envelope(cache)
     last_triangle = get_last_triangle(cache)
     V = jump_and_march(tri, interpolation_point; try_points=last_triangle[], kwargs...)
     i, j, return_flag = check_for_extrapolation(tri, V, interpolation_point, last_triangle)
     return_flag && return two_point_interpolate!(coordinates, envelope, tri, i, j, interpolation_point, project)
-    i, j, k = indices(V)
+    i, j, k = triangle_vertices(V)
     resize!(coordinates, 3)
     resize!(envelope, 3)
     λ₁, λ₂, λ₃ = _compute_triangle_barycentric_coordinates(tri, interpolation_point, i, j, k)

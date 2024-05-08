@@ -51,8 +51,8 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
     test_interpolant(itp, x, y, f)
     test_interpolant(itp, x, y, z)
 
-    tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 30, 30, add_ghost_triangles=true)
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    tri = triangulate_rectangle(0.0, 1.0, 0.0, 1.0, 30, 30)
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(get_points(tri), z; derivatives=true)
     xx = LinRange(0, 1, 50)
     yy = LinRange(0, 1, 50)
@@ -71,7 +71,7 @@ end
     f = (x, y) -> x^2 + y^2 + x^3 * y
     f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z; derivatives=false)
     @test_throws ArgumentError("Gradients must be provided for Sibson-1, Farin, or Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Sibson(1))
 end
@@ -82,7 +82,7 @@ end
     f = (x, y) -> x^2 + y^2 + x^3 * y
     f′ = (x, y) -> [2x + 3x^2 * y; 2y + x^3]
     f′′ = (x, y) -> [2+6x*y 3x^2; 3x^2 2]
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z; derivatives=false)
     @test_throws ArgumentError("Gradients and Hessians must be provided for Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Hiyoshi(2))
 end
@@ -133,7 +133,7 @@ end
     vals2 = itp2(_itp_xs, _itp_ys; method=Sibson(1))
     err = abs.(vals1 .- vals2)
     points = get_points(tri1)
-    ch = get_convex_hull_indices(tri1)
+    ch = get_convex_hull_vertices(tri1)
     bad_idx = identify_exterior_points(_itp_xs, _itp_ys, points, ch; tol=1e-3) # boundary effects _really_ matter...
     deleteat!(err, bad_idx)
     @test norm(err) ≈ 0 atol = 1e-2

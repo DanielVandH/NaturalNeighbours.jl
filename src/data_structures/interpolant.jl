@@ -13,7 +13,7 @@ struct NaturalNeighboursInterpolant{T<:Triangulation,F,G,H,N,D}
         derivatives=false,
         kwargs...
     ) where {T,F}
-        @assert num_solid_vertices(tri) == length(z) "The number of points in the triangulation must equal the length of the data vector."
+        @assert num_points(tri) == length(z) "The number of points in the triangulation must equal the length of the data vector."
         !has_ghost_triangles(tri) && add_ghost_triangles!(tri)
         if has_boundary_nodes(tri)
             @warn "Natural neighbour interpolation is only defined over unconstrained triangulations.\nYou may find unexpected results when interpolating near the boundaries or constrained edges, and especially near non-convex boundaries or outside of the triangulation.\nIn your later evaluations of this interpolant, consider using project=false." maxlog=1

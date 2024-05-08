@@ -7,11 +7,9 @@ import DelaunayTriangulation: DelaunayTriangulation,
     InsertionEventHistory,
     add_point!,
     each_added_triangle,
-    indices,
-    initialise_event_history,
     Triangulation,
     triangulate,
-    is_boundary_index,
+    is_ghost_vertex,
     get_neighbours,
     construct_triangle,
     Adjacent,
@@ -36,7 +34,6 @@ import DelaunayTriangulation: DelaunayTriangulation,
     is_collinear,
     has_boundary_nodes,
     get_triangulation,
-    rotate_ghost_triangle_to_standard_form,
     is_on,
     is_degenerate,
     point_position_relative_to_triangle,
@@ -54,10 +51,14 @@ import DelaunayTriangulation: DelaunayTriangulation,
     jump_and_march,
     jump_to_voronoi_polygon,
     iterated_neighbourhood,
+    sort_triangle,
+    each_point,
     iterated_neighbourhood!,
     triangle_area,
-    get_convex_hull_indices,
-    get_boundary_nodes
+    get_convex_hull_vertices,
+    get_boundary_nodes,
+    triangle_vertices
+    
 import ChunkSplitters: chunks
 using ElasticArrays
 using LinearAlgebra
@@ -97,6 +98,7 @@ include("differentiation/utils.jl")
 
 include("utils.jl")
 
+#=
 using PrecompileTools
 @setup_workload begin
     @compile_workload begin
@@ -121,5 +123,6 @@ using PrecompileTools
         end
     end
 end
+=#
 
 end # module NaturalNeighbours

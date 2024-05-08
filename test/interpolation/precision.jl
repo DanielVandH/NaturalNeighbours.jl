@@ -26,7 +26,7 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
     vals = itp(_x, _y; method=Sibson(0))
     for i in eachindex(vals)
         ξ, η = _x[i], _y[i]
-        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_indices(itp.triangulation)) > 1e-7
+        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_vertices(itp.triangulation)) > 1e-7
             @test vals[i] ≈ f(_x[i], _y[i]) atol = 1e-12
         end
     end
@@ -51,7 +51,7 @@ end
     vals = itp(_x, _y; method=Laplace())
     for i in eachindex(vals)
         ξ, η = _x[i], _y[i]
-        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_indices(itp.triangulation)) > 1e-7
+        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_vertices(itp.triangulation)) > 1e-7
             @test vals[i] ≈ f(_x[i], _y[i]) atol = 1e-12
         end
     end
@@ -77,7 +77,7 @@ end
     vals = itp(_x, _y; method=Sibson(1))
     for i in eachindex(vals)
         ξ, η = _x[i], _y[i]
-        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_indices(itp.triangulation)) > 1e-7
+        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_vertices(itp.triangulation)) > 1e-7
             @test vals[i] ≈ f(_x[i], _y[i]) atol = 1e-14
         end
     end
@@ -102,7 +102,7 @@ end
     vals = itp(_x, _y; method=Farin(1))
     for i in eachindex(vals)
         ξ, η = _x[i], _y[i]
-        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_indices(itp.triangulation)) > 1e-7
+        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_vertices(itp.triangulation)) > 1e-7
             @test vals[i] ≈ f(_x[i], _y[i]) atol = 1e-12
         end
     end
@@ -136,7 +136,7 @@ end
     vals = itp(_x, _y; method=Hiyoshi(2))
     for i in eachindex(vals)
         ξ, η = _x[i], _y[i]
-        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_indices(itp.triangulation)) > 1e-7
+        if DT.distance_to_polygon((ξ, η), get_points(itp.triangulation), get_convex_hull_vertices(itp.triangulation)) > 1e-7
             @test vals[i] ≈ f(_x[i], _y[i]) atol=1e-6
         end
     end

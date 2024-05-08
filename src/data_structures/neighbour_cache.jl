@@ -12,12 +12,14 @@ get_insertion_event_history(cache::NaturalNeighboursCache) = cache.insertion_eve
 get_poly_points(cache::NaturalNeighboursCache) = cache.poly_points
 get_temp_adjacent(cache::NaturalNeighboursCache) = cache.temp_adjacent
 get_last_triangle(cache::NaturalNeighboursCache) = cache.last_triangle
-function NaturalNeighboursCache(tri::Triangulation{P,Ts,I,E,Es,BN,BNM,B,BIR,BPL}) where {P,Ts,I,E,Es,BN,BNM,B,BIR,BPL}
+function NaturalNeighboursCache(tri::Triangulation)
     coordinates = number_type(tri)[]
+    I = integer_type(tri)
+    E = edge_type(tri)
     envelope = I[]
-    insertion_event_history = initialise_event_history(tri)
+    insertion_event_history = InsertionEventHistory(tri)
     poly_points = NTuple{2,number_type(tri)}[]
     temp_adjacent = Adjacent{I,E}()
-    last_triangle = (Ref ∘ indices ∘ first ∘ each_solid_triangle)(tri)
+    last_triangle = (Ref ∘ triangle_vertices ∘ first ∘ each_solid_triangle)(tri)
     return NaturalNeighboursCache(coordinates, envelope, insertion_event_history, poly_points, temp_adjacent, last_triangle)
 end

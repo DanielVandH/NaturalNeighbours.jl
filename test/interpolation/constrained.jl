@@ -20,7 +20,7 @@ end
     nx, ny = 10, 10
     tri = triangulate_rectangle(a, b, c, d, nx, ny)
     f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
-    z = [f(x, y) for (x, y) in each_point(tri)]
+    z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
     itp = interpolate(tri, z; derivatives=true)
     xg = LinRange(0, 1, 100)
     yg = LinRange(0, 1, 100)
@@ -38,7 +38,7 @@ end
     titles = ("(a): Sibson", "(b): Triangle", "(c): Laplace", "(d): Sibson-1", "(e): Nearest", "(f): Farin", "(g): Hiyoshi", "(h): Exact")
     fig = Figure(fontsize=55)
     for (i, (vals, title)) in enumerate(zip(all_vals, titles))
-        plot_2d(fig, 1, i, title, vals, xg, yg, first.(each_point(tri)), last.(each_point(tri)), !(vals == exact))
+        plot_2d(fig, 1, i, title, vals, xg, yg, first.(DelaunayTriangulation.each_point(tri)), last.(DelaunayTriangulation.each_point(tri)), !(vals == exact))
         plot_3d(fig, 2, i, " ", vals, xg, yg)
     end
     resize_to_layout!(fig)
@@ -60,8 +60,7 @@ end
     ]
     boundary_nodes, points = convert_boundary_points_to_indices(x, y)
     tri = triangulate(points; boundary_nodes)
-    A = get_total_area(tri)
-    refine!(tri; max_area=1e-4A)
+    A = get_area(tri)
     D = 6.25e-4
     Tf = (x, y) -> let r = sqrt(x^2 + y^2)
         (R₂^2 - r^2) / (4D) + R₁^2 * log(r / R₂) / (2D)
@@ -70,9 +69,9 @@ end
         !(R₁ ≤ r ≤ R₂) && return Inf
         return Tf(x, y)
     end
-    z = [Tf(x, y) for (x, y) in each_point(tri)]
-    x = first.(each_point(tri))
-    y = last.(each_point(tri))
+    z = [Tf(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
+    x = first.(DelaunayTriangulation.each_point(tri))
+    y = last.(DelaunayTriangulation.each_point(tri))
     triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
     itp = interpolate(tri, z; derivatives=true)
     xg = LinRange(-R₂, R₂, 250)

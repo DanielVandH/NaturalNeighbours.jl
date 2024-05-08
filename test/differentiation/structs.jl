@@ -25,8 +25,8 @@ end
 end
 
 @testset "show" begin
-    tri = triangulate_rectangle(0, 1, 0, 1, 2, 5, add_ghost_triangles=false)
-    tri = Triangulation(tri.points, tri.triangles, tri.convex_hull.indices)
+    tri = triangulate_rectangle(0, 1, 0, 1, 2, 5)
+    tri = Triangulation(tri.points, tri.triangles, tri.convex_hull.vertices)
     f = (x, y) -> sin(x) + cos(x - y)
     unlock_convex_hull!(tri)
     x = getx.(tri.points)

@@ -22,7 +22,7 @@ function get_taylor_neighbourhood!(S, S′, tri, d, nc::NaturalCoordinates)
         empty!(S′)
         for i in envelope
             for j in get_neighbours(tri, i)
-                if !is_boundary_index(j) && j ∉ envelope
+                if !is_ghost_vertex(j) && j ∉ envelope
                     push!(S′, j)
                 end
             end
@@ -34,7 +34,7 @@ function get_taylor_neighbourhood!(S, S′, tri, d, nc::NaturalCoordinates)
         empty!(S′)
         for i in envelope
             for j in get_neighbours(tri, i)
-                if !is_boundary_index(j) && j ∉ envelope
+                if !is_ghost_vertex(j) && j ∉ envelope
                     push!(S′, j)
                 end
             end
@@ -42,7 +42,7 @@ function get_taylor_neighbourhood!(S, S′, tri, d, nc::NaturalCoordinates)
         empty!(S)
         for s in S′
             for j in get_neighbours(tri, s)
-                if !is_boundary_index(j) && j ∉ envelope && j ∉ S′
+                if !is_ghost_vertex(j) && j ∉ envelope && j ∉ S′
                     push!(S, j)
                 end
             end

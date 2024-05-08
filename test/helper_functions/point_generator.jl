@@ -1,5 +1,5 @@
 function random_points_in_convex_hull(tri::Triangulation, n; rng=Random.default_rng()) # bit slow. oh well
-    boundary_nodes = get_convex_hull_indices(tri)
+    boundary_nodes = get_convex_hull_vertices(tri)
     points = get_points(tri)
     bbox = DT.polygon_bounds(points, boundary_nodes)
     F = DT.number_type(tri)
