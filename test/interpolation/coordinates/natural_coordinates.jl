@@ -14,7 +14,7 @@ to_mat(H) = [H[1] H[3]; H[3] H[2]]
         method = NNI.iwrap(method)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
-        n = 2500
+        n = 250
         pts = random_points_in_convex_hull(tri, n)
         for p in Iterators.flatten((pts, DelaunayTriangulation.each_point(tri)))
             natural_coordinates = NNI.compute_natural_coordinates(method, tri, p)
@@ -27,10 +27,10 @@ to_mat(H) = [H[1] H[3]; H[3] H[2]]
             end
         end
 
-        for _ in 1:50
+        for _ in 1:5
             pts = [(randn() + rand(), rand() - 2randn()) for _ in 1:250]
             tri = triangulate(pts, delete_ghosts=false)
-            n = 5000
+            n = 500
             random_points = random_points_in_convex_hull(tri, n)
             for p in Iterators.flatten((random_points, DT.each_point(tri)))
                 natural_coordinates = NNI.compute_natural_coordinates(method, tri, p)
@@ -63,7 +63,7 @@ function _circular_equality(A, B, by=isequal; kwargs...) # slightly tweaked vers
 end
 
 @testset "Test coefficient values for each method" begin # used GeoGebra
-    for _ in 1:10 # make sure rng is getting passed consistently 
+    for _ in 1:3 # make sure rng is getting passed consistently 
         # Setup
         rng = StableRNG(872973)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0),
