@@ -12,8 +12,7 @@ get_linear_matrix(cache::DerivativeCache) = cache.linear_matrix
 get_quadratic_matrix(cache::DerivativeCache) = cache.quadratic_matrix
 get_quadratic_matrix_no_cubic(cache::DerivativeCache) = cache.quadratic_matrix_no_cubic
 get_rhs_vector(cache::DerivativeCache) = cache.rhs_vector
-function DerivativeCache(tri::Triangulation) 
-    I = integer_type(tri)
+function DerivativeCache(tri::Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}) where {P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE} 
     iterated_neighbourhood = Set{I}()
     second_iterated_neighbourhood = Set{I}()
     F = number_type(tri)

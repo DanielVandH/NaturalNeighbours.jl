@@ -1,11 +1,11 @@
 # Our implementation of these coordinates follows https://gwlucastrig.github.io/TinfourDocs/NaturalNeighborTinfourAlgorithm/index.html with some simple modifications.
 function _compute_sibson_coordinates(
-    tri::Triangulation,
+    tri::Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE},
     interpolation_point,
-    cache::NaturalNeighboursCache=NaturalNeighboursCache(tri);
-    project = true,
+    cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
+    project=true,
     kwargs...
-) 
+) where {P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE,F}
     coordinates = get_coordinates(cache)
     envelope = get_envelope(cache)
     insertion_event_history = get_insertion_event_history(cache)
@@ -20,7 +20,7 @@ function _compute_sibson_coordinates(
     for i in firstindex(envelope):(lastindex(envelope)-1)
         pre = pre_insertion_area!(poly_points, envelope, i, tri)
         post, u, prev_u, next_u = post_insertion_area(envelope, i, tri, interpolation_point)
-        isnan(post) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope,u, prev_u, next_u)
+        isnan(post) && return handle_duplicate_points!(tri, interpolation_point, coordinates, envelope, u, prev_u, next_u)
         coordinates[i] = max(pre - post, zero(pre)) # coordinate types like Float32 can sometimes get e.g. -1f-8
         w += coordinates[i]
     end
@@ -79,7 +79,7 @@ function post_insertion_area(envelope, i, tri::Triangulation, interpolation_poin
     g2 = triangle_circumcenter(q, p, interpolation_point)
     !all(isfinite, g2) && return F(NaN), u, prev_u, next_u
     points = (mpq, mpr, g1, g2, mpq)
-    return polygon_area(points),  u, prev_u, next_u
+    return polygon_area(points), u, prev_u, next_u
 end
 
 function compute_natural_coordinates(::Sibson, tri, interpolation_point, cache=NaturalNeighboursCache(tri); kwargs...)
@@ -103,18 +103,18 @@ function _compute_sibson_1_coordinates(nc::NaturalCoordinates, tri::Triangulatio
         xₖ, yₖ = getxy(pₖ)
         rₖ² = (xₖ - x₀)^2 + (yₖ - y₀)^2
         rₖ = sqrt(rₖ²)
-        γₖ = λₖ / rₖ 
-        ζₖ = zₖ + (x₀- xₖ) * ∇ₖ[1] + (y₀ - yₖ) * ∇ₖ[2]
-        αₖ = λₖ * rₖ 
-        γ += γₖ 
-        β += λₖ * rₖ² 
-        α += αₖ 
-        ζ += ζₖ * γₖ 
+        γₖ = λₖ / rₖ
+        ζₖ = zₖ + (x₀ - xₖ) * ∇ₖ[1] + (y₀ - yₖ) * ∇ₖ[2]
+        αₖ = λₖ * rₖ
+        γ += γₖ
+        β += λₖ * rₖ²
+        α += αₖ
+        ζ += ζₖ * γₖ
         if !isfinite(γ)
             return zero(F), one(F), zero(F)
         end
     end
-    ζ /= γ 
-    α /= γ 
+    ζ /= γ
+    α /= γ
     return ζ, α, β
 end

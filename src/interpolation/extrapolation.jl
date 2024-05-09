@@ -33,7 +33,7 @@ end
 function check_for_extrapolation(tri, V, interpolation_point, last_triangle)
     if is_ghost_triangle(V)
         V = sort_triangle(V)
-        i, j, _ = sort_triangle(V)
+        i, j, _ = triangle_vertices(V)
         last_triangle[] = (i, j, get_adjacent(tri, j, i))
     else
         last_triangle[] = triangle_vertices(V)

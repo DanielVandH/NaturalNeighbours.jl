@@ -1,9 +1,9 @@
 function _compute_nearest_coordinates(
-    tri::Triangulation,
+    tri::Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE},
     interpolation_point,
-    cache::NaturalNeighboursCache=NaturalNeighboursCache(tri);
+    cache::NaturalNeighboursCache{F}=NaturalNeighboursCache(tri);
     kwargs...
-) 
+) where {P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE,F}
     coordinates = get_coordinates(cache)
     envelope = get_envelope(cache)
     last_triangle = get_last_triangle(cache)
