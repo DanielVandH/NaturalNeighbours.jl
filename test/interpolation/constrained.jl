@@ -62,6 +62,7 @@ end
     tri = triangulate(points; boundary_nodes)
     A = get_area(tri)
     D = 6.25e-4
+    refine!(tri; max_area=1e-2A)
     Tf = (x, y) -> let r = sqrt(x^2 + y^2)
         (R₂^2 - r^2) / (4D) + R₁^2 * log(r / R₂) / (2D)
     end

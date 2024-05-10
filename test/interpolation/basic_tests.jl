@@ -138,3 +138,33 @@ end
     deleteat!(err, bad_idx)
     @test norm(err) ≈ 0 atol = 1e-2
 end
+
+
+@testset "Test that the derivatives are all zero for missing vertices" begin
+    R₁ = 0.2
+    R₂ = 1.0
+    θ = collect(LinRange(0, 2π, 100))
+    θ[end] = 0.0 # get the endpoints to match
+    x = [
+        [R₂ .* cos.(θ)], # outer first
+        [reverse(R₁ .* cos.(θ))] # then inner - reverse to get clockwise orientation
+    ]
+    y = [
+        [R₂ .* sin.(θ)], # 
+        [reverse(R₁ .* sin.(θ))]
+    ]
+    boundary_nodes, points = convert_boundary_points_to_indices(x, y)
+    tri = triangulate(points; boundary_nodes)
+    A = get_area(tri)
+    refine!(tri; max_area=1e-4A)
+    itp = interpolate(tri, ones(DelaunayTriangulation.num_points(tri)), derivatives=true, parallel=false)
+    ind = findall(DelaunayTriangulation.each_point_index(tri)) do i
+        !DelaunayTriangulation.has_vertex(tri, i)
+    end
+    for i in ind
+        ∇ = NaturalNeighbours.get_gradient(itp, i)
+        @test all(iszero, ∇)
+        H = NaturalNeighbours.get_hessian(itp, i)
+        @test all(iszero, H)
+    end
+end

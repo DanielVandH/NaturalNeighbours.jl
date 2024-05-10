@@ -4,6 +4,12 @@
 Differentiate a given interpolant `itp` up to degree `order` (1 or 2). The returned object is a 
 `NaturalNeighboursDifferentiator` struct, which is callable. 
 
+!!! warning "Missing vertices"
+
+    When the underlying triangulation, `tri`, has points in `get_points(tri)` that are not 
+    vertices of the triangulation itself, the associated derivatives at these points
+    will be set to zero.
+
 For calling the resulting struct, we define the following methods:
 
     (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; parallel=false, method=default_diff_method(∂), kwargs...)

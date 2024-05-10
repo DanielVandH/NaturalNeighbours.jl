@@ -6,6 +6,12 @@
 Construct an interpolant over the data `z` at the sites defined by the triangulation `tri` (or `points`, or `(x, y)`). See the Output 
 section for a description of how to use the interpolant `itp`.
 
+!!! warning "Missing vertices"
+
+    When the underlying triangulation, `tri`, has points in `get_points(tri)` that are not 
+    vertices of the triangulation itself, the associated derivatives (relevant only if `derivatives=true`) at these points
+    will be set to zero.
+
 # Keyword Arguments 
 - `gradient=nothing`: The gradients at the corresponding data sites of `z`. Will be generated if `isnothing(gradient)` and `derivatives==true`.
 - `hessian=nothing`: The hessians at the corresponding data sites of `z`. Will be generated if `isnothing(hessian)` and `derivatives==true`.

@@ -137,16 +137,21 @@ end
 @inline function generate_second_order_derivatives!(∇, ℋ, method, tri, z, zrange, derivative_caches, neighbour_caches, id; alpha, use_cubic_terms, initial_gradients)
     for i in zrange
         zᵢ = z[i]
-        d_cache = derivative_caches[id]
-        n_cache = neighbour_caches[id]
-        S = get_iterated_neighbourhood(d_cache)
-        S′ = get_second_iterated_neighbourhood(d_cache)
-        if method == Direct()
-            λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 2 + use_cubic_terms, n_cache)
-        elseif method == Iterative()
-            λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 1, n_cache)
+        if !DelaunayTriangulation.has_vertex(tri, i)
+            ∇[i] = (zero(zᵢ), zero(zᵢ))
+            ℋ[i] = (zero(zᵢ), zero(zᵢ), zero(zᵢ))
+        else
+            d_cache = derivative_caches[id]
+            n_cache = neighbour_caches[id]
+            S = get_iterated_neighbourhood(d_cache)
+            S′ = get_second_iterated_neighbourhood(d_cache)
+            if method == Direct()
+                λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 2 + use_cubic_terms, n_cache)
+            elseif method == Iterative()
+                λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 1, n_cache)
+            end
+            ∇[i], ℋ[i] = generate_second_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id; alpha, use_cubic_terms, initial_gradients)
         end
-        ∇[i], ℋ[i] = generate_second_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id; alpha, use_cubic_terms, initial_gradients)
     end
     return nothing
 end
@@ -154,12 +159,16 @@ end
 @inline function generate_first_order_derivatives!(∇, method, tri, z, zrange, derivative_caches, neighbour_caches, id)
     for i in zrange
         zᵢ = z[i]
-        d_cache = derivative_caches[id]
-        n_cache = neighbour_caches[id]
-        S = get_iterated_neighbourhood(d_cache)
-        S′ = get_second_iterated_neighbourhood(d_cache)
-        λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 1, n_cache)
-        ∇[i] = generate_first_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id)
+        if !DelaunayTriangulation.has_vertex(tri, i)
+            ∇[i] = (zero(zᵢ), zero(zᵢ))
+        else
+            d_cache = derivative_caches[id]
+            n_cache = neighbour_caches[id]
+            S = get_iterated_neighbourhood(d_cache)
+            S′ = get_second_iterated_neighbourhood(d_cache)
+            λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 1, n_cache)
+            ∇[i] = generate_first_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id)
+        end
     end
     return nothing
 end
