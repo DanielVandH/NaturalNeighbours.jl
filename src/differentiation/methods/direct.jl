@@ -5,7 +5,7 @@ function _generate_first_order_derivatives_direct(
     i,
     λ,
     E,
-    d_cache=DerivativeCache(tri);
+    d_cache=DerivativeCache(tri, z);
     use_sibson_weight=!(i isa Integer))
     X = get_linear_matrix(d_cache)
     b = get_rhs_vector(d_cache)
@@ -13,26 +13,37 @@ function _generate_first_order_derivatives_direct(
     xᵢ, yᵢ = getxy(p)
     m = length(E)
     resize!(X, 2, m)
-    resize!(b, m)
+    is_scalar(z) ? resize!(b, m) : resize!(b, fdim(z), m)
     for (j, s) in enumerate(E)
         λₛ = get_λ(λ, j, use_sibson_weight)
-        zₛ = z[s]
+        zₛ = get_data(z, s)
         pₛ = get_point(tri, s)
         xₛ, yₛ = getxy(pₛ)
         δ = sqrt((xᵢ - xₛ)^2 + (yᵢ - yₛ)^2)
         βₛ = sqrt(λₛ) * inv(δ)
         X[1, j] = βₛ * (xₛ - xᵢ)
         X[2, j] = βₛ * (yₛ - yᵢ)
-        b[j] = βₛ * (zₛ - zᵢ)
+        if is_scalar(z)
+            b[j] = βₛ * (zₛ - zᵢ)
+        else
+            @. b[:, j] = βₛ * (zₛ - zᵢ)
+        end
     end
+    #=
     @static if VERSION < v"1.7.0"
         qr_X = qr!(Matrix(X'))
     else
         qr_X = qr!(X')
     end
-    ∇ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
-    ldiv!(qr_X, ∇)
-    return (∇[1], ∇[2])
+    =#
+    ∇ = is_scalar(z) ? X' \ b : X' \ b' # I want to do the above, but it just keeps segfaulting somehow
+    if is_scalar(z)
+        return (∇[1], ∇[2])
+    else
+        gradient = get_gradient(d_cache)
+        @. gradient = ∇[1:2, :]
+        return gradient
+    end
 end
 
 function _generate_second_order_derivatives_direct(
@@ -41,7 +52,7 @@ function _generate_second_order_derivatives_direct(
     zᵢ,
     i,
     E,
-    d_cache=DerivativeCache(tri);
+    d_cache=DerivativeCache(tri, z);
     use_cubic_terms=true)
     X = if use_cubic_terms
         get_quadratic_matrix(d_cache)
@@ -53,9 +64,9 @@ function _generate_second_order_derivatives_direct(
     xᵢ, yᵢ = getxy(p)
     m = length(E)
     resize!(X, 5 + 4use_cubic_terms, m)
-    resize!(b, m)
+    is_scalar(z) ? resize!(b, m) : resize!(b, fdim(z), m)
     for (j, s) in enumerate(E)
-        zₛ = z[s]
+        zₛ = get_data(z, s)
         pₛ = get_point(tri, s)
         xₛ, yₛ = getxy(pₛ)
         δ = sqrt((xᵢ - xₛ)^2 + (yᵢ - yₛ)^2)
@@ -71,17 +82,22 @@ function _generate_second_order_derivatives_direct(
             X[8, j] = βₛ * (xₛ - xᵢ)^2 * (yₛ - yᵢ) / 2
             X[9, j] = βₛ * (xₛ - xᵢ) * (yₛ - yᵢ)^2 / 2
         end
-        b[j] = βₛ * (zₛ - zᵢ)
+        if is_scalar(z)
+            b[j] = βₛ * (zₛ - zᵢ)
+        else
+            @. b[:, j] = βₛ * (zₛ - zᵢ)
+        end
     end
-    @static if VERSION < v"1.7.0"
-        ∇ℋ = Matrix(X') \ b
+    if is_scalar(z)
+        ∇ℋ = X' \ b
         return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
     else
-        qr_X = qr!(X')
-        ∇ℋ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
-        5 + 4use_cubic_terms > m && resize!(∇ℋ, 5 + 4use_cubic_terms) # See Issue #11
-        ldiv!(qr_X, ∇ℋ)
-        return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
+        ∇ℋ = X' \ b'
+        gradient = get_gradient(d_cache)
+        hessian = get_hessian(d_cache)
+        @. gradient = ∇ℋ[1:2, :]
+        @. hessian = ∇ℋ[3:5, :]
+        return gradient, hessian
     end
 end
 
@@ -93,7 +109,7 @@ function generate_first_order_derivatives(
     i,
     λ,
     E,
-    d_cache=DerivativeCache(tri);
+    d_cache=DerivativeCache(tri, z);
     use_sibson_weight=!(i isa Integer),
     kwargs...
 )
@@ -108,7 +124,7 @@ function generate_second_order_derivatives(
     i,
     λ,
     E,
-    d_cache=DerivativeCache(tri);
+    d_cache=DerivativeCache(tri, z);
     use_cubic_terms=true,
     kwargs...
 )

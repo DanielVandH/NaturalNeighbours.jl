@@ -1,13 +1,17 @@
 function _compute_farin_coordinates(nc::NaturalCoordinates{F}, tri::Triangulation, z, ∇) where {F}
     λ = get_coordinates(nc)
     N₀ = get_indices(nc)
-    result = zero(F)
+    result = is_scalar(z) ? zero(F) : zeros(F, fdim(z))
     for i in eachindex(λ)
         for j in i:lastindex(λ)
             for k in j:lastindex(λ)
                 bezier_height, multiplicity = get_contrib(tri, i, j, k, N₀, ∇, z)
                 λ_prod = λ[i] * λ[j] * λ[k]
-                result += 6bezier_height * λ_prod / multiplicity
+                if is_scalar(z)
+                    result += 6bezier_height * λ_prod / multiplicity
+                else
+                    @. result += 6bezier_height * λ_prod / multiplicity
+                end
             end
         end
     end
@@ -27,29 +31,29 @@ function find_bezier_edge(i, j, k)
     end
 end
 function bezier_point_contribution(i, N₀, z)
-    bezier_height = z[N₀[i]]
+    bezier_height = get_data(z, N₀[i])
     return bezier_height, 6
 end
 function bezier_edge_contribution(tri, i, j, N₀, ∇, z)
     u = N₀[i]
-    zᵤ = z[u]
-    bezier_height = zᵤ + directional_derivative(tri, i, j, N₀, ∇) / 3
+    zᵤ = get_data(z, u)
+    bezier_height = zᵤ .+ directional_derivative(tri, i, j, N₀, ∇) ./ 3
     return bezier_height, 2
 end
 function bezier_face_contribution(tri, i, j, k, N₀, ∇, z)
     u = N₀[i]
     v = N₀[j]
     w = N₀[k]
-    point_contrib = (z[u] + z[v] + z[w]) / 3
+    point_contrib = (get_data(z, u) .+ get_data(z, v) .+ get_data(z, w)) ./ 3
     edge_contrib = (
-        directional_derivative(tri, i, j, N₀, ∇) +
-        directional_derivative(tri, i, k, N₀, ∇) +
-        directional_derivative(tri, j, i, N₀, ∇) +
-        directional_derivative(tri, j, k, N₀, ∇) +
-        directional_derivative(tri, k, i, N₀, ∇) +
+        directional_derivative(tri, i, j, N₀, ∇) .+
+        directional_derivative(tri, i, k, N₀, ∇) .+
+        directional_derivative(tri, j, i, N₀, ∇) .+
+        directional_derivative(tri, j, k, N₀, ∇) .+
+        directional_derivative(tri, k, i, N₀, ∇) .+
         directional_derivative(tri, k, j, N₀, ∇)
-    ) / 12
-    return point_contrib + edge_contrib, 1
+    ) ./ 12
+    return point_contrib .+ edge_contrib, 1
 end
 function get_contrib(tri, i, j, k, N₀, ∇, z)
     if is_bezier_point(i, j, k)

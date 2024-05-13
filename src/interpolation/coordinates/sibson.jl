@@ -94,27 +94,35 @@ function _compute_sibson_1_coordinates(nc::NaturalCoordinates, tri::Triangulatio
     F = number_type(tri)
     α = zero(F)
     β = zero(F)
-    ζ = zero(F)
+    ζ = is_scalar(z) ? zero(F) : zeros(F, fdim(z))
     γ = zero(F)
     for (λₖ, k) in zip(λ, N₀)
-        ∇ₖ = ∇[k]
-        zₖ = z[k]
+        ∇ₖ = get_data(∇, k)
+        zₖ = get_data(z, k)
         pₖ = get_point(tri, k)
         xₖ, yₖ = getxy(pₖ)
         rₖ² = (xₖ - x₀)^2 + (yₖ - y₀)^2
         rₖ = sqrt(rₖ²)
         γₖ = λₖ / rₖ
-        ζₖ = zₖ + (x₀ - xₖ) * ∇ₖ[1] + (y₀ - yₖ) * ∇ₖ[2]
+        ζₖ = @. zₖ + (x₀ - xₖ) * ∇ₖ[1] + (y₀ - yₖ) * ∇ₖ[2]
         αₖ = λₖ * rₖ
         γ += γₖ
         β += λₖ * rₖ²
         α += αₖ
-        ζ += ζₖ * γₖ
+        if is_scalar(z)
+            ζ += ζₖ * γₖ
+        else
+            @. ζ += ζₖ * γₖ
+        end
         if !isfinite(γ)
-            return zero(F), one(F), zero(F)
+            return (is_scalar(z) ? zero(F) : zeros(F, fdim(z))), one(F), zero(F)
         end
     end
-    ζ /= γ
+    if is_scalar(z)
+        ζ /= γ
+    else
+        @. ζ /= γ
+    end
     α /= γ
     return ζ, α, β
 end

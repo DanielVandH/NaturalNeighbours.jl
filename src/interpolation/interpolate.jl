@@ -3,8 +3,9 @@
     interpolate(points, z; gradient=nothing, hessian=nothing, derivatives=false, kwargs...)
     interpolate(x::AbstractVector, y::AbstractVector, z; gradient=nothing, hessian=nothing, derivatives=false, kwargs...)
 
-Construct an interpolant over the data `z` at the sites defined by the triangulation `tri` (or `points`, or `(x, y)`). See the Output 
-section for a description of how to use the interpolant `itp`.
+Construct an interpolant over the data `z` at the sites defined by the triangulation `tri` (or `points`, or `(x, y)`). `z` should be a vector if the interpolant 
+is of a scalar function, and a matrix if it is of a vector function, where each column of the matrix corresponds to the function's value at the associated 
+data site. See the Output section for a description of how to use the interpolant `itp`.
 
 !!! warning "Missing vertices"
 
@@ -22,12 +23,16 @@ section for a description of how to use the interpolant `itp`.
 The returned value is a `NaturalNeighboursInterpolant` struct. This struct is callable, with the following methods defined:
 
     (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false, method=Sibson(), project = true, kwargs...)
-    (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), project = true, kwargs...)
+    (itp::NaturalNeighboursInterpolant)(vals, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), project = true, kwargs...)
     (itp::NaturalNeighboursInterpolant)(x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), project = true, kwargs...)
 
 1. The first method is for scalars, with `id` referring to a thread id. 
 2. This method is an in-place method for vectors, storing `itp(x[i], y[i])` into `vals[i]`. 
 3. This method is similar to (2), but `vals` is constructed and returned. 
+
+When the provided data `z` refers to a scalar function `f: ℝ² → ℝ`, the output of the interpolant corresponding to a single point is a scalar.
+When `z` refers to a vector function `f: ℝ² → ℝⁿ`, the output of the interpolant corresponding to a single point is a vector. For defining `vals`,
+in the vector case you should instead define `vals` as a matrix `zeros(n, length(x))` so that `vals[:, i] = itp(x[i], y[i])`.
 
 In each method, `method` defines the method used for evaluating the interpolant, which is some [`AbstractInterpolator`](@ref). For the first 
 method, `parallel` is ignored, but for the latter two methods it defines whether to use multithreading or not for evaluating the interpolant at 
@@ -141,12 +146,13 @@ function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false
     return _eval_interp(method, itp, p, cache; kwargs...)
 end
 
-function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
+function (itp::NaturalNeighboursInterpolant)(vals, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
     method = iwrap(method)
     if !parallel
         for i in eachindex(x, y)
-            vals[i] = itp(x[i], y[i], 1; method, kwargs...)
+            val = itp(x[i], y[i], 1; method, kwargs...)
+            setval!(vals, i, val)
         end
     else
         caches = get_neighbour_cache(itp)
@@ -154,7 +160,8 @@ function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVe
         chunked_iterator = chunks(vals, nt)
         Threads.@threads for (xrange, chunk_id) in chunked_iterator
             for i in xrange
-                vals[i] = itp(x[i], y[i], chunk_id; method, kwargs...)
+                val = itp(x[i], y[i], chunk_id; method, kwargs...)
+                setval!(vals, i, val)
             end
         end
     end
@@ -165,7 +172,7 @@ end
     n = length(x)
     tri = get_triangulation(itp)
     F = number_type(tri)
-    vals = zeros(F, n)
+    vals = is_scalar(get_z(itp)) ? zeros(F, n) : zeros(F, fdim(get_z(itp)), n)
     method = iwrap(method)
     itp(vals, x, y; method, parallel, kwargs...)
     return vals

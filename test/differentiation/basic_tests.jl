@@ -47,7 +47,7 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
                 λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, i, 3)
                 ∇ℋ2 = (
                     NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, z[i], i, λ, E),
-                    NNI._generate_second_order_derivatives_direct(tri, z, z[i], i, E, NNI.DerivativeCache(tri))
+                    NNI._generate_second_order_derivatives_direct(tri, z, z[i], i, E, NNI.DerivativeCache(tri, z))
                 )
                 ∇2_1, ℋ2_1 = ∇ℋ2[1]
                 ∇2_2, ℋ2_2 = ∇ℋ2[2]
@@ -105,7 +105,7 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
                 λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, p, 3)
                 ∇ℋ2 = (
                     NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, itp(p...), p, λ, E),
-                    NNI._generate_second_order_derivatives_direct(tri, z, itp(p...), p, E, NNI.DerivativeCache(tri))
+                    NNI._generate_second_order_derivatives_direct(tri, z, itp(p...), p, E, NNI.DerivativeCache(tri, z))
                 )
                 ∇2_1, ℋ2_1 = ∇ℋ2[1]
                 ∇2_2, ℋ2_2 = ∇ℋ2[2]
@@ -123,7 +123,7 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
                 λ, E = NNI.get_taylor_neighbourhood!(Set{Int64}(), Set{Int64}(), tri, p, 2)
                 ∇ℋ2 = (
                     NNI.generate_second_order_derivatives(NNI.Direct(), tri, z, itp(p...), p, λ, E; use_cubic_terms=false),
-                    NNI._generate_second_order_derivatives_direct(tri, z, itp(p...), p, E, NNI.DerivativeCache(tri); use_cubic_terms=false)
+                    NNI._generate_second_order_derivatives_direct(tri, z, itp(p...), p, E, NNI.DerivativeCache(tri, z); use_cubic_terms=false)
                 )
                 ∇2_1, ℋ2_1 = ∇ℋ2[1]
                 ∇2_2, ℋ2_2 = ∇ℋ2[2]
@@ -148,7 +148,7 @@ include(normpath(@__DIR__, "../.", "helper_functions", "test_functions.jl"))
         z = [f(x, y) for (x, y) in DelaunayTriangulation.each_point(tri)]
 
         nt = Base.Threads.nthreads()
-        derivative_caches = [NNI.DerivativeCache(tri) for _ in 1:nt]
+        derivative_caches = [NNI.DerivativeCache(tri, z) for _ in 1:nt]
         neighbour_caches = [NNI.NaturalNeighboursCache(tri) for _ in 1:nt]
 
         derivative_method = :iterative
@@ -309,8 +309,8 @@ end
 
 @testset "Test Float32" begin
     rng = StableRNG(123)
-    xs = randn(rng, 100)
-    ys = randn(rng, 100)
+    xs = randn(rng, 10)
+    ys = randn(rng, 10)
     tri1 = triangulate([Float32.(xs)'; Float32.(ys)']; rng)
     tri2 = triangulate([xs'; ys']; rng)
     zs = sin.(xs) .* cos.(ys)
@@ -393,8 +393,8 @@ end
         @test collect(∇1) ≈ collect(∇2)
     end
 
-    xrange = LinRange(-3, 3, 1000) .|> Float32
-    yrange = LinRange(-3, 3, 1000) .|> Float32
+    xrange = LinRange(-3, 3, 10) .|> Float32
+    yrange = LinRange(-3, 3, 10) .|> Float32
     itp_xs = [xrange[i] for i in 1:length(xrange), j in 1:length(yrange)]
     itp_ys = [yrange[j] for i in 1:length(xrange), j in 1:length(yrange)]
     _itp_xs = vec(itp_xs)

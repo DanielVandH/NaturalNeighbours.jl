@@ -1,8 +1,12 @@
 @inline function _eval_natural_coordinates(coordinates, indices, z)
-    val = zero(eltype(z))
+    val = is_scalar(z) ? zero(eltype(z)) : zeros(eltype(z), fdim(z))
     for (λ, k) in zip(coordinates, indices)
-        zₖ = z[k]
-        val += λ * zₖ
+        zₖ = get_data(z, k)
+        if is_scalar(z)
+            val += λ * zₖ
+        else
+            @. val += λ * zₖ
+        end
     end
     return val
 end
@@ -20,7 +24,7 @@ function _eval_natural_coordinates(::Sibson{1}, nc::NaturalCoordinates{F}, z, gr
         return sib0
     end
     ζ, α, β = _compute_sibson_1_coordinates(nc, tri, z, gradients)
-    num = α * sib0 + β * ζ
+    num = @. α * sib0 + β * ζ
     den = α + β
     return num / den
 end

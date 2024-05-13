@@ -65,3 +65,6 @@ function get_λ(coordinates::Vector{F}, j, use_sibson_weight) where {F}
     end
 end
 get_λ(coordinates::F, j, use_sibson_weight) where {F<:Number} = one(F)
+
+setval!(A::Vector, i, val) = A[i] = val
+setval!(A::Matrix, i, val) = A[:, i] .= val

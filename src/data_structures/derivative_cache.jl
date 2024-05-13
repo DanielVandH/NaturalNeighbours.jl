@@ -1,10 +1,12 @@
-struct DerivativeCache{I, F}
+    struct DerivativeCache{I, F, T, G, H}
     iterated_neighbourhood::Set{I}
     second_iterated_neighbourhood::Set{I}
     linear_matrix::ElasticMatrix{F, Vector{F}}
     quadratic_matrix::ElasticMatrix{F, Vector{F}}
     quadratic_matrix_no_cubic::ElasticMatrix{F, Vector{F}}
-    rhs_vector::Vector{F}
+    rhs_vector::T
+    gradient::G 
+    hessian::H
 end
 get_iterated_neighbourhood(cache::DerivativeCache) = cache.iterated_neighbourhood
 get_second_iterated_neighbourhood(cache::DerivativeCache) = cache.second_iterated_neighbourhood
@@ -12,7 +14,9 @@ get_linear_matrix(cache::DerivativeCache) = cache.linear_matrix
 get_quadratic_matrix(cache::DerivativeCache) = cache.quadratic_matrix
 get_quadratic_matrix_no_cubic(cache::DerivativeCache) = cache.quadratic_matrix_no_cubic
 get_rhs_vector(cache::DerivativeCache) = cache.rhs_vector
-function DerivativeCache(tri::Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}) where {P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE} 
+get_gradient(cache::DerivativeCache) = cache.gradient
+get_hessian(cache::DerivativeCache) = cache.hessian
+function DerivativeCache(tri::Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE}, z) where {P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C,BE} 
     iterated_neighbourhood = Set{I}()
     second_iterated_neighbourhood = Set{I}()
     F = number_type(tri)
@@ -20,12 +24,15 @@ function DerivativeCache(tri::Triangulation{P,T,BN,W,I,E,Es,BC,BEM,GVM,GVR,BPL,C
     quadratic_matrix = ElasticMatrix{F, Vector{F}}(undef, 9, 0)
     quadratic_matrix_no_cubic = ElasticMatrix{F, Vector{F}}(undef, 5, 0)
     rhs_vector = zeros(F, 0)
+    rhs_vector = is_scalar(z) ? zeros(F, 0) : ElasticMatrix{F, Vector{F}}(undef, fdim(z), 0)
+    gradient = is_scalar(z) ? nothing : Matrix{F}(undef, 2, fdim(z))
+    hessian = is_scalar(z) ? nothing : Matrix{F}(undef, 3, fdim(z))
     sizehint_m = 2^5
     sizehint!(iterated_neighbourhood, sizehint_m)
     sizehint!(second_iterated_neighbourhood, sizehint_m)
     sizehint!(linear_matrix, (2, sizehint_m))
     sizehint!(quadratic_matrix, (9, sizehint_m))
     sizehint!(quadratic_matrix_no_cubic, (5, sizehint_m))
-    sizehint!(rhs_vector, sizehint_m)
-    return DerivativeCache(iterated_neighbourhood, second_iterated_neighbourhood, linear_matrix, quadratic_matrix, quadratic_matrix_no_cubic, rhs_vector)
+    is_scalar(z) ? sizehint!(rhs_vector, sizehint_m) : sizehint!(rhs_vector, (fdim(z), sizehint_m))
+    return DerivativeCache(iterated_neighbourhood, second_iterated_neighbourhood, linear_matrix, quadratic_matrix, quadratic_matrix_no_cubic, rhs_vector, gradient, hessian)
 end

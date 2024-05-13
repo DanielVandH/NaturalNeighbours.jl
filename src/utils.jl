@@ -41,3 +41,25 @@ function identify_exterior_points(x, y, itp::NaturalNeighboursInterpolant; tol=0
     end
     return identify_exterior_points(x, y, points, bn; tol=tol)
 end
+
+ndata(z::AbstractVector) = length(z)
+ndata(z::AbstractMatrix) = size(z, 2)
+fdim(z::AbstractMatrix) = size(z, 1)
+
+initvec(::Type{T}, z::AbstractVector) where T = Vector{T}(undef, ndata(z))
+initvec(::Type{T}, z::AbstractMatrix) where T = Matrix{T}(undef, fdim(z), ndata(z))
+
+zrange(z::AbstractVector) = eachindex(z)
+zrange(z::AbstractMatrix) = axes(z, 2)
+
+_zero(::Type{F}) where {F} = zero(F)
+_zero(::Type{NTuple{N,F}}) where {N,F} = ntuple(i -> _zero(F), Val(N))
+zero!(A, i)  = setval!(A, i, _zero(eltype(A)))
+
+get_data(z::AbstractVector, i) = z[i]
+get_data(z::AbstractMatrix, i) = view(z, :, i)
+
+_copy(z) = copy(z)
+_copy(z::Tuple) = z
+
+is_scalar(z) = z isa AbstractVector

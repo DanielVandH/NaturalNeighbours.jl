@@ -87,7 +87,6 @@ end
     @test_throws ArgumentError("Gradients and Hessians must be provided for Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Hiyoshi(2))
 end
 
-
 @testset "Test Float32" begin
     rng = StableRNG(123)
     xs = randn(rng, 100)
@@ -97,31 +96,33 @@ end
     zs = sin.(xs) .* cos.(ys)
     itp1 = interpolate(tri1, Float32.(zs); derivatives=true)
     itp2 = interpolate(tri2, zs; derivatives=true)
-    for itp in (itp1, itp2)
-        for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
-            @inferred itp(rand(), rand(); method=method)
-            @inferred itp(rand(), rand(); method=method, project=false)
-            @inferred itp(rand(Float32), rand(Float32); method=method)
-            @inferred itp(rand(Float32), rand(Float32); method=method, project=false)
-            @inferred itp(rand(Float32), rand(Float64); method=method)
-            @inferred itp(rand(Float32), rand(Float64); method=method, project=false)
-            @inferred itp(rand(Float64), rand(Float32); method=method)
-            @inferred itp(rand(Float64), rand(Float32); method=method, project=false)
+    for _ in 1:5
+        for itp in (itp1, itp2)
+            for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
+                @inferred itp(rand(), rand(); method=method)
+                @inferred itp(rand(), rand(); method=method, project=false)
+                @inferred itp(rand(Float32), rand(Float32); method=method)
+                @inferred itp(rand(Float32), rand(Float32); method=method, project=false)
+                @inferred itp(rand(Float32), rand(Float64); method=method)
+                @inferred itp(rand(Float32), rand(Float64); method=method, project=false)
+                @inferred itp(rand(Float64), rand(Float32); method=method)
+                @inferred itp(rand(Float64), rand(Float32); method=method, project=false)
+            end
         end
+        for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
+            p, q = rand(2)
+            @test itp1(p, q; method=method) ≈ itp2(p, q; method=method)
+            @test itp1(p, q; method=method, project=false) ≈ itp2(p, q; method=method, project=false)
+            @test itp1(Float32(p), Float32(q); method=method) ≈ itp2(Float32(p), Float32(q); method=method)
+            @test itp1(Float32(p), Float32(q); method=method, project=false) ≈ itp2(Float32(p), Float32(q); method=method, project=false)
+            @test itp1(Float32(p), q; method=method) ≈ itp2(Float32(p), q; method=method)
+            @test itp1(Float32(p), q; method=method, project=false) ≈ itp2(Float32(p), q; method=method, project=false)
+            @test itp1(p, Float32(q); method=method) ≈ itp2(p, Float32(q); method=method)
+            @test itp1(p, Float32(q); method=method, project=false) ≈ itp2(p, Float32(q); method=method, project=false)
+        end
+        test_interpolant(itp1, xs, ys, zs)
+        test_interpolant(itp2, xs, ys, zs)
     end
-    for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
-        p, q = rand(2)
-        @test itp1(p, q; method=method) ≈ itp2(p, q; method=method)
-        @test itp1(p, q; method=method, project=false) ≈ itp2(p, q; method=method, project=false)
-        @test itp1(Float32(p), Float32(q); method=method) ≈ itp2(Float32(p), Float32(q); method=method)
-        @test itp1(Float32(p), Float32(q); method=method, project=false) ≈ itp2(Float32(p), Float32(q); method=method, project=false)
-        @test itp1(Float32(p), q; method=method) ≈ itp2(Float32(p), q; method=method)
-        @test itp1(Float32(p), q; method=method, project=false) ≈ itp2(Float32(p), q; method=method, project=false)
-        @test itp1(p, Float32(q); method=method) ≈ itp2(p, Float32(q); method=method)
-        @test itp1(p, Float32(q); method=method, project=false) ≈ itp2(p, Float32(q); method=method, project=false)
-    end
-    test_interpolant(itp1, xs, ys, zs)
-    test_interpolant(itp2, xs, ys, zs)
 
     xrange = LinRange(-3, 3, 1000) .|> Float32
     yrange = LinRange(-3, 3, 1000) .|> Float32
@@ -138,7 +139,6 @@ end
     deleteat!(err, bad_idx)
     @test norm(err) ≈ 0 atol = 1e-2
 end
-
 
 @testset "Test that the derivatives are all zero for missing vertices" begin
     R₁ = 0.2

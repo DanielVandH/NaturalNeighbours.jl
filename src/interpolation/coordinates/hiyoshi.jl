@@ -1,7 +1,7 @@
 function _compute_hiyoshi_coordinates(nc::NaturalCoordinates{F}, tri::Triangulation, z, ∇, H) where {F}
     λ = get_coordinates(nc)
     N₀ = get_indices(nc)
-    result = zero(F)
+    result = is_scalar(z) ? zero(F) : zeros(F, fdim(z))
     for i in eachindex(λ)
         for j in i:lastindex(λ)
             for k in j:lastindex(λ)
@@ -10,7 +10,11 @@ function _compute_hiyoshi_coordinates(nc::NaturalCoordinates{F}, tri::Triangulat
                         (i′, j′, k′, ℓ′, m′), case = group_sort(i, j, k, ℓ, m) # could (??) be faster to sort individually at each loop step, but not bothered with that currently
                         bezier_height, multiplicity = get_contrib(tri, i′, j′, k′, ℓ′, m′, N₀, ∇, H, z, case)
                         λ_prod = λ[i′] * λ[j′] * λ[k′] * λ[ℓ′] * λ[m′]
-                        result += 120bezier_height * λ_prod / multiplicity
+                        if is_scalar(z)
+                            result += 120bezier_height * λ_prod / multiplicity
+                        else
+                            @. result += 120bezier_height * λ_prod / multiplicity
+                        end
                     end
                 end
             end
@@ -20,35 +24,35 @@ function _compute_hiyoshi_coordinates(nc::NaturalCoordinates{F}, tri::Triangulat
 end
 
 function _hiyoshi_case_1(i, N₀, z) # iiiii
-    zᵢ = z[N₀[i]]
+    zᵢ = get_data(z, N₀[i])
     fᵢᵢᵢᵢᵢ = zᵢ
     return fᵢᵢᵢᵢᵢ
 end
 function _hiyoshi_case_2(tri, i, j, N₀, ∇, z) # iiiij
-    zᵢ = z[N₀[i]]
+    zᵢ = get_data(z, N₀[i])
     zᵢⱼ = directional_derivative(tri, i, j, N₀, ∇)
-    fᵢᵢᵢᵢⱼ = zᵢ + zᵢⱼ / 5
+    fᵢᵢᵢᵢⱼ = @. zᵢ + zᵢⱼ / 5
     return fᵢᵢᵢᵢⱼ
 end
 function _hiyoshi_case_3(tri, i, j, N₀, ∇, H, z) # iiijj
-    zᵢ = z[N₀[i]]
+    zᵢ = get_data(z, N₀[i])
     zᵢⱼ = directional_derivative(tri, i, j, N₀, ∇)
     zᵢⱼⱼ = hessian_form(tri, i, j, j, N₀, H)
-    fᵢᵢᵢⱼⱼ = zᵢ + 2zᵢⱼ / 5 + zᵢⱼⱼ / 20
+    fᵢᵢᵢⱼⱼ = @. zᵢ + 2zᵢⱼ / 5 + zᵢⱼⱼ / 20
     return fᵢᵢᵢⱼⱼ
 end
 function _hiyoshi_case_4(tri, i, j, k, N₀, ∇, H, z) # iiijk
-    zᵢ = z[N₀[i]]
+    zᵢ = get_data(z, N₀[i])
     zᵢⱼ = directional_derivative(tri, i, j, N₀, ∇)
     zᵢₖ = directional_derivative(tri, i, k, N₀, ∇)
     zᵢⱼₖ = hessian_form(tri, i, j, k, N₀, H)
-    fᵢᵢᵢⱼₖ = zᵢ + (zᵢⱼ + zᵢₖ) / 5 + zᵢⱼₖ / 20
+    fᵢᵢᵢⱼₖ = @. zᵢ + (zᵢⱼ + zᵢₖ) / 5 + zᵢⱼₖ / 20
     return fᵢᵢᵢⱼₖ
 end
 function _hiyoshi_case_5(tri, i, j, k, N₀, ∇, H, z) # iijjk
-    zᵢ = z[N₀[i]]
-    zⱼ = z[N₀[j]]
-    zₖ = z[N₀[k]]
+    zᵢ = get_data(z, N₀[i])
+    zⱼ = get_data(z, N₀[j])
+    zₖ = get_data(z, N₀[k])
     zᵢⱼ = directional_derivative(tri, i, j, N₀, ∇)
     zⱼᵢ = directional_derivative(tri, j, i, N₀, ∇)
     zᵢₖ = directional_derivative(tri, i, k, N₀, ∇)
@@ -58,15 +62,15 @@ function _hiyoshi_case_5(tri, i, j, k, N₀, ∇, H, z) # iijjk
     zᵢⱼₖ = hessian_form(tri, i, j, k, N₀, H)
     zⱼᵢₖ = hessian_form(tri, j, i, k, N₀, H)
     zₖᵢⱼ = hessian_form(tri, k, i, j, N₀, H)
-    fᵢᵢⱼⱼₖ = 13(zᵢ + zⱼ) / 30 + 2zₖ / 15 + (zᵢⱼ + zⱼᵢ) / 9 + 7(zᵢₖ + zⱼₖ) / 90 + 2(zₖᵢ + zₖⱼ) / 45 + (zᵢⱼₖ + zⱼᵢₖ + zₖᵢⱼ) / 45
+    fᵢᵢⱼⱼₖ = @. 13(zᵢ + zⱼ) / 30 + 2zₖ / 15 + (zᵢⱼ + zⱼᵢ) / 9 + 7(zᵢₖ + zⱼₖ) / 90 + 2(zₖᵢ + zₖⱼ) / 45 + (zᵢⱼₖ + zⱼᵢₖ + zₖᵢⱼ) / 45
     # fᵢᵢⱼⱼₖ = (zᵢ + zⱼ) / 2 + 3(zᵢⱼ + zⱼᵢ) / 20 + (zᵢₖ + zⱼₖ) / 10 + (zᵢⱼₖ + zⱼᵢₖ) / 30 + (zᵢⱼⱼ + zⱼᵢᵢ) / 120
     return fᵢᵢⱼⱼₖ
 end
 function _hiyoshi_case_6(tri, i, j, k, ℓ, N₀, ∇, H, z) # iijkℓ
-    zᵢ = z[N₀[i]]
-    zⱼ = z[N₀[j]]
-    zₖ = z[N₀[k]]
-    zₗ = z[N₀[ℓ]]
+    zᵢ = get_data(z, N₀[i])
+    zⱼ = get_data(z, N₀[j])
+    zₖ = get_data(z, N₀[k])
+    zₗ = get_data(z, N₀[ℓ])
     zᵢⱼ = directional_derivative(tri, i, j, N₀, ∇)
     zᵢₖ = directional_derivative(tri, i, k, N₀, ∇)
     zᵢₗ = directional_derivative(tri, i, ℓ, N₀, ∇)
@@ -98,17 +102,17 @@ function _hiyoshi_case_6(tri, i, j, k, ℓ, N₀, ∇, H, z) # iijkℓ
              (zⱼᵢ + zⱼₖ + zⱼₗ + zₖᵢ + zₖⱼ + zₖₗ + zₗᵢ + zₗⱼ + zₗₖ) / 45 +
              (zⱼᵢₖ + zⱼᵢₗ + zⱼₖₗ + zₖᵢⱼ + zₖᵢₗ + zₖⱼₗ + zₗᵢⱼ + zₗᵢₖ + zₗⱼₖ) / 180
     =#
-    fᵢᵢⱼₖₗ = zᵢ / 2 + (zⱼ + zₖ + zₗ) / 6 + 7(zᵢⱼ + zᵢₖ + zᵢₗ) / 90 + 2(zⱼᵢ + zₖᵢ + zₗᵢ) / 45 +
-             (zⱼₖ + zⱼₗ + zₖⱼ + zₖₗ + zₗⱼ + zₗₖ) / 30 + (zᵢⱼₖ + zᵢⱼₗ + zᵢₖₗ) / 90 +
-             (zⱼᵢₖ + zⱼᵢₗ + zₖᵢⱼ + zₖᵢₗ + zₗᵢⱼ + zₗᵢₖ) / 90 + (zⱼₖₗ + zₖⱼₗ + zₗⱼₖ) / 180
+    fᵢᵢⱼₖₗ = @. zᵢ / 2 + (zⱼ + zₖ + zₗ) / 6 + 7(zᵢⱼ + zᵢₖ + zᵢₗ) / 90 + 2(zⱼᵢ + zₖᵢ + zₗᵢ) / 45 +
+                (zⱼₖ + zⱼₗ + zₖⱼ + zₖₗ + zₗⱼ + zₗₖ) / 30 + (zᵢⱼₖ + zᵢⱼₗ + zᵢₖₗ) / 90 +
+                (zⱼᵢₖ + zⱼᵢₗ + zₖᵢⱼ + zₖᵢₗ + zₗᵢⱼ + zₗᵢₖ) / 90 + (zⱼₖₗ + zₖⱼₗ + zₗⱼₖ) / 180
     return fᵢᵢⱼₖₗ
 end
 function _hiyoshi_case_7(tri, i, j, k, ℓ, m, N₀, ∇, H, z) # ijkℓm
-    zᵢ = z[N₀[i]]
-    zⱼ = z[N₀[j]]
-    zₖ = z[N₀[k]]
-    zₗ = z[N₀[ℓ]]
-    zₘ = z[N₀[m]]
+    zᵢ = get_data(z, N₀[i])
+    zⱼ = get_data(z, N₀[j])
+    zₖ = get_data(z, N₀[k])
+    zₗ = get_data(z, N₀[ℓ])
+    zₘ = get_data(z, N₀[m])
     zᵢⱼ = directional_derivative(tri, i, j, N₀, ∇)
     zᵢₖ = directional_derivative(tri, i, k, N₀, ∇)
     zᵢₗ = directional_derivative(tri, i, ℓ, N₀, ∇)
@@ -159,13 +163,13 @@ function _hiyoshi_case_7(tri, i, j, k, ℓ, m, N₀, ∇, H, z) # ijkℓm
     zₘⱼₖ = hessian_form(tri, m, j, k, N₀, H)
     zₘⱼₗ = hessian_form(tri, m, j, ℓ, N₀, H)
     zₘₖₗ = hessian_form(tri, m, k, ℓ, N₀, H)
-    fᵢⱼₖₗₘ = (zᵢ + zⱼ + zₖ + zₗ + zₘ) / 5 +
-             (zᵢⱼ + zᵢₖ + zᵢₗ + zᵢₘ + zⱼᵢ + zⱼₖ + zⱼₗ + zⱼₘ + zₖᵢ + zₖⱼ + zₖₗ +
-              zₖₘ + zₗᵢ + zₗⱼ + zₗₖ + zₗₘ + zₘᵢ + zₘⱼ + zₘₖ + zₘₗ) / 30 +
-             (zᵢⱼₖ + zᵢⱼₗ + zᵢⱼₘ + zᵢₖₗ + zᵢₖₘ + zᵢₗₘ + zⱼᵢₗ + zⱼᵢₖ + zᵢᵢₘ +
-              zⱼₖₗ + zⱼₖₘ + zⱼₗₘ + zₖᵢⱼ + zₖᵢₗ + zₖᵢₘ + zₖⱼₗ + zₖⱼₘ + zₖₗₘ +
-              zₗᵢⱼ + zₗᵢₖ + zₗᵢₘ + zₗⱼₖ + zₗⱼₘ + zₗₖₘ + zₘᵢⱼ + zₘᵢₖ + zₘᵢₗ +
-              zₘⱼₖ + zₘⱼₗ + zₘₖₗ) / 180
+    fᵢⱼₖₗₘ = @. (zᵢ + zⱼ + zₖ + zₗ + zₘ) / 5 +
+                (zᵢⱼ + zᵢₖ + zᵢₗ + zᵢₘ + zⱼᵢ + zⱼₖ + zⱼₗ + zⱼₘ + zₖᵢ + zₖⱼ + zₖₗ +
+                 zₖₘ + zₗᵢ + zₗⱼ + zₗₖ + zₗₘ + zₘᵢ + zₘⱼ + zₘₖ + zₘₗ) / 30 +
+                (zᵢⱼₖ + zᵢⱼₗ + zᵢⱼₘ + zᵢₖₗ + zᵢₖₘ + zᵢₗₘ + zⱼᵢₗ + zⱼᵢₖ + zᵢᵢₘ +
+                 zⱼₖₗ + zⱼₖₘ + zⱼₗₘ + zₖᵢⱼ + zₖᵢₗ + zₖᵢₘ + zₖⱼₗ + zₖⱼₘ + zₖₗₘ +
+                 zₗᵢⱼ + zₗᵢₖ + zₗᵢₘ + zₗⱼₖ + zₗⱼₘ + zₗₖₘ + zₘᵢⱼ + zₘᵢₖ + zₘᵢₗ +
+                 zₘⱼₖ + zₘⱼₗ + zₘₖₗ) / 180
     return fᵢⱼₖₗₘ
 end
 

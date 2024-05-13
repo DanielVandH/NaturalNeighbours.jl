@@ -6,7 +6,7 @@ using ElasticArrays
 
 @testset "DerivativeCache" begin
     tri = triangulate_rectangle(0, 10, 0, 10, 101, 101)
-    derivative_cache = NNI.DerivativeCache(tri)
+    derivative_cache = NNI.DerivativeCache(tri, [1.0])
     @test NNI.get_iterated_neighbourhood(derivative_cache) == derivative_cache.iterated_neighbourhood == Set{Int64}()
     @test NNI.get_second_iterated_neighbourhood(derivative_cache) == derivative_cache.second_iterated_neighbourhood == Set{Int64}()
     @test NNI.get_linear_matrix(derivative_cache) == derivative_cache.linear_matrix == ElasticMatrix{Float64}(undef, 2, 0)
