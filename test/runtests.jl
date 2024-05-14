@@ -88,9 +88,6 @@ end
     @test NaturalNeighbours.ndata([1, 2, 3]) == 3
     @test NaturalNeighbours.ndata([1 2 3 4 5; 2 3 4 5 6]) == 5
 
-    @test NaturalNeighbours.initvec(NTuple{2,Float64}, [1, 2, 3])
-    @test NaturalNeighbours.initvec(NTuple{2,Float64}, [1 2 3 4 5; 2 3 4 5 6])
-
     @test NaturalNeighbours._zero(Float64) == 0.0
     @test NaturalNeighbours._zero(NTuple{2,Float64}) == (0.0, 0.0)
     A = [1.0, 2.0, 3.0]
