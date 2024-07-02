@@ -65,7 +65,8 @@ abstract type AbstractInterpolator{D} end
 
 Interpolate using Sibson's coordinates with `C(d)` continuity at the data sites.
 """ struct Sibson{D} <: AbstractInterpolator{D}
-    Sibson(d=0) = d ∈ (0, 1) ? new{d}() : throw(ArgumentError("The Sibson interpolant is only defined for d ∈ (0, 1)."))
+    Sibson(d) = d ∈ (0, 1) ? new{d}() : throw(ArgumentError("The Sibson interpolant is only defined for d ∈ (0, 1)."))
+    Sibson() = new{0}()
 end
 struct Triangle{D} <: AbstractInterpolator{D} end
 struct Nearest{D} <: AbstractInterpolator{D} end
