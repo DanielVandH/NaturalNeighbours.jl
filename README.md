@@ -15,10 +15,8 @@ Here is a quick example of how to use the package, demonstrating the available m
 ```julia
 using NaturalNeighbours
 using CairoMakie
-using StableRNGs
 
 ## The data 
-rng = StableRNG(123)
 f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
 x = vec([(i - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
 y = vec([(j - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
