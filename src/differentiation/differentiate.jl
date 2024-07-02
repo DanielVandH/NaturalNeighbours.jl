@@ -36,6 +36,9 @@ The outputs are:
 - `order == 1`: The scalar methods return a `Tuple` of the form `(∂x, ∂y)`, while the vector methods return a vector of `Tuple`s of the form `(∂x, ∂y)`.
 - `order == 2`: The scalar methods return a `(∇, ℋ)`, where `∇` is a `Tuple` of the form `(∂x, ∂y)` and `ℋ` is a `Tuple` of the form `(∂xx, ∂yy, ∂xy)`. The vector methods return a vector of `(∇, ℋ)`s.
 
+In cases where the data `z` in the interpolant is a matrix, the tuples `(∂x, ∂y)` are instead replaced with matrices, and similarly for `(∂xx, ∂yy, ∂xy)`. In particular, if `z` stores data from a function 
+`f: ℝ² → ℝⁿ`, then the gradients are represented by a `2 × n` matrix, and the Hessians are represented by a `3 × n` matrix.
+
 !!! warning
 
     Until we implement ghost point extrapolation, behaviour near the convex hull of your data sites may in some cases be undesirable,
@@ -63,9 +66,14 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
         λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
         if length(λ) == 1 && !isfinite(λ[1]) # this happens when we extrapolate 
             return (F(Inf), F(Inf))
+            if is_scalar(z)
+                return (F(Inf), F(Inf))
+            else
+                return [F(Inf) for _ in 1:2, _ in 1:fdim(z)]
+            end
         end
         ∇ = generate_first_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
-        return ∇
+        return _copy(∇) # don't return the Matrix cases directly since they are aliased with the cache. For the scalar case, copy is a no-op.
     else # O == 2
         if method == Direct()
             λ, E = get_taylor_neighbourhood!(S, S′, tri, 2 + use_cubic_terms, nc)
@@ -73,10 +81,14 @@ function _eval_differentiator(method::AbstractDifferentiator, ∂::NaturalNeighb
             λ, E = get_taylor_neighbourhood!(S, S′, tri, 1, nc)
         end
         if length(λ) == 1 && !isfinite(λ[1]) # this happens when we extrapolate 
-            return (F(Inf), F(Inf)), (F(Inf), F(Inf), F(Inf))
+            if is_scalar(z)
+                return (F(Inf), F(Inf)), (F(Inf), F(Inf), F(Inf))
+            else
+                return [F(Inf) for _ in 1:2, _ in 1:fdim(z)], [F(Inf) for _ in 1:3, _ in 1:fdim(z)]
+            end
         end
         ∇, H = generate_second_order_derivatives(method, tri, z, zᵢ, p, λ, E, d_cache; use_cubic_terms, alpha, use_sibson_weight, initial_gradients)
-        return ∇, H
+        return _copy(∇), _copy(H)
     end
 end
 
@@ -127,10 +139,11 @@ function (∂::NaturalNeighboursDifferentiator{I,O})(x::AbstractVector, y::Abstr
     itp = get_interpolant(∂)
     tri = get_triangulation(itp)
     F = number_type(tri)
+    z = get_z(itp)
     if O == 1
-        vals = Vector{NTuple{2,F}}(undef, n)
+        vals = is_scalar(z) ? Vector{NTuple{2,F}}(undef, n) : Vector{Matrix{F}}(undef, n)
     else # O == 2
-        vals = Vector{Tuple{NTuple{2,F},NTuple{3,F}}}(undef, n)
+        vals = is_scalar(z) ? Vector{Tuple{NTuple{2,F},NTuple{3,F}}}(undef, n) : Vector{Tuple{Matrix{F},Matrix{F}}}(undef, n)
     end
     method = dwrap(method)
     interpolant_method = iwrap(interpolant_method)

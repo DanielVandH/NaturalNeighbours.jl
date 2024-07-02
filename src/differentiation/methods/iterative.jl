@@ -6,7 +6,7 @@ function _generate_second_order_derivatives_iterative(
     λ,
     E,
     initial_gradients,
-    d_cache=DerivativeCache(tri),
+    d_cache=DerivativeCache(tri, z),
     alpha=0.1,
     use_sibson_weight=true
 )
@@ -16,15 +16,15 @@ function _generate_second_order_derivatives_iterative(
     xᵢ, yᵢ = getxy(p)
     m = length(E)
     resize!(X, 5, 3m)
-    resize!(b, 3m)
+    is_scalar(z) ? resize!(b, 3m) : resize!(bm, fdim(z), 3m)
     α = alpha
     α′ = one(alpha) - alpha
     for (j, s) in enumerate(E)
         λₛ = get_λ(λ, j, use_sibson_weight)
-        zₛ = z[s]
+        zₛ = get_data(z, s)
         pₛ = get_point(tri, s)
         xₛ, yₛ = getxy(pₛ)
-        ∇ₛ¹, ∇ₛ² = initial_gradients[s]
+        ∇ₛ¹² = get_data(initial_gradients, s)
         δ = (xᵢ - xₛ)^2 + (yᵢ - yₛ)^2
         βₛ = λₛ * inv(δ)
         γₛ = sqrt(α * βₛ)
@@ -46,20 +46,29 @@ function _generate_second_order_derivatives_iterative(
         X[3, j′′] = zero(γₛ′)
         X[4, j′′] = γₛ′ * (yₛ - yᵢ)
         X[5, j′′] = γₛ′ * (xₛ - xᵢ)
-        z̃ₛ = zₛ - zᵢ
-        b[j] = γₛ * z̃ₛ
-        b[j′] = γₛ′ * ∇ₛ¹
-        b[j′′] = γₛ′ * ∇ₛ²
+        if is_scalar(z)
+            z̃ₛ = zₛ - zᵢ
+            b[j] = γₛ * z̃ₛ
+            b[j′] = γₛ′ * ∇ₛ¹²[1]
+            b[j′′] = γₛ′ * ∇ₛ¹²[2]
+        else
+            @. b[:, j] = γₛ * (zₛ - zᵢ)
+            for idx in 1:fdim(z)
+                b[j′, idx] = γₛ′ * ∇ₛ¹²[idx][1]
+                b[j′′, idx] = γₛ′ * ∇ₛ¹²[idx][2]
+            end
+        end
     end
-    @static if VERSION < v"1.7.0"
-        ∇ℋ = Matrix(X') \ b
+    if is_scalar(z)
+        ∇ℋ = X' \ b
         return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
     else
-        qr_X = qr!(X')
-        ∇ℋ = copy(b) # This is the same fix in https://github.com/JuliaLang/julia/pull/43510 to avoid views, avoiding shared data issues
-        5 > 3m && resize!(∇ℋ, 5)
-        ldiv!(qr_X, ∇ℋ)
-        return (∇ℋ[1], ∇ℋ[2]), (∇ℋ[3], ∇ℋ[4], ∇ℋ[5])
+        ∇ℋ = X' \ b'
+        gradient = get_gradient(d_cache)
+        hessian = get_hessian(d_cache)
+        @. gradient = ∇ℋ[1:2, :]
+        @. hessian = ∇ℋ[3:5, :]
+        return gradient, hessian
     end
 end
 
@@ -71,7 +80,7 @@ function generate_second_order_derivatives(
     i,
     λ,
     E,
-    d_cache=DerivativeCache(tri);
+    d_cache=DerivativeCache(tri, z);
     alpha=0.1,
     initial_gradients=nothing,
     use_cubic_terms=nothing, # not used,

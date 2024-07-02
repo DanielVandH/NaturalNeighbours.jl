@@ -45,7 +45,7 @@ Generate derivatives at the data sites defined by the triangulation `tri` with a
 
 # Arguments 
 - `tri`: A `Triangulation` object.
-- `z`: A vector of function values at the data sites.
+- `z`: A vector of function values at the data sites, or a matrix of function values where each column corresponnds to the function's value at that data site.
 - `derivative_caches=[DerivativeCache(tri) for _ in 1:Base.Threads.nthreads()]`: A vector of `DerivativeCache` objects, one for each thread.
 - `neighbour_caches=[NaturalNeighboursCache(tri) for _ in 1:Base.Threads.nthreads()]`: A vector of `NaturalNeighboursCache` objects, one for each thread.
 
@@ -63,7 +63,7 @@ Generate derivatives at the data sites defined by the triangulation `tri` with a
 function generate_derivatives(
     tri,
     z,
-    derivative_caches=[DerivativeCache(tri) for _ in 1:Base.Threads.nthreads()],
+    derivative_caches=[DerivativeCache(tri, z) for _ in 1:Base.Threads.nthreads()],
     neighbour_caches=[NaturalNeighboursCache(tri) for _ in 1:Base.Threads.nthreads()];
     parallel=true,
     method=Direct(),
@@ -71,12 +71,11 @@ function generate_derivatives(
     alpha=0.1,
     initial_gradients=dwrap(method) == Direct() ? nothing : generate_gradients(tri, z, derivative_caches, neighbour_caches; parallel)
 )
-    n = length(z)
     F = number_type(tri)
-    ∇ = Vector{NTuple{2,F}}(undef, n)
-    ℋ = Vector{NTuple{3,F}}(undef, n)
+    ∇ = initvec(NTuple{2,F}, z)
+    ℋ = initvec(NTuple{3,F}, z)
     if !parallel
-        generate_second_order_derivatives!(∇, ℋ, method, tri, z, eachindex(z), derivative_caches, neighbour_caches, 1; alpha, use_cubic_terms, initial_gradients)
+        generate_second_order_derivatives!(∇, ℋ, method, tri, z, zrange(z), derivative_caches, neighbour_caches, 1; alpha, use_cubic_terms, initial_gradients)
     else
         nt = length(derivative_caches)
         chunked_iterator = chunks(z, nt)
@@ -113,15 +112,14 @@ Generate gradients at the data sites defined by the triangulation `tri` with ass
 function generate_gradients(
     tri,
     z,
-    derivative_caches=[DerivativeCache(tri) for _ in 1:Base.Threads.nthreads()],
+    derivative_caches=[DerivativeCache(tri, z) for _ in 1:Base.Threads.nthreads()],
     neighbour_caches=[NaturalNeighboursCache(tri) for _ in 1:Base.Threads.nthreads()];
     parallel=true
 )
-    n = length(z)
     F = number_type(tri)
-    ∇ = Vector{NTuple{2,F}}(undef, n)
+    ∇ = initvec(NTuple{2,F}, z)
     if !parallel
-        generate_first_order_derivatives!(∇, Direct(), tri, z, eachindex(z), derivative_caches, neighbour_caches, 1)
+        generate_first_order_derivatives!(∇, Direct(), tri, z, zrange(z), derivative_caches, neighbour_caches, 1)
     else
         nt = length(derivative_caches)
         chunked_iterator = chunks(∇, nt)
@@ -136,10 +134,10 @@ end
 
 @inline function generate_second_order_derivatives!(∇, ℋ, method, tri, z, zrange, derivative_caches, neighbour_caches, id; alpha, use_cubic_terms, initial_gradients)
     for i in zrange
-        zᵢ = z[i]
+        zᵢ = get_data(z, i)
         if !DelaunayTriangulation.has_vertex(tri, i)
-            ∇[i] = (zero(zᵢ), zero(zᵢ))
-            ℋ[i] = (zero(zᵢ), zero(zᵢ), zero(zᵢ))
+            zero!(∇, i)
+            zero!(ℋ, i)
         else
             d_cache = derivative_caches[id]
             n_cache = neighbour_caches[id]
@@ -150,7 +148,9 @@ end
             elseif method == Iterative()
                 λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 1, n_cache)
             end
-            ∇[i], ℋ[i] = generate_second_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id; alpha, use_cubic_terms, initial_gradients)
+            _∇i, _ℋi = generate_second_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id; alpha, use_cubic_terms, initial_gradients)
+            setval!(∇, i, _∇i)
+            setval!(ℋ, i, _ℋi)
         end
     end
     return nothing
@@ -158,16 +158,17 @@ end
 
 @inline function generate_first_order_derivatives!(∇, method, tri, z, zrange, derivative_caches, neighbour_caches, id)
     for i in zrange
-        zᵢ = z[i]
+        zᵢ = get_data(z, i)
         if !DelaunayTriangulation.has_vertex(tri, i)
-            ∇[i] = (zero(zᵢ), zero(zᵢ))
+            zero!(∇, i)
         else
             d_cache = derivative_caches[id]
             n_cache = neighbour_caches[id]
             S = get_iterated_neighbourhood(d_cache)
             S′ = get_second_iterated_neighbourhood(d_cache)
             λ, E = get_taylor_neighbourhood!(S, S′, tri, i, 1, n_cache)
-            ∇[i] = generate_first_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id)
+            _∇i = generate_first_order_derivatives(method, tri, z, zᵢ, i, λ, E, derivative_caches, id)
+            setval!(∇, i, _∇i)
         end
     end
     return nothing

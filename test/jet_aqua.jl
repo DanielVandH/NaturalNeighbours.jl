@@ -4,7 +4,7 @@ using CairoMakie
 using JET
 using Aqua
 
-Aqua.test_all(NaturalNeighbours; ambiguities=false, project_extras=false) # don't care about julia < 1.2
+Aqua.test_all(NaturalNeighbours; ambiguities=false, project_extras=false, unbound_args = false) # don't care about julia < 1.2
 Aqua.test_ambiguities(NaturalNeighbours) # don't pick up Base and Core...
 
 pts = [(rand(), rand()) for _ in 1:50]
