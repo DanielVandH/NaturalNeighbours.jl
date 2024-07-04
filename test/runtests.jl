@@ -34,7 +34,7 @@ include("jet_aqua.jl")
     @info "Testing Influence"
     @safetestset "Influence" begin
         include("interpolation/influence.jl")
-    end 
+    end
     @info "Testing Constrained Triangulation"
     @safetestset "Constrained Triangulations" begin
         include("interpolation/constrained.jl")
@@ -84,9 +84,21 @@ end
     #end
 end
 
+@testset "utils" begin
+    @test NaturalNeighbours.ndata([1, 2, 3]) == 3
+    @test NaturalNeighbours.ndata([1 2 3 4 5; 2 3 4 5 6]) == 5
 
+    @test NaturalNeighbours._zero(Float64) == 0.0
+    @test NaturalNeighbours._zero(NTuple{2,Float64}) == (0.0, 0.0)
+    A = [1.0, 2.0, 3.0]
+    NaturalNeighbours.zero!(A, 1)
+    @test A == [0.0, 2.0, 3.0]
+    A = [1.0 2.0 3.0; 4.0 5.0 6.0]
+    NaturalNeighbours.zero!(A, 2)
+    @test A == [1.0 0.0 3.0; 4.0 0.0 6.0]
 
-
-
-
-
+    z = [1.0, 2.0, 3.0]
+    @test NaturalNeighbours.get_data(z, 1) == 1.0
+    z = [1.0 2.0 3.0; 4.0 5.0 6.0]
+    @test NaturalNeighbours.get_data(z, 2) == [2.0, 5.0]
+end
