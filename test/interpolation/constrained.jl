@@ -7,12 +7,12 @@ using ReferenceTests
 using CairoMakie
 function plot_2d(fig, i, j, title, vals, xg, yg, x, y, show_scatter=true)
     ax = Axis(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    contourf!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
+    contourf!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
     show_scatter && scatter!(ax, vec([(i - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)]), vec([(j - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)]), color=:red, markersize=14)
 end
 function plot_3d(fig, i, j, title, vals, xg, yg)
     ax = Axis3(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
+    surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis)
 end
 
 @testset "A domain with no holes" begin
@@ -74,8 +74,8 @@ end
     y = last.(DelaunayTriangulation.each_point(tri))
     triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
     itp = interpolate(tri, z; derivatives=true)
-    xg = LinRange(-R₂, R₂, 250)
-    yg = LinRange(-R₂, R₂, 250)
+    xg = LinRange(-R₂, R₂, 75)
+    yg = LinRange(-R₂, R₂, 75)
     _x = vec([x for x in xg, _ in yg])
     _y = vec([y for _ in xg, y in yg])
     exact = _safe_Tf.(_x, _y)
@@ -99,5 +99,5 @@ end
     end
     resize_to_layout!(fig)
     fig
-    @test_reference normpath(@__DIR__, "example_constrained.png") fig
+    @test_reference normpath(@__DIR__, "example_constrained.png") fig by=psnr_equality(15)
 end

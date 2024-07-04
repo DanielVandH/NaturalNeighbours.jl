@@ -220,7 +220,7 @@ end
         yy = LinRange(0, 1, 50)
         x = vec([x for x in xx, _ in yy])
         y = vec([y for _ in xx, y in yy])
-        itp = interpolate(get_points(tri), z; derivatives=true)
+        itp = interpolate(tri, z; derivatives=true)
         q = (x[52], y[52])
         nc = NNI.compute_natural_coordinates(NNI.Sibson(), tri, q)
         ∇ = NNI.get_gradient(itp)

@@ -42,12 +42,12 @@ hiyoshi_vals = itp(_x, _y; method=Hiyoshi(2))
 ## Plot 
 function plot_2d(fig, i, j, title, vals, xg, yg, x, y, show_scatter=true)
     ax = Axis(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    contourf!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
+    contourf!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
     show_scatter && scatter!(ax, x, y, color=:red, markersize=14)
 end
 function plot_3d(fig, i, j, title, vals, xg, yg)
     ax = Axis3(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
+    surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis)
 end
 
 all_vals = (sibson_vals, triangle_vals, laplace_vals, sibson_1_vals, nearest_vals, farin_vals, hiyoshi_vals, exact)
