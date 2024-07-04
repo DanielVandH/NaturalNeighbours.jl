@@ -9,7 +9,7 @@ f′′ = (x, y) -&gt; [(162*exp(-(9 * x - 4)^2 - (9 * y - 7)^2))/5-(243*exp(-(9
     (27*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10)*((162*x)/49+18/49))/40+(3*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4)*((81*x)/2-9)*((81*y)/2-9))/4+(exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4)*((81*x)/2-63/2)*((81*y)/2-27/2))/2-(exp(-(9 * x - 4)^2 - (9 * y - 7)^2)*(162*x-72)*(162*y-126))/5 (243*exp(-(9 * y) / 10 - (9 * x + 1)^2 / 49 - 1 / 10))/400+(162*exp(-(9 * x - 4)^2 - (9 * y - 7)^2))/5-(243*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4))/8-(81*exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4))/4+(3*exp(-(9 * x - 2)^2 / 4 - (9 * y - 2)^2 / 4)*((81*y)/2-9)^2)/4+(exp(-(9 * x - 7)^2 / 4 - (9 * y - 3)^2 / 4)*((81*y)/2-27/2)^2)/2-(exp(-(9 * x - 4)^2 - (9 * y - 7)^2)*(162*y-126)^2)/5]</code></pre><p>Here is the surface of <span>$f$</span> along with its derivatives.</p><pre><code class="language-julia hljs">using CairoMakie
 function plot_f(fig, x, y, vals, title, i, show_3d=true, zlabel=&quot;z&quot;)
     ax = Axis(fig[1, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=title, titlealign=:left)
-    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis,  extendhigh=:auto)
+    c = contourf!(ax, x, y, vals, colormap=:viridis,  extendhigh=:auto)
     if show_3d
         ax = Axis3(fig[2, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=zlabel, width=600, height=600, title=&quot; &quot;, titlealign=:left, azimuth=0.49)
         surface!(ax, x, y, vals, color=vals, colormap=:viridis)
@@ -51,7 +51,7 @@ vorn = voronoi(tri)
 fig = Figure(fontsize=36, size=(1800, 600))
 ax = Axis(fig[1, 1], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=&quot;(a): Data and triangulation&quot;, titlealign=:left)
 scatter!(ax, x, y, color=:black, markersize=9)
-triplot!(ax, tri, color=:black, linewidth=2, show_convex_hull=false)
+triplot!(ax, tri, strokecolor=:black, strokewidth=2, show_convex_hull=false)
 voronoiplot!(ax, vorn, strokecolor=:blue)
 xlims!(ax, 0, 1)
 ylims!(ax, 0, 1)
@@ -73,7 +73,7 @@ using LinearAlgebra
 function plot_f2(fig, x, y, vals, title, i, tri, levels, show_3d=true, zlabel=&quot;z&quot;)
     triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
     ax = Axis(fig[1, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=title, titlealign=:left)
-    c = tricontourf!(ax, x, y, vals, color=vals, triangulation=triangles&#39;, colormap=:viridis, extendhigh=:auto, levels=levels)
+    c = tricontourf!(ax, x, y, vals, triangulation=triangles&#39;, colormap=:viridis, extendhigh=:auto, levels=levels)
     if show_3d
         ax = Axis3(fig[2, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=zlabel, width=600, height=600, title=&quot; &quot;, titlealign=:left, azimuth=0.49)
         mesh!(ax, hcat(x, y, vals), triangles, color=vals, colormap=:viridis, colorrange=extrema(levels))
@@ -152,7 +152,7 @@ _y = vec([y for _ in xg, y in yg])</code></pre><p>We can now evaluate <code>∂<
 end
 function plot_f2(fig, x, y, vals, title, i, levels, show_3d=true, zlabel=&quot;z&quot;)
     ax = Axis(fig[1, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, width=600, height=600, title=title, titlealign=:left)
-    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis, extendhigh=:auto, levels=levels)
+    c = contourf!(ax, x, y, vals, colormap=:viridis, extendhigh=:auto, levels=levels)
     if show_3d
         ax = Axis3(fig[2, i], xlabel=&quot;x&quot;, ylabel=&quot;y&quot;, zlabel=zlabel, width=600, height=600, title=&quot; &quot;, titlealign=:left, azimuth=0.49)
         surface!(ax, x, y, vals, color=vals, colormap=:viridis, colorrange=extrema(levels))
@@ -248,4 +248,4 @@ end</code></pre><p>If we instead use this metric, then:</p><pre><code class="lan
 7.479964687679311
 
 julia&gt; εH_nohull = rrmserr(f′′.(_x, _y), to_mat.(Hg), ∂, _x, _y)
-38.884740966379056</code></pre><p>The errors are smaller, though not by much.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../swiss/">Switzerland Elevation Data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Tuesday 2 July 2024 08:30">Tuesday 2 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
+38.884740966379056</code></pre><p>The errors are smaller, though not by much.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../interpolation/">« Interpolation</a><a class="docs-footer-nextpage" href="../swiss/">Switzerland Elevation Data »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 4 July 2024 10:22">Thursday 4 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
