@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Switzerland Elevation Data · NaturalNeighbours.jl</title><meta name="title" content="Switzerland Elevation Data · NaturalNeighbours.jl"/><meta property="og:title" content="Switzerland Elevation Data · NaturalNeighbours.jl"/><meta property="twitter:title" content="Switzerland Elevation Data · NaturalNeighbours.jl"/><meta name="description" content="Documentation for NaturalNeighbours.jl."/><meta property="og:description" content="Documentation for NaturalNeighbours.jl."/><meta property="twitter:description" content="Documentation for NaturalNeighbours.jl."/><meta property="og:url" content="https://DanielVandH.github.io/NaturalNeighbours.jl/swiss/"/><meta property="twitter:url" content="https://DanielVandH.github.io/NaturalNeighbours.jl/swiss/"/><link rel="canonical" href="https://DanielVandH.github.io/NaturalNeighbours.jl/swiss/"/><script data-outdated-warner src="../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../search_index.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../">NaturalNeighbours.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><span class="tocitem">Examples</span><ul><li><a class="tocitem" href="../interpolation/">Interpolation</a></li><li><a class="tocitem" href="../differentiation/">Differentiation</a></li><li class="is-active"><a class="tocitem" href>Switzerland Elevation Data</a><ul class="internal"><li class="toplevel"><a class="tocitem" href="#Downloading-the-Data"><span>Downloading the Data</span></a></li><li class="toplevel"><a class="tocitem" href="#Downsampling-and-Setting-up-the-Data-for-Plotting"><span>Downsampling and Setting up the Data for Plotting</span></a></li><li class="toplevel"><a class="tocitem" href="#Looking-at-the-Data"><span>Looking at the Data</span></a></li><li class="toplevel"><a class="tocitem" href="#Interpolating"><span>Interpolating</span></a></li><li class="toplevel"><a class="tocitem" href="#Eliminating-Points-Outside-of-the-Convex-Hull"><span>Eliminating Points Outside of the Convex Hull</span></a></li><li class="toplevel"><a class="tocitem" href="#Eliminating-Points-Outside-of-Switzerland"><span>Eliminating Points Outside of Switzerland</span></a></li></ul></li></ul></li><li><a class="tocitem" href="../compare/">Comparison of Interpolation Methods</a></li><li><span class="tocitem">Mathematical Details</span><ul><li><a class="tocitem" href="../interpolation_math/">Interpolation Details</a></li><li><a class="tocitem" href="../differentiation_math/">Differentiation Details</a></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Switzerland Elevation Data</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Switzerland Elevation Data</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/DanielVandH/NaturalNeighbours.jl/blob/main/docs/src/swiss.md#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="Switzerland-Elevation-Data"><a class="docs-heading-anchor" href="#Switzerland-Elevation-Data">Switzerland Elevation Data</a><a id="Switzerland-Elevation-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Switzerland-Elevation-Data" title="Permalink"></a></h1><p>Here we consider a more involved example, constructing an interpolant over elevation data of Switzerland. We use data from <a href="https://www.geoboundaries.org">geoBoundaries</a> who credits <a href="https://www.openstreetmap.org/">OpenStreetMap</a> for the data (available under an <a href="https://www.openstreetmap.org/copyright">Open Database License</a>). The data is available as a <a href="https://gist.github.com/DanielVandH/13687b0918e45a416a5c93cd52c91449">gist</a>, which was generated with the following R code (you don&#39;t need to run this code - we will download it directly from the gist soon):</p><pre><code class="language-R hljs">## Install and load the packages
+#install.packages(c(&quot;remotes&quot;, &quot;sf&quot;, &quot;raster&quot;, &quot;elevatr&quot;, &quot;dplyr&quot;, &quot;magrittr&quot;))
+#install.packages(c(&quot;dplyr&quot;, &quot;magrittr&quot;))
+#remotes::install_gitlab(&quot;dickoa/rgeoboundaries&quot;)
+library(rgeoboundaries)
+library(sf)
+library(raster)
+library(elevatr)
+#library(dplyr)
+#library(magrittr)
+
+## Get the elevation and polygon data 
+swiss_bound &lt;- rgeoboundaries::geoboundaries(&quot;Switzerland&quot;)
+elevation_data_rast &lt;- elevatr::get_elev_raster(locations = swiss_bound, z = 7, clip = &quot;locations&quot;)
+boundary_coords &lt;- rasterToPolygons(elevation_data_rast &gt; -Inf, dissolve = TRUE) # https://gis.stackexchange.com/a/187800
+elevation_data_xy &lt;- as.data.frame(elevation_data_rast, xy = TRUE)
+colnames(elevation_data_xy)[3] &lt;- &quot;elevation&quot;
+elevation_data_xy &lt;- elevation_data_xy[complete.cases(elevation_data_xy), ]
+all_polygons = boundary_coords@polygons[[1]]@Polygons
+
+## Inspect all the polygons
+#conv = function(polygon, id) {
+#  coords = polygon@coords 
+#  dir = polygon@ringDir
+#  hole = polygon@hole
+#  df = tibble(x = coords[, 1], y = coords[, 1], dir = polygon@ringDir, hole = polygon@hole, id = id)
+#}
+#polygon_df = vector(&#39;list&#39;, length(all_polygons))
+#for (i in seq_along(polygon_df)) {
+#  polygon_df[[i]] = conv(all_polygons[[i]], i)
+#}
+#polygon_df %&lt;&gt;% bind_rows(.id = &quot;column_label&quot;)
+# ^ After inspecting these results, the only polygon of interest is the first one.
+
+polygons = all_polygons[[1]]@coords
+x = elevation_data_xy[, 1]
+y = elevation_data_xy[, 2]
+z = elevation_data_xy[, 3]
+bnd_x = polygons[, 1]
+bnd_y = polygons[, 2]</code></pre><p>For this example, load the following packages:</p><pre><code class="language-julia hljs">using NaturalNeighbours
+using CairoMakie
+using DelaunayTriangulation
+using DelimitedFiles
+using Downloads
+using StableRNGs
+using StatsBase</code></pre><h1 id="Downloading-the-Data"><a class="docs-heading-anchor" href="#Downloading-the-Data">Downloading the Data</a><a id="Downloading-the-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Downloading-the-Data" title="Permalink"></a></h1><p>To start, let us download and setup the data. We need to get the data sites, the elevation values, and also the boundary points.</p><pre><code class="language-julia hljs">data_url = &quot;https://gist.githubusercontent.com/DanielVandH/13687b0918e45a416a5c93cd52c91449/raw/a8da6cdc94859fd66bcff85a2307f0f9cd57a18c/data.txt&quot;
+boundary_url = &quot;https://gist.githubusercontent.com/DanielVandH/13687b0918e45a416a5c93cd52c91449/raw/a8da6cdc94859fd66bcff85a2307f0f9cd57a18c/boundary.txt&quot;
+data_dir = Downloads.download(data_url)
+boundary_dir = Downloads.download(boundary_url)
+data = readdlm(data_dir, skipstart=6)
+data[:, 3] ./= 1000.0 # m -&gt; km
+boundary = readdlm(boundary_dir, skipstart=6)
+good_elevation = findall(≥(0), @view data[:, 3])
+data = @views data[good_elevation, :]
+data_sites = [(data[i, 1], data[i, 2]) for i in axes(data, 1)]
+elevation_data = @views data[:, 3]
+boundary_points = [(boundary[i, 1], boundary[i, 2]) for i in axes(boundary, 1)]</code></pre><h1 id="Downsampling-and-Setting-up-the-Data-for-Plotting"><a class="docs-heading-anchor" href="#Downsampling-and-Setting-up-the-Data-for-Plotting">Downsampling and Setting up the Data for Plotting</a><a id="Downsampling-and-Setting-up-the-Data-for-Plotting-1"></a><a class="docs-heading-anchor-permalink" href="#Downsampling-and-Setting-up-the-Data-for-Plotting" title="Permalink"></a></h1><p>We now setup the data for plotting. We want to use <code>tricontourf!</code>, so we need to get a triangulation of the data. Since the <code>boundary_points</code> do not actually store a subset of the points from <code>data_sites</code>, we can&#39;t just do e.g. <code>indexin(boundary_points, data_sites)</code> to get the associated boundary indices, so we instead find the closest data site to each boundary point.</p><pre><code class="language-julia hljs">function nearest_tuple(q, data)
+    δ = Inf
+    nearest_idx = 0
+    qx, qy = getxy(q)
+    for (i, p) in pairs(data)
+        px, py = getxy(p)
+        δ₁ = (qx - px)^2 + (qy - py)^2
+        if δ₁ &lt; δ
+            δ = δ₁
+            nearest_idx = i
+        end
+    end
+    return nearest_idx
+end
+function update_boundary(boundary_points, data_sites)
+    boundary_nodes = map(q -&gt; nearest_tuple(q, data_sites), boundary_points)
+    unique!(boundary_nodes)
+    push!(boundary_nodes, boundary_nodes[begin])
+    reverse!(boundary_nodes) # so that the boundary is traversed clockwise
+    boundary_points = data_sites[boundary_nodes]
+    return boundary_points, data_sites, boundary_nodes
+end
+boundary_points, data_sites, boundary_nodes = update_boundary(boundary_points, data_sites)</code></pre><p>Next, before, we plot, let us downsample the data. We do this since the data set is quite large, so when we interpolate it&#39;ll be useful to have fewer data points for the purpose of this example.</p><pre><code class="language-julia hljs">rng = StableRNG(123)
+desample_idx = sample(rng, axes(data, 1), 5000, replace=false)
+ds_data = data[desample_idx, :]
+ds_data_sites = [(ds_data[i, 1], ds_data[i, 2]) for i in axes(ds_data, 1)]
+ds_elevation_data = @views ds_data[:, 3]
+ds_boundary_points, ds_data_sites, ds_boundary_nodes = update_boundary(boundary_points, ds_data_sites)
+reverse!(ds_boundary_nodes) # so that the boundary is traversed clockwise
+ds_tri = triangulate(ds_data_sites, boundary_nodes=ds_boundary_nodes)
+ds_triangles = [T[j] for T in each_solid_triangle(ds_tri), j in 1:3]</code></pre><h1 id="Looking-at-the-Data"><a class="docs-heading-anchor" href="#Looking-at-the-Data">Looking at the Data</a><a id="Looking-at-the-Data-1"></a><a class="docs-heading-anchor-permalink" href="#Looking-at-the-Data" title="Permalink"></a></h1><p>Now let&#39;s look at the data.</p><pre><code class="language-julia hljs">colorrange = (0, 4)
+levels = LinRange(colorrange..., 40)
+fig = Figure(fontsize=24)
+ax1 = Axis3(fig[1, 1], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, zlabel=&quot;Elevation (km)&quot;, width=600, height=400, azimuth=0.9, title=&quot;(c): Downsampled height data (n = $(length(ds_elevation_data)))&quot;, titlealign=:left)
+mesh!(ax1, ds_data, ds_triangles, color=ds_elevation_data, colorrange=colorrange)
+ax2 = Axis(fig[1, 2], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, width=600, height=400, title=&quot;(d): Downsampled height data (n = $(length(ds_elevation_data)))&quot;, titlealign=:left)
+tf = tricontourf!(ax2, ds_tri, ds_elevation_data, levels=levels)
+Colorbar(fig[1:2, 3], tf)
+resize_to_layout!(fig)</code></pre><figure>
+    <img src='../figures/swiss_heights.png', alt'Switzerland Data'><br>
+</figure><p>We see that the downsampled data isn&#39;t that much different, despite having <span>$n = 5,000$</span> points rather than <span>$n = 220,175$</span> as in the original data set. Of course, the boundary has been trimmed a bit (if we really cared, we probably wouldn&#39;t have downsampled the boundary, but instead only downsampled the interior points - not relevant for this example).</p><h1 id="Interpolating"><a class="docs-heading-anchor" href="#Interpolating">Interpolating</a><a id="Interpolating-1"></a><a class="docs-heading-anchor-permalink" href="#Interpolating" title="Permalink"></a></h1><p>Now let&#39;s define and evaluate our interpolant.</p><pre><code class="language-julia hljs">## Define the interpolant 
+interpolant = interpolate(ds_data_sites, ds_elevation_data; derivatives=true)
+
+## Evaluate the interpolant 
+a, b, c, d = DelaunayTriangulation.polygon_bounds(ds_data_sites, ds_boundary_nodes)
+nx = 250
+ny = 250
+xg = LinRange(a, b, nx)
+yg = LinRange(c, d, ny)
+x = [xg[i] for i in 1:nx, j in 1:ny] |&gt; vec
+y = [yg[j] for i in 1:nx, j in 1:ny] |&gt; vec
+
+sibson_vals = interpolant(x, y; method=Sibson(), parallel=true)
+sibson_1_vals = interpolant(x, y; method=Sibson(1), parallel=true)
+laplace_vals = interpolant(x, y; method=Laplace(), parallel=true)
+triangle_vals = interpolant(x, y; method=Triangle(), parallel=true)
+nearest_vals = interpolant(x, y; method=Nearest(), parallel=true)
+farin_vals = interpolant(x, y; method=Farin(), parallel=true)
+hiyoshi_vals = interpolant(x, y; method=Hiyoshi(2), parallel=true)</code></pre><p>Let&#39;s look at our results for each of these methods.</p><pre><code class="language-julia hljs">query_tri = triangulate([x&#39;; y&#39;]; randomise=false)
+query_triangles = [T[j] for T in each_solid_triangle(query_tri), j in 1:3]
+function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, query_triangles, query_tri, a, b, c, d, e, f, nx, ny)
+    ax = Axis3(fig[i1, j1], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, zlabel=&quot;Elevation (km)&quot;, width=600, height=400, azimuth=0.9, title=title1, titlealign=:left)
+    m = mesh!(ax, hcat(x, y, vals), query_triangles, color=vals, colorrange=colorrange)
+    xlims!(ax, a, b)
+    ylims!(ax, c, d)
+    zlims!(ax, e, f)
+    ax = Axis(fig[i2, j2], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, width=600, height=400, title=title2, titlealign=:left)
+    contourf!(ax, xg, yg, reshape(vals, (nx, ny)), levels=levels)
+    lines!(ax, [get_point(query_tri, i) for i in get_convex_hull_vertices(query_tri)], color=:red, linewidth=4, linestyle=:dash)
+    lines!(ax, ds_boundary_points, color=:white, linewidth=4)
+    xlims!(ax, a, b)
+    ylims!(ax, c, d)
+    return m
+end
+function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
+    fig = Figure(fontsize=24)
+    m1 = plot_results!(fig, 1, 1, 1, 2, x, y, xg, yg, sibson_vals, &quot;(a): Sibson&quot;, &quot;(b): Sibson&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m2 = plot_results!(fig, 1, 3, 1, 4, x, y, xg, yg, sibson_1_vals, &quot;(c): Sibson-1&quot;, &quot;(d): Sibson-1&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m3 = plot_results!(fig, 2, 1, 2, 2, x, y, xg, yg, laplace_vals, &quot;(e): Laplace&quot;, &quot;(f): Laplace&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m4 = plot_results!(fig, 2, 3, 2, 4, x, y, xg, yg, triangle_vals, &quot;(g): Triangle&quot;, &quot;(h): Triangle&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m5 = plot_results!(fig, 3, 1, 3, 2, x, y, xg, yg, nearest_vals, &quot;(i): Nearest&quot;, &quot;(j): Nearest&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m6 = plot_results!(fig, 3, 3, 3, 4, x, y, xg, yg, farin_vals, &quot;(k): Farin&quot;, &quot;(ℓ): Farin&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    m7 = plot_results!(fig, 4, 1, 4, 2, x, y, xg, yg, hiyoshi_vals, &quot;(m): Hiyoshi&quot;, &quot;(n): Hiyoshi&quot;, query_triangles, interpolant.triangulation, a, b, c, d, e, f, nx, ny)
+    ax = Axis3(fig[4, 3], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, zlabel=&quot;Elevation (km)&quot;, width=600, height=400, azimuth=0.9, title=&quot;(k): Original height data&quot;, titlealign=:left)
+    mesh!(ax, data, triangles, color=elevation_data, colorrange=(0, 4))
+    xlims!(ax, a, b)
+    ylims!(ax, c, d)
+    zlims!(ax, e, f)
+    ax = Axis(fig[4, 4], xlabel=&quot;Longitude&quot;, ylabel=&quot;Latitude&quot;, width=600, height=400, title=&quot;(o): Original height data&quot;, titlealign=:left)
+    tricontourf!(ax, tri, elevation_data, levels=levels)
+    xlims!(ax, a, b)
+    ylims!(ax, c, d)
+    Colorbar(fig[1:4, 5], m1)
+    resize_to_layout!(fig)
+    return fig
+end
+e, f = 0.0, 4.5
+fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, ds_data, ds_triangles, ds_elevation_data, ds_tri)</code></pre><figure>
+    <img src='../figures/swiss_heights_interpolated.png', alt'Switzerland Data Interpolated'><br>
+</figure><p>We see that the results are pretty similar across the methods except for <code>Nearest()</code>. We could compute the errors between the interpolant and the points that we removed from the dataset to quantify this better, but we won&#39;t do that –- we&#39;re not intending to a comprehensive analysis here.</p><h1 id="Eliminating-Points-Outside-of-the-Convex-Hull"><a class="docs-heading-anchor" href="#Eliminating-Points-Outside-of-the-Convex-Hull">Eliminating Points Outside of the Convex Hull</a><a id="Eliminating-Points-Outside-of-the-Convex-Hull-1"></a><a class="docs-heading-anchor-permalink" href="#Eliminating-Points-Outside-of-the-Convex-Hull" title="Permalink"></a></h1><p>One issue with the interpolant is that the extrapolated results are distracting. Let&#39;s set <code>project=false</code> to remove values outside of the convex hull of our data sites.</p><pre><code class="language-julia hljs">sibson_vals_p = interpolant(x, y; method=Sibson(), parallel=true, project=false)
+sibson_1_vals_p = interpolant(x, y; method=Sibson(1), parallel=true, project=false)
+laplace_vals_p = interpolant(x, y; method=Laplace(), parallel=true, project=false)
+triangle_vals_p = interpolant(x, y; method=Triangle(), parallel=true, project=false)
+nearest_vals_p = interpolant(x, y; method=Nearest(), parallel=true, project=false)
+farin_vals_p = interpolant(x, y; method=Farin(), parallel=true, project=false)
+hiyoshi_vals_p = interpolant(x, y; method=Hiyoshi(2), parallel=true, project=false)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, ds_data, ds_triangles, ds_elevation_data, ds_tri)</code></pre><figure>
+    <img src='../figures/swiss_heights_interpolated_projected.png', alt'Switzerland Data Interpolated without Projection'><br>
+</figure><p>Of course, this is still not perfect because Switzerland is not convex! There&#39;s still points being extrapolated, and we have to handle this manually. </p><h1 id="Eliminating-Points-Outside-of-Switzerland"><a class="docs-heading-anchor" href="#Eliminating-Points-Outside-of-Switzerland">Eliminating Points Outside of Switzerland</a><a id="Eliminating-Points-Outside-of-Switzerland-1"></a><a class="docs-heading-anchor-permalink" href="#Eliminating-Points-Outside-of-Switzerland" title="Permalink"></a></h1><p>The function we need is <code>identify_exterior_points</code>, which we use together with a representation of the boundary of Switzerland (hence why we got the boundary nodes earlier). We replace all exterior values with <code>Inf</code> so that they don&#39;t get plotted (using <code>NaN</code> leads to issues with <code>surface!</code>&#39;s shading for some reason).</p><pre><code class="language-julia hljs">exterior_idx = identify_exterior_points(x, y, ds_data_sites, ds_boundary_nodes)
+sibson_vals_p[exterior_idx] .= Inf
+sibson_1_vals_p[exterior_idx] .= Inf
+laplace_vals_p[exterior_idx] .= Inf
+triangle_vals_p[exterior_idx] .= Inf
+nearest_vals_p[exterior_idx] .= Inf
+farin_vals_p[exterior_idx] .= Inf
+hiyoshi_vals_p[exterior_idx] .= Inf
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, ds_data, ds_triangles, ds_elevation_data, ds_tri)</code></pre><figure>
+    <img src='../figures/swiss_heights_interpolated_projected_boundary.png', alt'Switzerland Data Interpolated Complete'><br>
+</figure><p>Perfect!</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../differentiation/">« Differentiation</a><a class="docs-footer-nextpage" href="../compare/">Comparison of Interpolation Methods »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.4.1 on <span class="colophon-date" title="Thursday 4 July 2024 14:05">Thursday 4 July 2024</span>. Using Julia version 1.10.4.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
