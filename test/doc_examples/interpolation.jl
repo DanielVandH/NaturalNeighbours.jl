@@ -23,7 +23,7 @@ sib1_vals = itp(_x, _y; method=Sibson(1))
 
 function plot_itp(fig, x, y, vals, title, i, show_data_sites, itp, xd=nothing, yd=nothing, show_3d=true, levels=-0.1:0.05:0.3)
     ax = Axis(fig[1, i], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis, levels=levels, extendhigh=:auto)
+    c = contourf!(ax, x, y, vals, colormap=:viridis, levels=levels, extendhigh=:auto)
     show_data_sites && scatter!(ax, xd, yd, color=:red, markersize=9)
     tri = itp.triangulation
     ch_idx = get_convex_hull_vertices(tri)

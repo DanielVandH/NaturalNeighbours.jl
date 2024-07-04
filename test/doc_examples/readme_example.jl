@@ -4,7 +4,6 @@ using ReferenceTests
 using StableRNGs
 
 ## The data 
-rng = StableRNG(123)
 f = (x, y) -> sin(x * y) - cos(x - y) * exp(-(x - y)^2)
 x = vec([(i - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
 y = vec([(j - 1) / 9 for i in (1, 3, 4, 5, 8, 9, 10), j in (1, 2, 3, 5, 6, 7, 9, 10)])
@@ -30,12 +29,12 @@ hiyoshi_vals = itp(_x, _y; method=Hiyoshi(2))
 ## Plot 
 function plot_2d(fig, i, j, title, vals, xg, yg, x, y, show_scatter=true)
     ax = Axis(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    contourf!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
+    contourf!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
     show_scatter && scatter!(ax, x, y, color=:red, markersize=14)
 end
 function plot_3d(fig, i, j, title, vals, xg, yg)
     ax = Axis3(fig[i, j], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis, levels=-1:0.05:0, extendlow=:auto, extendhigh=:auto)
+    surface!(ax, xg, yg, reshape(vals, (length(xg), length(yg))), color=vals, colormap=:viridis)
 end
 
 all_vals = (sibson_vals, triangle_vals, laplace_vals, sibson_1_vals, nearest_vals, farin_vals, hiyoshi_vals, exact)

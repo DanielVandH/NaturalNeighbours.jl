@@ -17,7 +17,7 @@ points = [
 ]
 tri = triangulate(points)
 vorn = voronoi(tri)
-fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), generator_color=:red)
+fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), markercolor=:red)
 resize_to_layout!(fig)
 fig
 
@@ -62,7 +62,7 @@ vorn2 = voronoi(tri2)
 V = get_polygon(vorn2, DelaunayTriangulation.num_points(tri2))
 AX2 = get_area(vorn2, DelaunayTriangulation.num_points(tri2))
 
-fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), generator_color=:red, markersize=7, color=:white)
+fig, ax, sc = voronoiplot(vorn, axis=(width=400, height=400), markercolor=:red, markersize=7, color=:white)
 xlims!(ax, 3, 9)
 ylims!(ax, 1.5, 7)
 Vcoords = [get_polygon_point(vorn2, i) for i in V]

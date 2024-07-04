@@ -46,10 +46,8 @@ function update_boundary(boundary_points, data_sites)
     return boundary_points, data_sites, boundary_nodes
 end
 boundary_points, data_sites, boundary_nodes = update_boundary(boundary_points, data_sites)
-tri = triangulate(data_sites, boundary_nodes=boundary_nodes)
-triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
 
-## Downsample the data to use for the interpolant 
+## Downsample the data
 rng = StableRNG(123)
 desample_idx = sample(rng, axes(data, 1), 5000, replace=false)
 ds_data = data[desample_idx, :]
@@ -64,15 +62,10 @@ ds_triangles = [T[j] for T in each_solid_triangle(ds_tri), j in 1:3]
 colorrange = (0, 4)
 levels = LinRange(colorrange..., 40)
 fig = Figure(fontsize=24)
-ax1 = Axis3(fig[1, 1], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(a): Original height data (n = $(length(elevation_data)))", titlealign=:left)
-mesh!(ax1, data, triangles, color=elevation_data, colorrange=colorrange)
-ax2 = Axis(fig[1, 2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(b): Original height data (n = $(length(elevation_data)))", titlealign=:left)
-tf = tricontourf!(ax2, tri, elevation_data, color=elevation_data, levels=levels)
-
-ax3 = Axis3(fig[2, 1], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(c): Downsampled height data (n = $(length(ds_elevation_data)))", titlealign=:left)
-mesh!(ax3, ds_data, ds_triangles, color=ds_elevation_data, colorrange=colorrange)
-ax4 = Axis(fig[2, 2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(d): Downsampled height data (n = $(length(ds_elevation_data)))", titlealign=:left)
-tricontourf!(ax4, ds_tri, ds_elevation_data, color=ds_elevation_data, levels=levels)
+ax1 = Axis3(fig[1, 1], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title="(c): Downsampled height data (n = $(length(ds_elevation_data)))", titlealign=:left)
+mesh!(ax1, ds_data, ds_triangles, color=ds_elevation_data, colorrange=colorrange)
+ax2 = Axis(fig[1, 2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(d): Downsampled height data (n = $(length(ds_elevation_data)))", titlealign=:left)
+tf = tricontourf!(ax2, ds_tri, ds_elevation_data, levels=levels)
 Colorbar(fig[1:2, 3], tf)
 resize_to_layout!(fig)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights.png"), fig)
@@ -99,7 +92,7 @@ farin_vals = interpolant(x, y; method=Farin(), parallel=true)
 hiyoshi_vals = interpolant(x, y; method=Hiyoshi(2), parallel=true)
 
 ## Plot the results 
-query_tri = triangulate([x'; y'])
+query_tri = triangulate([x'; y']; randomise=false)
 query_triangles = [T[j] for T in each_solid_triangle(query_tri), j in 1:3]
 function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, query_triangles, query_tri, a, b, c, d, e, f, nx, ny)
     ax = Axis3(fig[i1, j1], xlabel="Longitude", ylabel="Latitude", zlabel="Elevation (km)", width=600, height=400, azimuth=0.9, title=title1, titlealign=:left)
@@ -108,7 +101,7 @@ function plot_results!(fig, i1, j1, i2, j2, x, y, xg, yg, vals, title1, title2, 
     ylims!(ax, c, d)
     zlims!(ax, e, f)
     ax = Axis(fig[i2, j2], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title=title2, titlealign=:left)
-    contourf!(ax, xg, yg, reshape(vals, (nx, ny)), color=vals, levels=levels)
+    contourf!(ax, xg, yg, reshape(vals, (nx, ny)), levels=levels)
     lines!(ax, [get_point(query_tri, i) for i in get_convex_hull_vertices(query_tri)], color=:red, linewidth=4, linestyle=:dash)
     lines!(ax, ds_boundary_points, color=:white, linewidth=4)
     xlims!(ax, a, b)
@@ -130,7 +123,7 @@ function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, n
     ylims!(ax, c, d)
     zlims!(ax, e, f)
     ax = Axis(fig[4, 4], xlabel="Longitude", ylabel="Latitude", width=600, height=400, title="(o): Original height data", titlealign=:left)
-    tricontourf!(ax, tri, elevation_data, color=elevation_data, levels=levels)
+    tricontourf!(ax, tri, elevation_data, levels=levels)
     xlims!(ax, a, b)
     ylims!(ax, c, d)
     Colorbar(fig[1:4, 5], m1)
@@ -138,7 +131,7 @@ function plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, n
     return fig
 end
 e, f = 0.0, 4.5
-fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
+fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, nearest_vals, farin_vals, hiyoshi_vals, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, ds_data, ds_triangles, ds_elevation_data, ds_tri)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated.png"), fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "swiss_heights_interpolated.png") fig
 
@@ -151,7 +144,7 @@ nearest_vals_p = interpolant(x, y; method=Nearest(), parallel=true, project=fals
 farin_vals_p = interpolant(x, y; method=Farin(), parallel=true, project=false)
 hiyoshi_vals_p = interpolant(x, y; method=Hiyoshi(2), parallel=true, project=false)
 
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, ds_data, ds_triangles, ds_elevation_data, ds_tri)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated_projected.png"), fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "swiss_heights_interpolated_projected.png") fig
 
@@ -165,7 +158,7 @@ nearest_vals_p[exterior_idx] .= Inf
 farin_vals_p[exterior_idx] .= Inf
 hiyoshi_vals_p[exterior_idx] .= Inf
 
-fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, data, triangles, elevation_data, tri)
+fig = plot_results(sibson_vals_p, sibson_1_vals_p, laplace_vals_p, triangle_vals_p, nearest_vals_p, farin_vals_p, hiyoshi_vals_p, query_triangles, interpolant, a, b, c, d, e, f, nx, ny, ds_data, ds_triangles, ds_elevation_data, ds_tri)
 # save(normpath(@__DIR__, "..", "docs", "src", "figures", "swiss_heights_interpolated_projected_boundary.png"), fig)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "swiss_heights_interpolated_projected_boundary.png") fig
 

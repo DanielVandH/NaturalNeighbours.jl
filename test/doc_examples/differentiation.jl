@@ -13,7 +13,7 @@ f′′ = (x, y) -> [(162*exp(-(9 * x - 4)^2 - (9 * y - 7)^2))/5-(243*exp(-(9 * 
 
 function plot_f(fig, x, y, vals, title, i, show_3d=true, zlabel="z")
     ax = Axis(fig[1, i], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis, extendhigh=:auto)
+    c = contourf!(ax, x, y, vals, colormap=:viridis, extendhigh=:auto)
     if show_3d
         ax = Axis3(fig[2, i], xlabel="x", ylabel="y", zlabel=zlabel, width=600, height=600, title=" ", titlealign=:left, azimuth=0.49)
         surface!(ax, x, y, vals, color=vals, colormap=:viridis)
@@ -54,7 +54,7 @@ vorn = voronoi(tri)
 fig = Figure(fontsize=50, size=(1800, 600))
 ax = Axis(fig[1, 1], xlabel="x", ylabel="y", width=600, height=600, title="(a): Data and triangulation", titlealign=:left)
 scatter!(ax, x, y, color=:black, markersize=9)
-triplot!(ax, tri, color=:black, linewidth=2)
+triplot!(ax, tri, strokecolor=:black, strokewidth=2)
 voronoiplot!(ax, vorn, strokecolor=:blue, color=(:white, 0.0))
 xlims!(ax, 0, 1)
 ylims!(ax, 0, 1)
@@ -74,7 +74,7 @@ fig
 function plot_f2(fig, x, y, vals, title, i, tri, levels, show_3d=true, zlabel="z")
     triangles = [T[j] for T in each_solid_triangle(tri), j in 1:3]
     ax = Axis(fig[1, i], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    c = tricontourf!(ax, x, y, vals, color=vals, triangulation=triangles', colormap=:viridis, extendhigh=:auto, levels=levels)
+    c = tricontourf!(ax, x, y, vals, triangulation=triangles', colormap=:viridis, extendhigh=:auto, levels=levels)
     if show_3d
         ax = Axis3(fig[2, i], xlabel="x", ylabel="y", zlabel=zlabel, width=600, height=600, title=" ", titlealign=:left, azimuth=0.49)
         mesh!(ax, hcat(x, y, vals), triangles, color=vals, colormap=:viridis, colorrange=extrema(levels))
@@ -166,7 +166,7 @@ function rrmserr(z, ẑ)
 end
 function plot_f2(fig, x, y, vals, title, i, levels, show_3d=true, zlabel="z")
     ax = Axis(fig[1, i], xlabel="x", ylabel="y", width=600, height=600, title=title, titlealign=:left)
-    c = contourf!(ax, x, y, vals, color=vals, colormap=:viridis, extendhigh=:auto, levels=levels)
+    c = contourf!(ax, x, y, vals, colormap=:viridis, extendhigh=:auto, levels=levels)
     if show_3d
         ax = Axis3(fig[2, i], xlabel="x", ylabel="y", zlabel=zlabel, width=600, height=600, title=" ", titlealign=:left, azimuth=0.49)
         surface!(ax, x, y, vals, color=vals, colormap=:viridis, colorrange=extrema(levels))

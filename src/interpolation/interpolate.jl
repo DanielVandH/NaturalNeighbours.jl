@@ -35,6 +35,11 @@ all the points. The `kwargs...` argument is passed into `add_point!` from Delaun
 the `project` argument determines whether extrapolation is performed by projecting any exterior points onto the boundary of the convex hull 
 of the data sites and performing two-point interpolation, or to simply replace any extrapolated values with `Inf`.
 
+!!! performance 
+
+    For the best performance when evaluating the interpolant at many points, either of the second or 
+    third methods are preferred over repeatedly calling the first.
+
 !!! warning
 
     Until we implement ghost point extrapolation, behaviour near the convex hull of your data sites may in some cases be undesirable,
@@ -77,33 +82,38 @@ struct Hiyoshi{D} <: AbstractInterpolator{D} end
     Triangle()
 
 Interpolate using a piecewise linear interpolant over the underlying triangulation.
-""" Triangle(d=0) = Triangle{0}()
+""" Triangle() = Triangle{0}()
+Triangle(d) = Triangle()
 @doc """
     Nearest()
 
 Interpolate by taking the function value at the nearest data site.
-""" Nearest(d=0) = Nearest{0}()
+""" Nearest() = Nearest{0}()
+Nearest(d) = Nearest{d}()
 @doc """
     Laplace()
 
 Interpolate using Laplace's coordinates.
-""" Laplace(d=0) = Laplace{0}()
+""" Laplace() = Laplace{0}()
+Laplace(d) = Laplace()
 @doc """
     Farin()
 
 Interpolate using Farin's C(1) interpolant.
-""" Farin(d=0) = Farin{1}()
+""" Farin() = Farin{1}()
+Farin(d) = Farin()
 @doc """
-    Hiyoshi(d=2)
+    Hiyoshi(d)
 
-Interpolate using Hiyoshi's C(2) interpolant. Hiyoshi's interpolant C(0) is not yet implemented, 
+Interpolate using Hiyoshi's C(d) interpolant. Hiyoshi's interpolant C(0) is not yet implemented, 
 but we do not make any conversions to C(2) like in e.g. `Farin()`, e.g. `Farin()` gets 
 converted to `Farin(1)` but, to support possible later versions, `Hiyoshi()` does not get 
 converted to `Hiyoshi(2)`.
-""" Hiyoshi(d=0) = Hiyoshi{d}()
+""" Hiyoshi() = Hiyoshi{0}()
+Hiyoshi(d) = Hiyoshi{d}()
 
 @inline iwrap(s::AbstractInterpolator) = s
-@inline function iwrap(s::Symbol)
+@inline function iwrap(s::Symbol) # this is bad design, should just prohibit symbols
     if s == :sibson
         return Sibson()
     elseif s == :sibson_1
