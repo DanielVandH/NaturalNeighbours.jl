@@ -58,7 +58,8 @@ end
         else
             return typemax(F)
         end
-    else
+    else        
+        F = number_type(tri)
         i, j, k = triangle_vertices(sort_triangle(V))
         if method.allow_cache && !isempty(method.s)
             s₁, s₂, s₃, s₄, s₅, s₆, s₇, s₈, s₉ = method.s[(i, j, k)]
@@ -69,7 +70,7 @@ end
         β = s₄ * z[i] + s₅ * z[j] + s₆ * z[k]
         γ = s₇ * z[i] + s₈ * z[j] + s₉ * z[k]
         x, y = getxy(p)
-        return α * x + β * y + γ
+        return F(α * x + β * y + γ)
     end
 end
 
