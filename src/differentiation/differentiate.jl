@@ -122,7 +122,7 @@ function (∂::NaturalNeighboursDifferentiator)(vals::AbstractVector, x::Abstrac
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
     method = dwrap(method)
     interpolant_method = iwrap(interpolant_method)
-    interpolant_method isa Triangle && populate_cache!(interpolant_method, tri)
+    interpolant_method isa Triangle && populate_cache!(interpolant_method, get_triangulation(get_interpolant(∂)))
     if !parallel
         for i in eachindex(x, y)
             vals[i] = ∂(x[i], y[i], 1; method, interpolant_method, kwargs...)

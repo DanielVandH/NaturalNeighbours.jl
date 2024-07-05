@@ -97,7 +97,7 @@ end
     itp1 = interpolate(tri1, Float32.(zs); derivatives=true)
     itp2 = interpolate(tri2, zs; derivatives=true)
     for itp in (itp1, itp2)
-        for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Triangle(; allow_cache = true), Nearest())
+        for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Triangle(; allow_cache = false), Nearest())
             @inferred itp(rand(), rand(); method=method)
             @inferred itp(rand(), rand(); method=method, project=false)
             @inferred itp(rand(Float32), rand(Float32); method=method)
@@ -108,7 +108,7 @@ end
             @inferred itp(rand(Float64), rand(Float32); method=method, project=false)
         end
     end
-    for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(; allow_cache = true), Nearest())
+    for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
         p, q = rand(2)
         @test itp1(p, q; method=method) ≈ itp2(p, q; method=method)
         @test itp1(p, q; method=method, project=false) ≈ itp2(p, q; method=method, project=false)

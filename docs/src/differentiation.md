@@ -345,7 +345,7 @@ julia> ε
 There are of course some strange artifacts near the convex hull, but the results are not terrible. Let's see what happens to the error if we instead use the other interpolant methods.
 
 ```julia
-other_methods = [Sibson(), Laplace(), Nearest(), Triangle(; allow_cache = true)]
+other_methods = [Sibson(), Laplace(), Nearest(), Triangle()]
 ∇gs = [∂(_x, _y; interpolant_method=method) for method in other_methods]
 ∇f = [f′(x, y) for x in xg, y in yg]
 εs = [rrmserr(∇f, collect.(∇g)) for ∇g in ∇gs]

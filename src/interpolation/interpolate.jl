@@ -100,7 +100,7 @@ struct Laplace{D} <: AbstractInterpolator{D} end
 struct Farin{D} <: AbstractInterpolator{D} end
 struct Hiyoshi{D} <: AbstractInterpolator{D} end
 @doc """
-    Triangle(; allow_cache = false)
+    Triangle(; allow_cache = true)
 
 Interpolate using a piecewise linear interpolant over the underlying triangulation.
 
@@ -111,7 +111,7 @@ Interpolate using a piecewise linear interpolant over the underlying triangulati
     `Triangle()` method, the object returned from `Triangle()` will store all 
     the coordinates. For this reason, if you want to reuse `Triangle()` for different 
     evaluations of the interpolant, you should be sure to reuse the same instance rather 
-    than reinstantiating it every single time. If you do not want this behaviour, leave 
+    than reinstantiating it every single time. If you do not want this behaviour, set 
     `allow_cache = false`.
 
     If you only ever call the scalar-argument version of the interpolant, no caching will 

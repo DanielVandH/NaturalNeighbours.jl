@@ -192,7 +192,7 @@ fig, ε = plot_gradients(∇g, f′, xg, yg)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface.png") fig
 @test ε ≈ 13.1857476
 
-other_methods = [Sibson(), Laplace(), Nearest(), Triangle(; allow_cache = true)]
+other_methods = [Sibson(), Laplace(), Nearest(), Triangle()]
 ∇gs = [∂(_x, _y; interpolant_method=method) for method in other_methods]
 ∇f = [f′(x, y) for x in xg, y in yg]
 εs = [rrmserr(∇f, collect.(∇g)) for ∇g in ∇gs]

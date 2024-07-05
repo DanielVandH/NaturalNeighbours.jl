@@ -43,7 +43,7 @@ itp = interpolate(tri, z)
 @test_opt target_modules = (@__MODULE__,) itp([0.3], [0.5], method=Farin())
 @test_opt target_modules = (@__MODULE__,) itp([0.3], [0.5], method=Hiyoshi())
 @test_opt target_modules = (@__MODULE__,) itp([0.3], [0.5], method=Laplace())
-@test_opt target_modules = (@__MODULE__,) itp([0.3], [0.5], method=Triangle())
+@test_opt target_modules = (@__MODULE__,) itp([0.3], [0.5], method=Triangle(; allow_cache = false))
 @test_opt target_modules = (@__MODULE__,) itp([0.3], [0.5], method=Nearest())
 
 @test_call target_modules = (@__MODULE__,) interpolate(tri, z; derivatives=false, parallel=false)
