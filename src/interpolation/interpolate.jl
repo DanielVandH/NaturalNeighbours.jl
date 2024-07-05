@@ -73,17 +73,51 @@ Interpolate using Sibson's coordinates with `C(d)` continuity at the data sites.
     Sibson(d) = d ∈ (0, 1) ? new{d}() : throw(ArgumentError("The Sibson interpolant is only defined for d ∈ (0, 1)."))
     Sibson() = new{0}()
 end
-struct Triangle{D} <: AbstractInterpolator{D} end
+struct Triangle{D} <: AbstractInterpolator{D}
+    allow_cache::Bool
+    s::Dict{NTuple{3,Int},NTuple{9,Float64}}
+end
+Triangle{D}(; allow_cache=false) where {D} = Triangle{D}(allow_cache, Dict{NTuple{3,Int},Float64}())
+Base.empty!(method::Triangle) = empty!(method.s)
+
+function populate_cache!(method::Triangle, tri::Triangulation)
+    method.allow_cache || return method
+    if length(method.s) == DelaunayTriangulation.num_solid_triangles(tri)
+        return method
+    elseif !isempty(method.s) # user is using a new triangulation
+        empty!(method)
+    end
+    for T in each_solid_triangle(tri)
+        V = sort_triangle(T)
+        i, j, k = triangle_vertices(V)
+        method.s[(i, j, k)] = _compute_triangle_shape_coefficients(tri, i, j, k)
+    end
+    return method
+end
+
 struct Nearest{D} <: AbstractInterpolator{D} end
 struct Laplace{D} <: AbstractInterpolator{D} end
 struct Farin{D} <: AbstractInterpolator{D} end
 struct Hiyoshi{D} <: AbstractInterpolator{D} end
 @doc """
-    Triangle()
+    Triangle(; allow_cache = true)
 
 Interpolate using a piecewise linear interpolant over the underlying triangulation.
-""" Triangle() = Triangle{0}()
-Triangle(d) = Triangle()
+
+!!! note "Cached coordinates with `allow_cache=true`"
+
+    The `Triangle()` interpolator is special as it will cache the coordinates used 
+    for each triangle. In particular, when an interpolator is evaluated with the 
+    `Triangle()` method, the object returned from `Triangle()` will store all 
+    the coordinates. For this reason, if you want to reuse `Triangle()` for different 
+    evaluations of the interpolant, you should be sure to reuse the same instance rather 
+    than reinstantiating it every single time. If you do not want this behaviour, set 
+    `allow_cache = false`.
+
+    If you only ever call the scalar-argument version of the interpolant, no caching will 
+    be done even with `allow_cache = true`.
+""" Triangle(; allow_cache=false) = Triangle{0}(; allow_cache)
+Triangle(d; allow_cache=false) = Triangle(; allow_cache)
 @doc """
     Nearest()
 
@@ -149,12 +183,14 @@ function (itp::NaturalNeighboursInterpolant)(x, y, id::Integer=1; parallel=false
     p = (F(x), F(y))
     cache = get_neighbour_cache(itp, id)
     method = iwrap(method)
+    # method isa Triangle && populate_cache!(method, tri)
     return _eval_interp(method, itp, p, cache; kwargs...)
 end
 
 function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVector, y::AbstractVector; parallel=true, method=Sibson(), kwargs...)
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
     method = iwrap(method)
+    method isa Triangle && populate_cache!(method, get_triangulation(itp))
     if !parallel
         for i in eachindex(x, y)
             vals[i] = itp(x[i], y[i], 1; method, kwargs...)
@@ -178,6 +214,7 @@ end
     F = number_type(tri)
     vals = zeros(F, n)
     method = iwrap(method)
+    method isa Triangle && populate_cache!(method, tri)
     itp(vals, x, y; method, parallel, kwargs...)
     return vals
 end

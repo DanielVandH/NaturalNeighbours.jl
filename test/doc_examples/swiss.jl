@@ -139,7 +139,7 @@ fig = plot_results(sibson_vals, sibson_1_vals, laplace_vals, triangle_vals, near
 sibson_vals_p = interpolant(x, y; method=Sibson(), parallel=true, project=false)
 sibson_1_vals_p = interpolant(x, y; method=Sibson(1), parallel=true, project=false)
 laplace_vals_p = interpolant(x, y; method=Laplace(), parallel=true, project=false)
-triangle_vals_p = interpolant(x, y; method=Triangle(), parallel=true, project=false)
+triangle_vals_p = interpolant(x, y; method=Triangle(; allow_cache = false), parallel=true, project=false)
 nearest_vals_p = interpolant(x, y; method=Nearest(), parallel=true, project=false)
 farin_vals_p = interpolant(x, y; method=Farin(), parallel=true, project=false)
 hiyoshi_vals_p = interpolant(x, y; method=Hiyoshi(2), parallel=true, project=false)

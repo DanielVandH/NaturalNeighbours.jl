@@ -1,4 +1,4 @@
-function two_point_interpolate!(tri, i, j, c)
+function two_point_interpolate(tri, i, j, c)
     # Project c onto the line through (a, b): https://stackoverflow.com/a/15187473
     # The orthogonal projection is not guaranteed to be on the line segment (corresponding 
     # to t < 0 or t > 1), in which case the weights are no longer a convex combination.
@@ -14,7 +14,7 @@ end
 
 function two_point_interpolate!(coordinates::AbstractVector{F}, envelope, tri, i, j, r, project=true) where {F} #interpolate r using two points i, j
     if project
-        t = two_point_interpolate!(tri, i, j, r)
+        t = two_point_interpolate(tri, i, j, r)
         resize!(coordinates, 2)
         resize!(envelope, 2)
         coordinates[1] = one(t) - t
