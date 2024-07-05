@@ -10,7 +10,7 @@ include(normpath(@__DIR__, "../..", "helper_functions", "point_generator.jl"))
 
 to_mat(H) = [H[1] H[3]; H[3] H[2]]
 @testset "Natural coordinates" begin
-    for method in (Sibson(), Triangle(), Nearest(), Laplace())
+    for method in (Sibson(), Nearest(), Laplace())
         method = NNI.iwrap(method)
         pts = [(0.0, 8.0), (0.0, 0.0), (14.0, 0.0), (14.0, 8.0), (4.0, 4.0), (10.0, 6.0), (6.0, 2.0), (12.0, 4.0), (0.0, 4.0)]
         tri = triangulate(pts, randomise=false, delete_ghosts=false)
@@ -95,12 +95,6 @@ end
         @test AX ≈ AX2 rtol = 1e-3
         @test _circular_equality(nc.indices, [23, 12, 5, 24, 7, 11])
         @test _circular_equality(nc.coordinates, [K1I1J1, F1G1J1K1, AF1G1D1B1A1, A1B1C1, B1D1E1C1, H1I1E1D1G1] ./ AX, ≈, rtol = 1e-2)
-
-        # Triangle 
-        nc = NNI.compute_natural_coordinates(NNI.Triangle(), tri, q; rng=rng)
-        V = jump_and_march(tri, q; rng)
-        @test _circular_equality(nc.indices, [5, 11, 12])
-        @test _circular_equality(nc.coordinates, [0.52, 0.3, 0.18], ≈, rtol = 1e-2)
 
         # Laplace 
         nc = NNI.compute_natural_coordinates(NNI.Laplace(), tri, q; rng=rng)

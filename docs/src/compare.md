@@ -29,7 +29,7 @@ We also define the following constants and other useful variables:
 ```julia
 const itp_methods = (
     Sibson(0),
-    Triangle(),
+    Triangle(; allow_cache = true), 
     Nearest(),
     Laplace(),
     Sibson(1),

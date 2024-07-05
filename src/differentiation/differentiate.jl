@@ -82,6 +82,22 @@ end
 
 @inline default_diff_method(∂) = Direct() # isnothing(get_gradient(get_interpolant(∂))) ? Direct() : Iterative()
 
+function _get_nc_and_z(method::AbstractInterpolator{D}, p, z, gradients, hessians, tri, cache=NaturalNeighboursCache(tri); rng=Random.default_rng(), project=true) where {D}
+    if (method isa Triangle) || method == Nearest() # coordinates need to be the natural neighbours
+        nc = compute_natural_coordinates(Sibson(), tri, p, cache; rng, project)
+    else
+        nc = compute_natural_coordinates(method, tri, p, cache; rng, project)
+    end
+    if D == 0
+        zᵢ = _eval_natural_coordinates(nc, z)
+    elseif D == 1
+        zᵢ = _eval_natural_coordinates(method, nc, z, gradients, tri)
+    else # D == 2 
+        zᵢ = _eval_natural_coordinates(method, nc, z, gradients, hessians, tri)
+    end
+    return nc, zᵢ
+end
+
 @inline function (∂::NaturalNeighboursDifferentiator)(x, y, zᵢ, nc, id::Integer=1; parallel=false, method=default_diff_method(∂), kwargs...)
     method = dwrap(method)
     F = (number_type ∘ get_triangulation ∘ get_interpolant)(∂)
@@ -106,6 +122,7 @@ function (∂::NaturalNeighboursDifferentiator)(vals::AbstractVector, x::Abstrac
     @assert length(x) == length(y) == length(vals) "x, y, and vals must have the same length."
     method = dwrap(method)
     interpolant_method = iwrap(interpolant_method)
+    interpolant_method isa Triangle && populate_cache!(interpolant_method, tri)
     if !parallel
         for i in eachindex(x, y)
             vals[i] = ∂(x[i], y[i], 1; method, interpolant_method, kwargs...)
@@ -134,6 +151,7 @@ function (∂::NaturalNeighboursDifferentiator{I,O})(x::AbstractVector, y::Abstr
     end
     method = dwrap(method)
     interpolant_method = iwrap(interpolant_method)
+    interpolant_method isa Triangle && populate_cache!(interpolant_method, tri)
     ∂(vals, x, y; method, interpolant_method, parallel, kwargs...)
     return vals
 end

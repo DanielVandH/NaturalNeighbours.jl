@@ -14,7 +14,7 @@ const NNI = NaturalNeighbours
 ## Some methods and constants 
 const itp_methods = (
     Sibson(0),
-    Triangle(),
+    Triangle(; allow_cache = true),
     Nearest(),
     Laplace(),
     Sibson(1),

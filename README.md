@@ -32,7 +32,7 @@ exact = f.(_x, _y)
 
 ## Evaluate some interpolants 
 sibson_vals = itp(_x, _y; method=Sibson())
-triangle_vals = itp(_x, _y; method=Triangle())
+triangle_vals = itp(_x, _y; method=Triangle(; allow_cache = true))
 laplace_vals = itp(_x, _y; method=Laplace())
 sibson_1_vals = itp(_x, _y; method=Sibson(1))
 nearest_vals = itp(_x, _y; method=Nearest())

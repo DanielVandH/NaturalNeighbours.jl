@@ -87,7 +87,6 @@ end
     @test_throws ArgumentError("Gradients and Hessians must be provided for Hiyoshi-2 interpolation. Consider using e.g. interpolate(tri, z; derivatives = true).") itp(0.5, 0.5; method=Hiyoshi(2))
 end
 
-
 @testset "Test Float32" begin
     rng = StableRNG(123)
     xs = randn(rng, 100)
@@ -98,7 +97,7 @@ end
     itp1 = interpolate(tri1, Float32.(zs); derivatives=true)
     itp2 = interpolate(tri2, zs; derivatives=true)
     for itp in (itp1, itp2)
-        for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
+        for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Triangle(; allow_cache = true), Nearest())
             @inferred itp(rand(), rand(); method=method)
             @inferred itp(rand(), rand(); method=method, project=false)
             @inferred itp(rand(Float32), rand(Float32); method=method)
@@ -109,7 +108,7 @@ end
             @inferred itp(rand(Float64), rand(Float32); method=method, project=false)
         end
     end
-    for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(), Nearest())
+    for method in (Sibson(1), Sibson(), Laplace(), Farin(1), Hiyoshi(2), Triangle(; allow_cache = true), Nearest())
         p, q = rand(2)
         @test itp1(p, q; method=method) ≈ itp2(p, q; method=method)
         @test itp1(p, q; method=method, project=false) ≈ itp2(p, q; method=method, project=false)
@@ -167,4 +166,35 @@ end
         H = NaturalNeighbours.get_hessian(itp, i)
         @test all(iszero, H)
     end
+end
+
+@testset "Testing Triangle()'s cache" begin
+    tri = triangulate(rand(2, 50))
+    method = Triangle()
+    method2 = Triangle(; allow_cache=true)
+    s = Dict{NTuple{3,Int},NTuple{9,Float64}}()
+    for T in each_solid_triangle(tri)
+        V = DelaunayTriangulation.sort_triangle(T)
+        s[V] = NaturalNeighbours._compute_triangle_shape_coefficients(tri, V...)
+        @test sum(s[V]) ≈ 1.0
+    end
+    itp = interpolate(tri, rand(50))
+    itp(rand(50), rand(50); method)
+    @test isempty(method.s)
+    itp(1 / 2, 1 / 2; method=method2)
+    @test isempty(method2.s)
+    itp(rand(50), rand(50); method=method2)
+    @test !isempty(method2.s)
+    @test method2.s == s
+    tri2 = triangulate(rand(2, 68))
+    itp = interpolate(tri2, rand(68))
+    itp(rand(50), rand(50); method=method2)
+    s = Dict{NTuple{3,Int},NTuple{9,Float64}}()
+    for T in each_solid_triangle(tri2)
+        V = DelaunayTriangulation.sort_triangle(T)
+        s[V] = NaturalNeighbours._compute_triangle_shape_coefficients(tri2, V...)
+        @inferred NaturalNeighbours._compute_triangle_shape_coefficients(tri2, V...)
+        @test sum(s[V]) ≈ 1.0
+    end
+    @test method2.s == s # make sure that method2 knows to regenerate the cache
 end

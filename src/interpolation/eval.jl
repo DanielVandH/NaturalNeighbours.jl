@@ -44,6 +44,35 @@ end
     return _eval_natural_coordinates(nc, z)
 end
 
+@inline function _eval_interp(method::Triangle, itp::NaturalNeighboursInterpolant, p, cache; project=true, kwargs...)
+    tri = get_triangulation(itp)
+    z = get_z(itp)
+    last_triangle = get_last_triangle(cache)
+    V = jump_and_march(tri, p; try_points=last_triangle[], kwargs...)
+    i, j, return_flag = check_for_extrapolation(tri, V, p, last_triangle)
+    if return_flag
+        F = number_type(tri)
+        if project
+            t = two_point_interpolate(tri, i, j, p)
+            return z[i] * (1 - t) + z[j] * t
+        else
+            return typemax(F)
+        end
+    else
+        i, j, k = triangle_vertices(sort_triangle(V))
+        if method.allow_cache && !isempty(method.s)
+            s₁, s₂, s₃, s₄, s₅, s₆, s₇, s₈, s₉ = method.s[(i, j, k)]
+        else
+            s₁, s₂, s₃, s₄, s₅, s₆, s₇, s₈, s₉ = _compute_triangle_shape_coefficients(tri, i, j, k)
+        end
+        α = s₁ * z[i] + s₂ * z[j] + s₃ * z[k]
+        β = s₄ * z[i] + s₅ * z[j] + s₆ * z[k]
+        γ = s₇ * z[i] + s₈ * z[j] + s₉ * z[k]
+        x, y = getxy(p)
+        return α * x + β * y + γ
+    end
+end
+
 @inline function _eval_interp(method::Union{<:Farin,Sibson{1}}, itp::NaturalNeighboursInterpolant, p, cache; kwargs...)
     gradients = get_gradient(itp)
     if isnothing(gradients)
@@ -73,20 +102,4 @@ end
         return _eval_natural_coordinates(nc, z)
     end
     return _eval_natural_coordinates(method, nc, z, gradients, hessians, tri)
-end
-
-function _get_nc_and_z(method::AbstractInterpolator{D}, p, z, gradients, hessians, tri, cache=NaturalNeighboursCache(tri); rng=Random.default_rng(), project=true) where {D}
-    if method == Triangle() || method == Nearest() # coordinates need to be the natural neighbours
-        nc = compute_natural_coordinates(Sibson(), tri, p, cache; rng, project)
-    else
-        nc = compute_natural_coordinates(method, tri, p, cache; rng, project)
-    end
-    if D == 0
-        zᵢ = _eval_natural_coordinates(nc, z)
-    elseif D == 1
-        zᵢ = _eval_natural_coordinates(method, nc, z, gradients, tri)
-    else # D == 2 
-        zᵢ = _eval_natural_coordinates(method, nc, z, gradients, hessians, tri)
-    end
-    return nc, zᵢ
 end
