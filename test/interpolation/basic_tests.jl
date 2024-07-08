@@ -171,7 +171,7 @@ end
 @testset "Testing Triangle()'s cache" begin
     tri = triangulate(rand(2, 50))
     method2 = Triangle()
-    method2 = Triangle(; allow_cache=false)
+    method = Triangle(; allow_cache=false)
     s = Dict{NTuple{3,Int},NTuple{9,Float64}}()
     for T in each_solid_triangle(tri)
         V = DelaunayTriangulation.sort_triangle(T)
