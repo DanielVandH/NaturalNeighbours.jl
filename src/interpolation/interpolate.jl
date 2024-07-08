@@ -77,7 +77,7 @@ struct Triangle{D} <: AbstractInterpolator{D}
     allow_cache::Bool
     s::Dict{NTuple{3,Int},NTuple{9,Float64}}
 end
-Triangle{D}(; allow_cache=false) where {D} = Triangle{D}(allow_cache, Dict{NTuple{3,Int},Float64}())
+Triangle{D}(; allow_cache=true) where {D} = Triangle{D}(allow_cache, Dict{NTuple{3,Int},Float64}())
 Base.empty!(method::Triangle) = empty!(method.s)
 
 function populate_cache!(method::Triangle, tri::Triangulation)
@@ -116,8 +116,8 @@ Interpolate using a piecewise linear interpolant over the underlying triangulati
 
     If you only ever call the scalar-argument version of the interpolant, no caching will 
     be done even with `allow_cache = true`.
-""" Triangle(; allow_cache=false) = Triangle{0}(; allow_cache)
-Triangle(d; allow_cache=false) = Triangle(; allow_cache)
+""" Triangle(; allow_cache=true) = Triangle{0}(; allow_cache)
+Triangle(d; allow_cache=true) = Triangle(; allow_cache)
 @doc """
     Nearest()
 
