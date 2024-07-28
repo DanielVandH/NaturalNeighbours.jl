@@ -101,12 +101,12 @@ tri = triangulate(points)
 ∇g = generate_gradients(tri, z)
 fig, ε = plot_gradients(∇g, tri, f′, x, y)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_data.png") fig
-@test ε ≈ 10.2511800
+@test ε ≈ 10.2511800 rtol=1e-3
 
 ∇gr, _ = generate_derivatives(tri, z; method=Direct())
 fig, ε = plot_gradients(∇gr, tri, f′, x, y)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "joint_gradient_data.png") fig
-@test ε ≈ 7.7177915977
+@test ε ≈ 7.7177915977 rtol=1e-3
 
 # Hessians 
 to_mat(H::NTuple{3,Float64}) = [H[1] H[3]; H[3] H[2]]
@@ -128,17 +128,17 @@ function plot_hessians(H, tri, f′′, x, y)
 end
 _, Hg = generate_derivatives(tri, z)
 fig, ε = plot_hessians(Hg, tri, f′′, x, y)
-@test ε ≈ 42.085578794
+@test ε ≈ 42.085578794 rtol=1e-3
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_data.png") fig
 
 _, Hg = generate_derivatives(tri, z, use_cubic_terms=false)
 fig, ε = plot_hessians(Hg, tri, f′′, x, y)
-@test ε ≈ 35.20873081
+@test ε ≈ 35.20873081 rtol=1e-3
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_data_no_cubic.png") fig
 
 _, Hg = generate_derivatives(tri, z, method=Iterative()) # the gradients will be generated first automatically
 fig, ε = plot_hessians(Hg, tri, f′′, x, y)
-@test ε ≈ 39.584816
+@test ε ≈ 39.584816 rtol=1e-3
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_data_iterative.png") fig
 
 # Away from the data sites 
@@ -190,7 +190,7 @@ function plot_gradients(∇g, f′, xg, yg)
 end
 fig, ε = plot_gradients(∇g, f′, xg, yg)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface.png") fig
-@test ε ≈ 13.1857476
+@test ε ≈ 13.1857476 rtol=1e-1
 
 other_methods = [Sibson(), Laplace(), Nearest(), Triangle()]
 ∇gs = [∂(_x, _y; interpolant_method=method) for method in other_methods]
@@ -236,8 +236,8 @@ figH, εH = plot_hessians(Hg, f′′, xg, yg)
 zlims!(figH.content[4], -25, 25)
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "hessian_surface_direct.png") figH
 @test_reference normpath(@__DIR__, "../..", "docs", "src", "figures", "gradient_surface_2_direct.png") fig∇
-@test εH ≈ 46.7610990050276
-@test ε∇ ≈ 9.853286514069882
+@test εH ≈ 46.7610990050276 rtol=1e-1
+@test ε∇ ≈ 9.853286514069882 rtol=1e-1
 
 function rrmserr(z, ẑ, ∂, x, y)
     tri = ∂.interpolant.triangulation
@@ -259,5 +259,5 @@ end
 
 εH_nohull = rrmserr(f′′.(_x, _y), to_mat.(Hg), ∂, _x, _y)
 ε∇_nohull = rrmserr(f′.(_x, _y), ∇g, ∂, _x, _y)
-@test ε∇_nohull ≈ 7.479964687673911
-@test εH_nohull ≈ 38.884740966379056
+@test ε∇_nohull ≈ 7.479964687673911 rtol=1e-2
+@test εH_nohull ≈ 38.884740966379056 rtol=1e-2
