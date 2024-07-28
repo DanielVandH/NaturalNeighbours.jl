@@ -4,6 +4,7 @@ function compute_bowyer_envelope!(envelope, tri::Triangulation, history::Inserti
     The Bowyer-Watson algorithm removes all triangles whose circumcenters contain 
     the point to be inserted, creating a hole which is then retriangulated with the 
     new point included.
+    
     What happens here is that we record the new triangles added in `history`, and then
     extract those triangles - we know that these changed after the new point was added,
     so they are the "natural neighbours" of the new point.
@@ -13,8 +14,8 @@ function compute_bowyer_envelope!(envelope, tri::Triangulation, history::Inserti
     empty!(get_adjacent(temp_adjacent))
     n = num_points(tri)
     I = integer_type(tri)
-    # Note that the `peek` keyword here indicates that the original triangulation is 
-    # never modified - but the new triangles are added to `history`.
+    # Note that the `peek` keyword here indicates that the original triangulation 
+    # is never modified - but the new triangles are added to `history`.
     V = add_point!(tri, point; store_event_history=Val(true), event_history=history, peek=Val(true), kwargs...)
     all_triangles = each_added_triangle(history)
     if isempty(all_triangles) # This is possible for constrained triangulations
@@ -32,10 +33,12 @@ function compute_bowyer_envelope!(envelope, tri::Triangulation, history::Inserti
     v = i == I(n + 1) ? j : i # get a vertex on the envelope
     push!(envelope, v)
     for i in 2:num_triangles(all_triangles)
-        # Get the vertex associated with the edge `(point, points[v])` such that the 
-        # returned point (the new `v`) forms a positively oriented triangle
-        # with that edge.  Then, add the newly found `v` to the envelope.
-        # To be clear, `n+1` is the index of the newly inserted vertex in the triangulation.
+        #=
+        Get the vertex associated with the edge `(point, points[v])` such that the 
+        returned point (the new `v`) forms a positively oriented triangle
+        with that edge.  Then, add the newly found `v` to the envelope.
+        To be clear, `n+1` is the index of the newly inserted vertex in the triangulation.
+        =#
         v = get_adjacent(temp_adjacent, I(n + 1), v) 
         push!(envelope, v)
     end
