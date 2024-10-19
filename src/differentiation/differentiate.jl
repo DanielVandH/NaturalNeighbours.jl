@@ -129,7 +129,7 @@ function (∂::NaturalNeighboursDifferentiator)(vals::AbstractVector, x::Abstrac
         end
     else
         nt = Base.Threads.nthreads()
-        chunked_iterator = chunks(vals, nt)
+        chunked_iterator = chunks(vals; n=nt)
         Threads.@threads for (xrange, chunk_id) in chunked_iterator
             for i in xrange
                 vals[i] = ∂(x[i], y[i], chunk_id; method, interpolant_method, kwargs...)
