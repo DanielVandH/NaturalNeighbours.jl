@@ -59,7 +59,7 @@ import DelaunayTriangulation: DelaunayTriangulation,
     get_boundary_nodes,
     triangle_vertices
 
-import ChunkSplitters: chunks
+import ChunkSplitters: index_chunks
 using ElasticArrays
 using LinearAlgebra
 using Random

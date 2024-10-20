@@ -79,8 +79,8 @@ function generate_derivatives(
         generate_second_order_derivatives!(∇, ℋ, method, tri, z, eachindex(z), derivative_caches, neighbour_caches, 1; alpha, use_cubic_terms, initial_gradients)
     else
         nt = length(derivative_caches)
-        chunked_iterator = chunks(z, nt)
-        Base.Threads.@threads for (zrange, chunk_id) in chunked_iterator
+        chunked_iterator = index_chunks(z; n=nt)
+        Base.Threads.@threads for (chunk_id, zrange) in enumerate(chunked_iterator)
             generate_second_order_derivatives!(∇, ℋ, method, tri, z, zrange, derivative_caches, neighbour_caches, chunk_id; alpha, use_cubic_terms, initial_gradients)
         end
     end
@@ -124,8 +124,8 @@ function generate_gradients(
         generate_first_order_derivatives!(∇, Direct(), tri, z, eachindex(z), derivative_caches, neighbour_caches, 1)
     else
         nt = length(derivative_caches)
-        chunked_iterator = chunks(∇, nt)
-        Base.Threads.@threads for (zrange, chunk_id) in chunked_iterator
+        chunked_iterator = index_chunks(∇; n=nt)
+        Base.Threads.@threads for (chunk_id, zrange) in enumerate(chunked_iterator)
             generate_first_order_derivatives!(∇, Direct(), tri, z, zrange, derivative_caches, neighbour_caches, chunk_id)
         end
     end

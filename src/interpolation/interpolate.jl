@@ -198,8 +198,8 @@ function (itp::NaturalNeighboursInterpolant)(vals::AbstractVector, x::AbstractVe
     else
         caches = get_neighbour_cache(itp)
         nt = length(caches)
-        chunked_iterator = chunks(vals, nt)
-        Threads.@threads for (xrange, chunk_id) in chunked_iterator
+        chunked_iterator = index_chunks(vals; n=nt)
+        Threads.@threads for (chunk_id, xrange) in enumerate(chunked_iterator)
             for i in xrange
                 vals[i] = itp(x[i], y[i], chunk_id; method, kwargs...)
             end
